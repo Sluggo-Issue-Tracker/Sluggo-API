@@ -1,0 +1,6 @@
+.vscode
+db.sqlite3
+private
+*/__pycache__/*
+*.pyc
+.DS_Store
