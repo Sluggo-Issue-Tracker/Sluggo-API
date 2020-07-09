@@ -9,7 +9,7 @@ class Profile(models.Model):
     The Profile class for the users of Sluggo. This will store the necessary information as a wrapper table around User.
 
     The class contains:
-        user: The one-to-one field that refers to a specific User
+        owner: The one-to-one field that refers to a specific User
         role: A record storing whether a user is Approved, Unapproved, or an Admin. Takes use of the Roles Private Class
         bio: A text field that will store each users Bio for their profile
         icon: A field that will allow users to upload images for their profile pictures.
@@ -29,21 +29,29 @@ class Profile(models.Model):
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="profiles"
+    )
     role = models.CharField(
         max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
     )
     bio = models.TextField()
+
+    class Meta:
+        ordering = ["id"]
+
     # icon = models.ImageField(default="default.jpg", upload_to="profile_pics") NEEDS PILLOW
 
 
 # REST TUTORIAL BELOW HERE #
 
 # Imports for REST Tutorial
-from pygments.lexers import get_all_lexers
+from pygments.lexers import get_all_lexers, get_lexer_by_name
 from pygments.styles import get_all_styles
+from pygments.formatters.html import HtmlFormatter
+from pygments import highlight
 
-LEXERS = [item for item in get_all_styles() if item[1]]
+LEXERS = [item for item in get_all_lexers() if item[1]]
 LANGUAGE_CHOICES = sorted([(item[1][0], item[0]) for item in LEXERS])
 STYLE_CHOICES = sorted([(item, item) for item in get_all_styles()])
 
@@ -57,7 +65,23 @@ class Snippet(models.Model):
         choices=LANGUAGE_CHOICES, default="python", max_length=100
     )
     style = models.CharField(choices=STYLE_CHOICES, default="friendly", max_length=100)
+    owner = models.ForeignKey(User, related_name="snippets", on_delete=models.CASCADE)
+    highlighted = models.TextField()
 
     class Meta:
         ordering = ["created"]
+
+    def save(self, *args, **kwargs):
+        """
+        Use the `pygments` library to create a highlighted HTML
+        representation of the code snippet.
+        """
+        lexer = get_lexer_by_name(self.language)
+        linenos = "table" if self.linenos else False
+        options = {"title": self.title} if self.title else {}
+        formatter = HtmlFormatter(
+            style=self.style, linenos=linenos, full=True, **options
+        )
+        self.highlighted = highlight(self.code, lexer, formatter)
+        super(Snippet, self).save(*args, **kwargs)
 

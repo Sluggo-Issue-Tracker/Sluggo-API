@@ -2,9 +2,18 @@
 This project will house Andrew's testing of REST API things
 """
 from django.urls import include, path
-from . import views as snippet_views
+from rest_framework.routers import DefaultRouter
+from . import views as api_views
 
-urlpatterns = [
-    path("snippets/", snippet_views.snippet_list),
-    path("snippets/<int:pk>/", snippet_views.snippet_detail),
+router = DefaultRouter()
+router.register(r"snippets", api_views.SnippetViewSet)
+router.register(r"users", api_views.UserViewSet, "api")
+router.register(r"profiles", api_views.ProfileViewSet)
+
+
+urlpatterns = [path("", include(router.urls))]
+
+
+urlpatterns += [
+    path("api-auth/", include("rest_framework.urls")),
 ]
