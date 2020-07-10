@@ -3,7 +3,7 @@ A REST API needs to provide a way of serializing and deserializing the models cr
 """
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, Snippet
+from .models import Profile, Snippet, Ticket
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -20,6 +20,37 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ["id", "owner", "role", "bio"]
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for the Ticket model.
+
+    The fields that are serialized and visible currently are:
+        id: The id of the Ticket
+        owner: The user that created the ticket
+        assigned_user: The user assigned to the ticket
+        title: The title of the ticket
+        description: The description of the ticket
+        started: When the ticket was started
+        completed: When the ticket was finished
+        due_date: When the ticket is due
+    """
+
+    owner = serializers.ReadOnlyField(source="owner.username")
+
+    class Meta:
+        model = Ticket
+        fields = [
+            "id",
+            "owner",
+            "assigned_user",
+            "title",
+            "description",
+            "started",
+            "completed",
+            "due_date",
+        ]
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
