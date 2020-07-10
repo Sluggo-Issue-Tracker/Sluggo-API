@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Snippet, Ticket
+from .models import Profile, Ticket
 
 
 class TicketAdmin(admin.ModelAdmin):
@@ -9,4 +9,3 @@ class TicketAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(Profile)
 admin.site.register(Ticket, TicketAdmin)
-admin.site.register(Snippet)

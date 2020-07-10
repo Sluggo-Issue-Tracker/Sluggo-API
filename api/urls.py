@@ -6,7 +6,6 @@ from rest_framework.routers import DefaultRouter
 from . import views as api_views
 
 router = DefaultRouter()
-router.register(r"snippets", api_views.SnippetViewSet)
 router.register(r"users", api_views.UserViewSet, "api")
 router.register(r"profiles", api_views.ProfileViewSet)
 router.register(r"tickets", api_views.TicketViewSet)
