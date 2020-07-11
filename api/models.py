@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 
@@ -30,7 +32,7 @@ class Profile(models.Model):
         ADMIN = "AD", _("Admin")
 
     owner = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="profiles"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
     )
     role = models.CharField(
         max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
@@ -39,6 +41,15 @@ class Profile(models.Model):
 
     class Meta:
         ordering = ["id"]
+
+    @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Profile.objects.create(owner=instance)
+
+    @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.profiles.save()
 
     # icon = models.ImageField(default="default.jpg", upload_to="profile_pics") NEEDS PILLOW
 
@@ -59,10 +70,14 @@ class Ticket(models.Model):
     """
 
     owner = models.ForeignKey(
-        User, related_name="created_tickets", on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        related_name="created_tickets",
+        on_delete=models.CASCADE,
     )
     assigned_user = models.ForeignKey(
-        User, related_name="assigned_tickets", on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        related_name="assigned_tickets",
+        on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=100, blank=False)
     description = models.TextField(blank=True)

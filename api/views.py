@@ -1,5 +1,5 @@
 from rest_framework import permissions, viewsets
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from .models import Profile, Ticket
 from .serializers import ProfileSerializer, UserSerializer, TicketSerializer
@@ -35,10 +35,11 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """
 
+    User = get_user_model()
     queryset = User.objects.all()
     serializer_class = UserSerializer

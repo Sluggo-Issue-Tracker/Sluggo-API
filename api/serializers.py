@@ -2,7 +2,8 @@
 A REST API needs to provide a way of serializing and deserializing the models created into representations such as json. We can do this by declaring serializers that work very similar to Django's forms. Create a file in the app directory named serializers.py and create your classes.
 """
 from rest_framework import serializers
-from django.contrib.auth.models import User
+
+from django.contrib.auth import get_user_model
 from .models import Profile, Ticket
 
 
@@ -57,8 +58,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     profiles = serializers.HyperlinkedRelatedField(
         view_name="profile-detail", read_only=True
     )
+    fullname = serializers.ReadOnlyField(source="get_full_name")
 
     class Meta:
-        model = User
-        fields = ["url", "id", "username", "profiles"]
+        model = get_user_model()
+        fields = ["url", "id", "email", "fullname", "profiles"]
 
