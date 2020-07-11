@@ -3,13 +3,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .forms import UserCreationForm, UserChangeForm
+from .models import User
 
 
-class CustomUserAdmin(BaseUserAdmin):
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm
+class UserAdmin(BaseUserAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
 
     list_display = ("email", "first_name", "last_name", "is_staff")
     list_filter = ("is_staff",)
@@ -38,4 +38,4 @@ class CustomUserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(User, UserAdmin)

@@ -1,10 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import CustomUser
+from .models import User
 
 
-class CustomUserCreationForm(forms.ModelForm):
+class UserCreationForm(forms.ModelForm):
     """
     New User Form. Requires password confirmation.
     """
@@ -13,7 +13,7 @@ class CustomUserCreationForm(forms.ModelForm):
     password2 = forms.CharField(label="Confirm password", widget=forms.PasswordInput)
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ("email", "first_name", "last_name")
 
     def clean_password2(self):
@@ -33,7 +33,7 @@ class CustomUserCreationForm(forms.ModelForm):
         return user
 
 
-class CustomUserChangeForm(forms.ModelForm):
+class UserChangeForm(forms.ModelForm):
     """
     Update User Form. Doesn't allow changing password in the Admin.
     """
@@ -41,7 +41,7 @@ class CustomUserChangeForm(forms.ModelForm):
     password = ReadOnlyPasswordHashField()
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             "email",
             "password",

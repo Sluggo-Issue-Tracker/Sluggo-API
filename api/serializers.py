@@ -4,6 +4,8 @@ A REST API needs to provide a way of serializing and deserializing the models cr
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+
+from django.conf import settings
 from .models import Profile, Ticket
 
 
@@ -38,7 +40,7 @@ class TicketSerializer(serializers.ModelSerializer):
         due_date: When the ticket is due
     """
 
-    owner = serializers.ReadOnlyField(source="owner.username")
+    owner = serializers.ReadOnlyField(source="owner.email")
 
     class Meta:
         model = Ticket
