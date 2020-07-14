@@ -42,10 +42,16 @@ class Profile(models.Model):
     class Meta:
         ordering = ["id"]
 
+    def __str__(self):
+        return f"Profile: {self.owner.get_full_name}"
+
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
-            Profile.objects.create(owner=instance)
+            if instance.is_superuser or instance.is_staff:
+                Profile.objects.create(owner=instance, role=Profile.Roles.ADMIN)
+            else:
+                Profile.objects.create(owner=instance)
 
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def save_user_profile(sender, instance, **kwargs):
