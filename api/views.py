@@ -35,7 +35,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """

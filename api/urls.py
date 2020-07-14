@@ -7,7 +7,7 @@ from . import views as api_views
 
 
 router = DefaultRouter()
-router.register(r"users", api_views.CustomUserViewSet)
+router.register(r"users", api_views.UserViewSet)
 router.register(r"profiles", api_views.ProfileViewSet)
 router.register(r"tickets", api_views.TicketViewSet)
 
