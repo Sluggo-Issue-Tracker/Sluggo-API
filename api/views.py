@@ -2,7 +2,12 @@ from rest_framework import permissions, viewsets
 from django.contrib.auth import get_user_model
 
 from .models import Profile, Ticket
-from .serializers import ProfileSerializer, UserSerializer, TicketSerializer
+from .serializers import (
+    ProfileSerializer,
+    AdminProfileSerializer,
+    UserSerializer,
+    TicketSerializer,
+)
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 
@@ -16,7 +21,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly | IsAdminOrReadOnly,
     ]
     queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated and (
+            self.action == "create"
+            or self.request.user.profiles.role == Profile.Roles.ADMIN
+        ):
+            return AdminProfileSerializer
+        else:
+            return ProfileSerializer
 
 
 class TicketViewSet(viewsets.ModelViewSet):
@@ -35,7 +48,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """

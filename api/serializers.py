@@ -16,6 +16,23 @@ class ProfileSerializer(serializers.ModelSerializer):
     The fields that are serialized and visible currently are:
         id: The id of the Profile
         user: A foriegn key to the entry in the User table corresponding to this user.
+        role: Unapproved, Approved, or Admin (Non-admin can't edit this)
+        bio: The bio of the user's profile
+    """
+
+    class Meta:
+        model = Profile
+        fields = ["id", "owner", "role", "bio"]
+        read_only_fields = ["role", "owner"]
+
+
+class AdminProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for the Profile model.
+
+    The fields that are serialized and visible currently are:
+        id: The id of the Profile
+        user: A foriegn key to the entry in the User table corresponding to this user.
         role: Unapproved, Approved, or Admin
         bio: The bio of the user's profile
     """
