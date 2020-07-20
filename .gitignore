@@ -3,6 +3,6 @@ db.sqlite3
 private
 */__pycache__/*
 */migrations/*
-
+!*/migrations/__init__.py
 *.pyc
 .DS_Store
