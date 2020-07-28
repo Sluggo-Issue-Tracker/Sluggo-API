@@ -97,3 +97,26 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"Ticket: {self.title}"
+
+class Ticket_Comment(models.Model):
+
+    """
+    Comment object for tickets
+    """
+
+    ticket_id = models.ForeignKey(
+        Ticket,
+        related_name="comments",
+        on_delete=models.CASCADE
+    )
+    author_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    content = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment: {self.content}"
