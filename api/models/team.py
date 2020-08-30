@@ -20,10 +20,10 @@ class Team(models.Model):
         due_date: The due date for the ticket, a date field that will keep track of when things are due.
     """
 
-    displayname = models.CharField(max_length=100, blank=false)
+    displayname = models.CharField(max_length=100, blank=False)
     created = models.DateTimeField(auto_now_add=True)
-    activated = model.DateTimeField(auto_now_add=True)
-    deactivated = model.DateTimeField()
+    activated = models.DateTimeField(auto_now_add=True)
+    deactivated =models.DateTimeField()
 
     def __str__(self):
         return f"Team: {self.title}"

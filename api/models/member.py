@@ -21,8 +21,8 @@ class Member(models.Model):
     """
 
     created = models.DateTimeField(auto_now_add=True)
-    activated = model.DateTimeField(auto_now_add=True)
-    deactivated = model.DateTimeField()
+    activated = models.DateTimeField(auto_now_add=True)
+    deactivated = models.DateTimeField()
 
     def __str__(self):
         return f"Member: {self.title}"
