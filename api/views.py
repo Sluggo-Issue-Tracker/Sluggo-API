@@ -1,4 +1,5 @@
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
+from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 
 from .models import Profile, Ticket
@@ -53,6 +54,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """
+
 
     User = get_user_model()
     queryset = User.objects.all()

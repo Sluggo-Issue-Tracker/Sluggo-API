@@ -6,7 +6,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from django.conf import settings
-from .models import Profile, Ticket
+from .models import Profile, Ticket, Ticket_Comment
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -42,6 +42,22 @@ class AdminProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "owner", "role", "bio"]
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    
+    """
+    Serialzier for comments. to be used with tickets
+    """
+
+    class Meta:
+        model = Ticket_Comment
+        fields = [
+            "id",
+            "ticket_id",
+            "author_id",
+            "content",
+            "created"
+        ]
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -58,6 +74,7 @@ class TicketSerializer(serializers.ModelSerializer):
     """
 
     owner = serializers.ReadOnlyField(source="owner.email")
+    comments = CommentSerializer(many=True)
 
     class Meta:
         model = Ticket
@@ -67,10 +84,12 @@ class TicketSerializer(serializers.ModelSerializer):
             "assigned_user",
             "title",
             "description",
+            "comments",
             "started",
             "completed",
             "due_date",
         ]
+
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):

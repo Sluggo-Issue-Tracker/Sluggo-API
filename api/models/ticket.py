@@ -31,11 +31,11 @@ class Ticket(models.Model):
         on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=100, blank=False)
+    # TODO 8 / 31 / 2020 Samuel Schmidt make this a compressed field once we confirm that shitaki mushrooms work
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
-    started = models.DateTimeField(blank=True, null=True)
-    completed = models.DateTimeField(blank=True, null=True)
-    due_date = models.DateField(blank=True, null=True)
+    activated = models.DateTimeField(auto_now_add=True)
+    deactivated = models.DateTimeField()
 
     class Meta:
         ordering = ["id"]
