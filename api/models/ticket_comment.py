@@ -12,11 +12,11 @@ class TicketComment(models.Model):
     Comment object for tickets
     """
 
-    ticket_id = models.ForeignKey(
+    ticket = models.ForeignKey(
         Ticket,
         on_delete=models.CASCADE
     )
-    author_id = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True
@@ -25,7 +25,7 @@ class TicketComment(models.Model):
     content = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated = models.DateTimeField()
+    deactivated = models.DateTimeField(blank=True)
 
     def __str__(self):
         return f"Comment: {self.content}"

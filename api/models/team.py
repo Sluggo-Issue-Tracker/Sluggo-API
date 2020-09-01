@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
+from .ticket import Ticket
+
 
 class Team(models.Model):
     """
@@ -11,9 +13,14 @@ class Team(models.Model):
     """
 
     name = models.CharField(max_length=100, blank=False)
+    ticket_head = models.IntegerField(blank=False, default=0)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated =models.DateTimeField()
+    deactivated = models.DateTimeField(blank=True)
 
     def __str__(self):
-        return f"Team: {self.title}"
+        return f"Team: {self.name}"
+
+    @receiver(post_save, sender=Ticket)
+    def incrementTicketCount(sender, instance, **kwargs):
+        instance.ticket_head+= 1

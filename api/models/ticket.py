@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
+from . import Team
+
 
 class Ticket(models.Model):
     """
@@ -20,22 +22,31 @@ class Ticket(models.Model):
         due_date: The due date for the ticket, a date field that will keep track of when things are due.
     """
 
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE
+    )
+
+    ticket_number = models.IntegerField()
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="created_tickets",
         on_delete=models.CASCADE,
     )
+
     assigned_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="assigned_tickets",
         on_delete=models.CASCADE,
     )
+
     title = models.CharField(max_length=100, blank=False)
     # TODO 8 / 31 / 2020 Samuel Schmidt make this a compressed field once we confirm that shitaki mushrooms work
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated = models.DateTimeField()
+    deactivated = models.DateTimeField(blank=True)
 
     class Meta:
         ordering = ["id"]

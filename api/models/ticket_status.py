@@ -8,13 +8,13 @@ class TicketStatus(models.Model):
     By default, they will be created, started, and completed
     """
 
-    team_id = models.ForeignKey(
+    team = models.ForeignKey(
         Team, on_delete=models.CASCADE
     )
-    title = models.CharField()
+    title = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated = models.DateTimeField()
+    deactivated = models.DateTimeField(blank=True)
 
     class Meta:
         ordering = ["id"]
