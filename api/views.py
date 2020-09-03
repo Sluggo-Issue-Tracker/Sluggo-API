@@ -2,7 +2,13 @@ from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 
-from .models import Ticket
+from .models import (
+    Member,
+    Team,
+    Ticket,
+    TicketComment,
+    TicketStatus
+)
 from .serializers import (
     UserSerializer,
     TicketSerializer,
@@ -26,10 +32,15 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class MemberViewSet(viewsets.ModelViewSet):
     """
-    This viewset automatically provides `list` and `detail` actions.
+    list and detail inherited from parent class
     """
-    User = get_user_model()
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+
+    queryset = Member.objects.all()
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly | IsAdminOrReadOnly
+    ]
+

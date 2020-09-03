@@ -5,7 +5,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from ..models import Ticket
-from ..models import Profile
+from ..models import Member
 
 import datetime
 

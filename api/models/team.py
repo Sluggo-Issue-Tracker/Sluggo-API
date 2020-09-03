@@ -20,7 +20,3 @@ class Team(models.Model):
 
     def __str__(self):
         return f"Team: {self.name}"
-
-    @receiver(post_save, sender=Ticket)
-    def incrementTicketCount(sender, instance, **kwargs):
-        instance.ticket_head+= 1

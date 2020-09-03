@@ -31,13 +31,11 @@ class Ticket(models.Model):
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name="created_tickets",
         on_delete=models.CASCADE,
     )
 
     assigned_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name="assigned_tickets",
         on_delete=models.CASCADE,
     )
 
