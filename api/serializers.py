@@ -63,12 +63,14 @@ class TicketCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketComment
         ticket_id = serializers.ReadOnlyField(source="ticket.id")
+        team_id = serializers.ReadOnlyField(source="team.id")
         author = UserSerializer(Many=False)
 
         fields = [
             "id",
             "ticket_id",
-            "author_id",
+            "team_id",
+            "author",
             "content",
             "created",
             "activated",
@@ -109,6 +111,21 @@ class TicketSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "comments",
+            "activated",
+            "deactivated"
+        ]
+
+
+class TicketStatusSerializer(serializers.ModelSerializer):
+    team_id = serializers.ReadOnlyField(source="team.id")
+
+    class Meta:
+        model = TicketStatus
+        fields = [
+            "id",
+            "team_id",
+            "title",
+            "created",
             "activated",
             "deactivated"
         ]

@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from . import Ticket
+from . import Ticket, Team
 
 
 class TicketComment(models.Model):
@@ -14,6 +14,10 @@ class TicketComment(models.Model):
 
     ticket = models.ForeignKey(
         Ticket,
+        on_delete=models.CASCADE
+    )
+    team = models.ForeignKey(
+        Team,
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(

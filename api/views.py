@@ -16,22 +16,6 @@ from .serializers import (
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 
-class TicketViewSet(viewsets.ModelViewSet):
-    """
-    This viewset automatically provides `list` and `detail` actions.
-    """
-
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly,
-    ]
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
-
 class MemberViewSet(viewsets.ModelViewSet):
     """
     list and detail inherited from parent class
@@ -43,4 +27,52 @@ class MemberViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
         IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
+
+
+class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly | IsAdminOrReadOnly
+    ]
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly | IsAdminOrReadOnly,
+    ]
+
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class TicketCommentViewSet(viewsets.ModelViewSet):
+
+    """
+    Basic crud should be pre-generated, so we only need to do the more complicated calls
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly | IsAdminOrReadOnly,
+    ]
+
+    queryset = TicketComment.objects.all()
+
+    @action(detail=False)
+    def recent_comments(self, request, team_id=None):
+        """ This call returns the first page of comments associated with the given team_id """
+        pass
+
+
+
 
