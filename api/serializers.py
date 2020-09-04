@@ -92,7 +92,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
     team_id = serializers.ReadOnlyField(source="team.id")
     owner = serializers.ReadOnlyField(source="owner.email")
-    comments = TicketCommentSerializer(many=True)
+    comments = TicketCommentSerializer(many=True, required=False)
     assigned_user = UserSerializer()
 
     class Meta:

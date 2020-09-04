@@ -14,25 +14,40 @@ user_dict = dict(email="adam@sicmundus.org", first_name="Jonas", last_name="Kahn
 
 admin_dict = dict(email="Claudia@wnpp.gov", first_name="Claudia", last_name="Tiedemann")
 
+"""
+each test validates basic CRUD functionality
+"""
+
 
 class TeamBaseBehavior(TestCase):
 
     def setUp(self):
-        self.team_name = "bugslotics"
-        self.team = Team(
-            name=self.team_name,
-            description="a very cool team",
-            ticket_head=0
-        )
+        self.user = User.objects.create_user(**user_dict)
 
     def testTeamCreate(self):
-        old_count = Team.objects.count()
-        self.team.save()
-        new_count = Team.objects.count()
-        self.assertGreater(new_count, old_count)
+        client = APIClient()
+        client.force_authenticate(user=self.user)
 
-    def testTeamStr(self):
-        self.assertEqual(str(self.team), f"Team: {self.team_name}")
+        team_data = {
+            "name": "bugslotics",
+            "description": "a very cool team",
+            "ticket_head": 0
+        }
+
+        response = client.post(
+            reverse("team-list"), team_data, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def testTeamRead(self):
+        pass
+
+    def testTeamUpdate(self):
+        pass
+
+    def testTeamDelete(self):
+        pass
 
 
 class ProfileBaseBehavior(TestCase):
