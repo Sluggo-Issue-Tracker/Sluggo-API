@@ -1,5 +1,6 @@
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 
 from .models import (
@@ -10,15 +11,17 @@ from .models import (
     TicketStatus
 )
 from .serializers import (
-    UserSerializer,
     TicketSerializer,
+    MemberSerializer,
+    TeamSerializer,
+    TicketCommentSerializer,
 )
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 
 class MemberViewSet(viewsets.ModelViewSet):
     """
-    list and detail inherited from parent class
+    CRUD stuff inherited from ModelViewSet
     """
 
     queryset = Member.objects.all()
@@ -28,14 +31,31 @@ class MemberViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
+    serializer_class = TeamSerializer
+
 
 class TeamViewSet(viewsets.ModelViewSet):
+
     queryset = Team.objects.all()
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
         IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
+
+    serializer_class = MemberSerializer
+
+    @action(detail=True, methods=["post"])
+    def join(self, request):
+        """ create a new member entry representing a join to the referenced """
+        pass
+
+    @action(detail=False, methods=["get"])
+    def search(self, request, search_term=None):
+        """ retrieve teams based on a user search term. ideally i would want to use something like
+            cosine similarity
+        """
+        pass
 
 
 class TicketViewSet(viewsets.ModelViewSet):
@@ -50,6 +70,12 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+
+    @action(detail=False, methods=["get"])
+    def list_team(self, request, pk=None):
+        queryset = Ticket.objects.filter(team__id=pk)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -67,6 +93,7 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
     ]
 
     queryset = TicketComment.objects.all()
+    serializer_class = TicketCommentSerializer
 
     @action(detail=False)
     def recent_comments(self, request, team_id=None):
@@ -74,5 +101,10 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
         pass
 
 
+class TicketStatusViewSet(viewsets.ModelViewSet):
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly | IsAdminOrReadOnly
+    ]
 
-
+    queryset = TicketStatus.objects.all()
