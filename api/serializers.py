@@ -8,13 +8,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from django.conf import settings
-from .models import (
-    Ticket,
-    TicketComment,
-    TicketStatus,
-    Team,
-    Member
-)
+from . import models as api_models
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Team
+        model = api_models.Team
         fields = [
             "id",
             "name",
@@ -43,7 +37,7 @@ class MemberSerializer(serializers.ModelSerializer):
     team_id = serializers.ReadOnlyField(source="team.id")
 
     class Meta:
-        model = Member
+        model = api_models.Member
         fields = [
             "id",
             "user",
@@ -62,7 +56,7 @@ class TicketCommentSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        model = TicketComment
+        model = api_models.TicketComment
         ticket_id = serializers.ReadOnlyField(source="ticket.id")
         team_id = serializers.ReadOnlyField(source="team.id")
         author = UserSerializer(Many=False)
@@ -102,7 +96,7 @@ class TicketSerializer(serializers.ModelSerializer):
     assigned_user = UserSerializer(many=False)
 
     class Meta:
-        model = Ticket
+        model = api_models.Ticket
         fields = [
             "id",
             "team_id",
@@ -121,7 +115,7 @@ class TicketStatusSerializer(serializers.ModelSerializer):
     team_id = serializers.ReadOnlyField(source="team.id")
 
     class Meta:
-        model = TicketStatus
+        model = api_models.TicketStatus
         fields = [
             "id",
             "team_id",
