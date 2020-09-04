@@ -19,7 +19,7 @@ class TeamBaseBehavior(TestCase):
 
     def setUp(self):
         self.team_name = "bugslotics"
-        self.team = Team.objects.create(
+        self.team = Team(
             name=self.team_name,
             description="a very cool team",
             ticket_head=0
