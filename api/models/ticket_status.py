@@ -1,5 +1,5 @@
 from django.db import models
-from . import Team
+from .team import Team
 
 
 class TicketStatus(models.Model):

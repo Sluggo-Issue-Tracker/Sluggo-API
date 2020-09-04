@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from . import Team
+from .team import Team
 
 
 class Ticket(models.Model):
@@ -32,11 +32,13 @@ class Ticket(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='owned_ticket'
     )
 
     assigned_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='assigned_ticket'
     )
 
     title = models.CharField(max_length=100, blank=False)
