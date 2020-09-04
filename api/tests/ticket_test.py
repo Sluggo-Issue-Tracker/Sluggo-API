@@ -61,7 +61,7 @@ class TicketViewTestCase(TestCase):
 
         self.assigned_user = User.objects.create_user(**assigned_dict)
         self.admin_user = User.objects.create_user(**admin_dict)
-        self.admin_user.profiles.role = Profile.Roles.ADMIN
+        self.admin_user.profiles.role = Member.Roles.ADMIN
 
         # Create a client with authentication
         self.client = APIClient()

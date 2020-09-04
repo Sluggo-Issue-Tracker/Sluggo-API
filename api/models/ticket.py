@@ -46,7 +46,7 @@ class Ticket(models.Model):
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated = models.DateTimeField(blank=True)
+    deactivated = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["id"]

@@ -27,7 +27,7 @@ class TicketComment(models.Model):
     content = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
-    deactivated = models.DateTimeField(blank=True)
+    deactivated = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Comment: {self.content}"
