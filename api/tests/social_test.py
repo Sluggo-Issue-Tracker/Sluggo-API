@@ -4,7 +4,8 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 
-from ..models import Ticket, Team, Member
+from ..models import Team, Member
+from ..serializers import TeamSerializer
 
 import datetime
 
@@ -24,24 +25,49 @@ class TeamBaseBehavior(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(**user_dict)
 
-    def testTeamCreate(self):
-        client = APIClient()
-        client.force_authenticate(user=self.user)
-
-        team_data = {
+        self.team_data = {
             "name": "bugslotics",
             "description": "a very cool team",
             "ticket_head": 0
         }
 
+    def testTeamCreate(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
         response = client.post(
-            reverse("team-list"), team_data, format="json"
+            reverse("team-list"), self.team_data, format="json"
         )
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def testTeamRead(self):
-        pass
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
+        response = client.post(
+            reverse("team-list"), self.team_data, format="json"
+        )
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        serializer = TeamSerializer(data=response.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        team_id = team.id
+
+        response = client.get(
+            reverse("team-detail", kwargs={'pk': team_id}), format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
 
     def testTeamUpdate(self):
         pass

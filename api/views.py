@@ -31,7 +31,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
-    serializer_class = TeamSerializer
+    serializer_class = MemberSerializer
 
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -43,7 +43,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
-    serializer_class = MemberSerializer
+    serializer_class = TeamSerializer
 
     @action(detail=True, methods=["post"])
     def join(self, request):
