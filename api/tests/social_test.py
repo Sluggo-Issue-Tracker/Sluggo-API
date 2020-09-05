@@ -70,10 +70,70 @@ class TeamBaseBehavior(TestCase):
             self.assertEqual(v, response.data.get(k))
 
     def testTeamUpdate(self):
-        pass
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
+        response = client.post(
+            reverse("team-list"), self.team_data, format="json"
+        )
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        serializer = TeamSerializer(data=response.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        team_id = team.id
+
+        updated_data = {
+            "name": "slugbotics",
+            "description": "a very cool team"
+        }
+
+        response = client.put(
+            reverse("team-detail", kwargs={'pk': team_id}),
+            updated_data,
+            format="json"
+        )
+
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for k, v in updated_data.items():
+            self.assertEqual(v, response.data.get(k))
 
     def testTeamDelete(self):
-        pass
+        client = APIClient()
+        client.force_authenticate(self.user)
+
+        response = client.post(
+            reverse("team-list"), self.team_data, format="json"
+        )
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        serializer = TeamSerializer(data=response.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        team_id = team.id
+
+        # TODO: 9/5/2020 tdimhcsleumas delete should simply set deactivated rather then deleting the entire record
+        #                this will be depended on overriding the delete method, whenever we get to that
+
+        old_count = Team.objects.count()
+
+        response = client.delete(
+            reverse("team-detail", kwargs={"pk": team.id})
+        )
+
+        print(response)
+
+        new_count = Team.objects.count()
+
+        self.assertGreater(old_count, new_count)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class ProfileBaseBehavior(TestCase):

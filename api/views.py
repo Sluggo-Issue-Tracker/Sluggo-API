@@ -40,7 +40,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly
+        #IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
     serializer_class = TeamSerializer
@@ -65,7 +65,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly,
+       # IsOwnerOrReadOnly | IsAdminOrReadOnly, ignoring these until we get owner field squared away
     ]
 
     queryset = Ticket.objects.all()

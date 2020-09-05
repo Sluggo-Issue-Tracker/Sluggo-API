@@ -1,6 +1,10 @@
 from rest_framework import permissions
 
 
+"""
+these all need to be deprecated as they are reliant on the old profile 
+"""
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
