@@ -31,6 +31,22 @@ class TeamBaseBehavior(TestCase):
             "ticket_head": 0
         }
 
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        self.client = client
+
+        response = client.post(
+            reverse("team-list"), self.team_data, format="json"
+        )
+
+        for k, v in self.team_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        serializer = TeamSerializer(data=response.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        self.team_id = team.id
+
     def testTeamCreate(self):
         client = APIClient()
         client.force_authenticate(user=self.user)
@@ -45,23 +61,9 @@ class TeamBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def testTeamRead(self):
-        client = APIClient()
-        client.force_authenticate(user=self.user)
 
-        response = client.post(
-            reverse("team-list"), self.team_data, format="json"
-        )
-
-        for k, v in self.team_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        serializer = TeamSerializer(data=response.data)
-        serializer.is_valid(raise_exception=True)
-        team = serializer.save()
-        team_id = team.id
-
-        response = client.get(
-            reverse("team-detail", kwargs={'pk': team_id}), format="json"
+        response = self.client.get(
+            reverse("team-detail", kwargs={'pk': self.team_id}), format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -70,28 +72,14 @@ class TeamBaseBehavior(TestCase):
             self.assertEqual(v, response.data.get(k))
 
     def testTeamUpdate(self):
-        client = APIClient()
-        client.force_authenticate(user=self.user)
-
-        response = client.post(
-            reverse("team-list"), self.team_data, format="json"
-        )
-
-        for k, v in self.team_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        serializer = TeamSerializer(data=response.data)
-        serializer.is_valid(raise_exception=True)
-        team = serializer.save()
-        team_id = team.id
 
         updated_data = {
             "name": "slugbotics",
             "description": "a very cool team"
         }
 
-        response = client.put(
-            reverse("team-detail", kwargs={'pk': team_id}),
+        response = self.client.put(
+            reverse("team-detail", kwargs={'pk': self.team_id}),
             updated_data,
             format="json"
         )
@@ -104,28 +92,14 @@ class TeamBaseBehavior(TestCase):
             self.assertEqual(v, response.data.get(k))
 
     def testTeamDelete(self):
-        client = APIClient()
-        client.force_authenticate(self.user)
-
-        response = client.post(
-            reverse("team-list"), self.team_data, format="json"
-        )
-
-        for k, v in self.team_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        serializer = TeamSerializer(data=response.data)
-        serializer.is_valid(raise_exception=True)
-        team = serializer.save()
-        team_id = team.id
 
         # TODO: 9/5/2020 tdimhcsleumas delete should simply set deactivated rather then deleting the entire record
         #                this will be depended on overriding the delete method, whenever we get to that
 
         old_count = Team.objects.count()
 
-        response = client.delete(
-            reverse("team-detail", kwargs={"pk": team.id})
+        response = self.client.delete(
+            reverse("team-detail", kwargs={"pk": self.team_id})
         )
 
         print(response)
@@ -136,7 +110,7 @@ class TeamBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-class ProfileBaseBehavior(TestCase):
+class MemberBaseBehavior(TestCase):
 
     def setUp(self):
         profile_user = User.objects.create_user(**user_dict)
