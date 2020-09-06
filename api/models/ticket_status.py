@@ -13,7 +13,7 @@ class TicketStatus(models.Model):
     )
     title = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now_add=True)
-    activated = models.DateTimeField(auto_now_add=True)
+    activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
     class Meta:

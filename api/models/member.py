@@ -36,6 +36,9 @@ class Member(models.Model):
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
+    # md5 of team.name + user.email
+    join_id = models.BinaryField(length=128, unique=True)
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
@@ -50,7 +53,7 @@ class Member(models.Model):
 
     bio = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
-    activated = models.DateTimeField(auto_now_add=True)
+    activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
     class Meta:

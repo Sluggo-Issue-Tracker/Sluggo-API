@@ -10,7 +10,7 @@ class Team(models.Model):
     description = models.TextField()
     ticket_head = models.IntegerField(blank=False, default=0)
     created = models.DateTimeField(auto_now_add=True)
-    activated = models.DateTimeField(auto_now_add=True)
+    activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

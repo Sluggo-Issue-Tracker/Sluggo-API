@@ -15,6 +15,11 @@ user_dict = dict(email="adam@sicmundus.org", first_name="Jonas", last_name="Kahn
 
 admin_dict = dict(email="Claudia@wnpp.gov", first_name="Claudia", last_name="Tiedemann")
 
+team_dict = {
+    "name": "bugslotics",
+    "description": "a pretty cool team"
+}
+
 """
 each test validates basic CRUD functionality
 """
@@ -113,19 +118,50 @@ class TeamBaseBehavior(TestCase):
 class MemberBaseBehavior(TestCase):
 
     def setUp(self):
-        profile_user = User.objects.create_user(**user_dict)
+        self.user = User.objects.create_user(**user_dict)
+        self.user.save()
 
-    def testRead(self):
-        # read the record created in setUp. confirm the results are expected
-        pass
+        self.team = Team(**team_dict)
+        self.team.save()
 
-    def testCreate(self):
+        self.member_data = {
+            "user_id": self.user.id,
+            "team_id": self.team.id,
+            "role": "AD",
+            "bio": "cool dude"
+        }
+
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        self.client = client
+
+        response = client.post(
+            reverse("team-list"), self.member_data, format="json"
+        )
+
+        for k, v in self.member_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        serializer = TeamSerializer(data=response.data)
+        serializer.is_valid(raise_exception=True)
+        member = serializer.save()
+        self.member_id = member.id
+
+    def testMemberCreate(self):
         # create a new record. this call should return the newly created record
         pass
 
-    def testUpdate(self):
+
+    def testMemberRead(self):
+        # read the record created in setUp. confirm the results are expected
+        pass
+
+    def testMemberUpdate(self):
         # change the record's values. this call should return the newly updated record
         pass
 
-    def testDelete(self):
+    def testMemberApproval(self):
+        pass
+
+    def testMemberDelete(self):
         pass

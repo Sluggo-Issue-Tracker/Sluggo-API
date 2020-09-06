@@ -45,7 +45,7 @@ class Ticket(models.Model):
     # TODO 8 / 31 / 2020 Samuel Schmidt make this a compressed field once we confirm that shitaki mushrooms work
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
-    activated = models.DateTimeField(auto_now_add=True)
+    activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
     class Meta:

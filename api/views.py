@@ -33,22 +33,41 @@ class MemberViewSet(viewsets.ModelViewSet):
 
     serializer_class = MemberSerializer
 
+    # i think it should be reasonable that when members are created, the authenticated user
+    # is the one that the member record references
+    def create(self, request, *args, **kwargs):
+        team_id = request.data.get("team_id")
+
+        request.data["team"] = Team.objects.get(id=team_id)
+        request.data["user"] = self.request.user
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=["put"])
+    def approve(self, request):
+        """ approve the join request """
+        return Response({"msg": "sucess"}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    def leave(self, request):
+        """ leave this team """
+        return Response({"msg": "sucess"}, status=status.HTTP_200_OK)
+
+
 
 class TeamViewSet(viewsets.ModelViewSet):
-
     queryset = Team.objects.all()
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        #IsOwnerOrReadOnly | IsAdminOrReadOnly
+        # IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
     serializer_class = TeamSerializer
-
-    @action(detail=True, methods=["post"])
-    def join(self, request):
-        """ create a new member entry representing a join to the referenced """
-        pass
 
     @action(detail=False, methods=["get"])
     def search(self, request, search_term=None):
@@ -65,7 +84,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-       # IsOwnerOrReadOnly | IsAdminOrReadOnly, ignoring these until we get owner field squared away
+        # IsOwnerOrReadOnly | IsAdminOrReadOnly, ignoring these until we get owner field squared away
     ]
 
     queryset = Ticket.objects.all()
@@ -82,7 +101,6 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
-
     """
     Basic crud should be pre-generated, so we only need to do the more complicated calls
     """
