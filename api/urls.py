@@ -16,8 +16,6 @@ router.register(r"ticket", api_views.TicketViewSet)
 router.register(r"ticket-comment", api_views.TicketCommentViewSet)
 router.register(r"ticket-status", api_views.TicketStatusViewSet)
 
-print(router.urls)
-
 urlpatterns = [path("", include(router.urls))]
 
 urlpatterns += [

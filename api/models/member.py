@@ -3,9 +3,24 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+from hashlib import md5
 
 from .team import Team
 
+class MemberManager(models.Manager):
+    def create(self, **obj_data):
+
+        team = obj_data.get("team")
+        user = obj_data.get("user")
+
+        if not user or not team:
+            raise ValueError("missing name or team")
+
+        join_id = md5(
+            str(team.id + user.email).encode()
+        ).hexdigest()
+        obj_data["join_id"] = join_id
+        return super().create(**obj_data)
 
 class Member(models.Model):
     """
@@ -37,7 +52,7 @@ class Member(models.Model):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.email)
-    join_id = models.BinaryField(max_length=256, unique=True)
+    join_id = models.CharField(max_length=256, unique=True)
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
