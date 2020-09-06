@@ -20,6 +20,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+
+    # make the following fields read only
+    id = serializers.ReadOnlyField()
+    ticket_head = serializers.ReadOnlyField()
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
+
     class Meta:
         model = api_models.Team
         fields = [
@@ -28,6 +36,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "ticket_head",
             "created",
+            "activated",
             "deactivated"
         ]
 
@@ -35,11 +44,16 @@ class TeamSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     team_id = serializers.ReadOnlyField(source="team.id")
+    join_id = serializers.ReadOnlyField()
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.Member
         fields = [
             "id",
+            "join_id",
             "user",
             "team_id",
             "role",

@@ -36,8 +36,8 @@ class Member(models.Model):
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
-    # md5 of team.name + user.email
-    join_id = models.BinaryField(length=128, unique=True)
+    # team.team_id + md5 (user.email)
+    join_id = models.BinaryField(max_length=256, unique=True)
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE

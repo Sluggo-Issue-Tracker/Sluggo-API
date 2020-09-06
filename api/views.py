@@ -1,7 +1,7 @@
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
+from hashlib import md5
 
 from .models import (
     Member,
@@ -68,6 +68,23 @@ class TeamViewSet(viewsets.ModelViewSet):
     ]
 
     serializer_class = TeamSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = TeamSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        name = request.data["name"].encode()
+        nameHash = md5(name)
+        team_id = nameHash.hexdigest()
+        print(team_id)
+        serializer.save(
+            id=md5(name).digest()
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 
     @action(detail=False, methods=["get"])
     def search(self, request, search_term=None):

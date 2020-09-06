@@ -18,6 +18,7 @@ admin_dict = dict(email="Claudia@wnpp.gov", first_name="Claudia", last_name="Tie
 team_dict = {
     "name": "bugslotics",
     "description": "a pretty cool team"
+
 }
 
 """
@@ -29,42 +30,29 @@ class TeamBaseBehavior(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(**user_dict)
+        team = Team.objects.create(**team_dict)
 
-        self.team_data = {
+
+
+    """def testTeamCreate(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
+        team_data = {
             "name": "bugslotics",
-            "description": "a very cool team",
-            "ticket_head": 0
+            "description": "a medium cool team"
         }
 
-        client = APIClient()
-        client.force_authenticate(user=self.user)
-        self.client = client
-
         response = client.post(
-            reverse("team-list"), self.team_data, format="json"
+            reverse("team-list"), team_data, format="json"
         )
 
-        for k, v in self.team_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        serializer = TeamSerializer(data=response.data)
-        serializer.is_valid(raise_exception=True)
-        team = serializer.save()
-        self.team_id = team.id
-
-    def testTeamCreate(self):
-        client = APIClient()
-        client.force_authenticate(user=self.user)
-
-        response = client.post(
-            reverse("team-list"), self.team_data, format="json"
-        )
-
-        for k, v in self.team_data.items():
+        for k, v in team_data.items():
             self.assertEqual(v, response.data.get(k))
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    """
     def testTeamRead(self):
 
         response = self.client.get(
@@ -76,10 +64,9 @@ class TeamBaseBehavior(TestCase):
         for k, v in self.team_data.items():
             self.assertEqual(v, response.data.get(k))
 
-    def testTeamUpdate(self):
+    """def testTeamUpdate(self):
 
         updated_data = {
-            "name": "slugbotics",
             "description": "a very cool team"
         }
 
@@ -112,7 +99,7 @@ class TeamBaseBehavior(TestCase):
         new_count = Team.objects.count()
 
         self.assertGreater(old_count, new_count)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)"""
 
 
 class MemberBaseBehavior(TestCase):
@@ -138,6 +125,8 @@ class MemberBaseBehavior(TestCase):
         response = client.post(
             reverse("team-list"), self.member_data, format="json"
         )
+
+        print(response.data)
 
         for k, v in self.member_data.items():
             self.assertEqual(v, response.data.get(k))
