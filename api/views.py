@@ -28,7 +28,6 @@ class MemberViewSet(viewsets.ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly
     ]
 
     serializer_class = MemberSerializer
@@ -38,14 +37,22 @@ class MemberViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
 
-        request.data["team"] = Team.objects.get(id=team_id)
-        request.data["user"] = self.request.user
+        try:
+            team = Team.objects.get(id=team_id)
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            serializer.save(user=self.request.user, team=team)
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Team.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    # requiring that all updates are partial instead of full
+    def update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return super().update(request, *args, **kwargs)
 
     @action(detail=True, methods=["put"])
     def approve(self, request):
@@ -70,17 +77,8 @@ class TeamViewSet(viewsets.ModelViewSet):
 
     # requiring that all updates are partial instead of full
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
+        kwargs["partial"] = True
+        return super().update(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"])
     def search(self, request, search_term=None):

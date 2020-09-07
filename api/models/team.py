@@ -30,5 +30,8 @@ class Team(models.Model):
 
     objects = TeamManager()
 
+    class Meta:
+        app_label = "api"
+
     def __str__(self):
         return f"Team: {self.id}, {self.name}"

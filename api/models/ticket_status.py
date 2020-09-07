@@ -18,6 +18,7 @@ class TicketStatus(models.Model):
 
     class Meta:
         ordering = ["id"]
+        app_label = "api"
 
     def __str__(self):
         return f"TicketStatus: {self.title}"

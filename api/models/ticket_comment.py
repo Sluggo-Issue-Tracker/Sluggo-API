@@ -29,5 +29,8 @@ class TicketComment(models.Model):
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+       app_label = "api"
+
     def __str__(self):
         return f"Comment: {self.content}"

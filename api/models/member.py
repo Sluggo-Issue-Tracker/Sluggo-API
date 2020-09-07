@@ -7,20 +7,19 @@ from hashlib import md5
 
 from .team import Team
 
+
 class MemberManager(models.Manager):
     def create(self, **obj_data):
-
         team = obj_data.get("team")
         user = obj_data.get("user")
 
         if not user or not team:
             raise ValueError("missing name or team")
 
-        join_id = md5(
-            str(team.id + user.email).encode()
-        ).hexdigest()
+        join_id = team.id + md5(user.email.encode()).hexdigest()
         obj_data["join_id"] = join_id
         return super().create(**obj_data)
+
 
 class Member(models.Model):
     """
@@ -52,14 +51,14 @@ class Member(models.Model):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.email)
-    join_id = models.CharField(max_length=256, unique=True)
+    join_id = models.CharField(max_length=256, unique=True, editable=False)
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
     )
 
     team = models.ForeignKey(
-        Team, on_delete=models.CASCADE
+        Team, on_delete=models.CASCADE, editable=False
     )
 
     role = models.CharField(
@@ -71,8 +70,11 @@ class Member(models.Model):
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
+    objects = MemberManager()
+
     class Meta:
         ordering = ["id"]
+        app_label = "api"
 
     def __str__(self):
         return f"Member: {self.user.get_full_name}"
