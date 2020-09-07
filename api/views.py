@@ -70,7 +70,16 @@ class MemberViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["put"])
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
-        return Response({"msg": "sucess"}, status=status.HTTP_200_OK)
+
+        try:
+            member = Member.objects.get(pk=pk)
+            member.deactivated = timezone.now()
+            member.save()
+
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except Member.DoesNotExist:
+            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class TeamViewSet(viewsets.ModelViewSet):
