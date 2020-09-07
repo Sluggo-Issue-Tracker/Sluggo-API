@@ -13,7 +13,11 @@ User = get_user_model()
 
 user_dict = dict(email="adam@sicmundus.org", first_name="Jonas", last_name="Kahnwald")
 
-admin_dict = dict(email="Claudia@wnpp.gov", first_name="Claudia", last_name="Tiedemann")
+admin_dict = dict(
+    email="Claudia@wnpp.gov",
+    first_name="Claudia",
+    last_name="Tiedemann"
+)
 
 team_dict = {
     "name": "bugslotics",
