@@ -1,7 +1,7 @@
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from hashlib import md5
+from django.utils import timezone
 
 from .models import (
     Member,
@@ -55,13 +55,21 @@ class MemberViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @action(detail=True, methods=["put"])
-    def approve(self, request):
+    def approve(self, request, pk=None):
         """ approve the join request """
-        return Response({"msg": "sucess"}, status=status.HTTP_200_OK)
+        try:
+            member = Member.objects.get(pk=pk)
+            member.activated = timezone.now()
+            member.save()
 
-    @action(detail=True, methods=["post"])
-    def leave(self, request):
-        """ leave this team """
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except Member.DoesNotExist:
+            return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=["put"])
+    def leave(self, request, pk=None):
+        """ leave this team this is deletion but only to deactivate the record """
         return Response({"msg": "sucess"}, status=status.HTTP_200_OK)
 
 

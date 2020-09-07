@@ -157,7 +157,12 @@ class MemberBaseBehavior(TestCase):
             self.assertEqual(v, response.data.get(k))
 
     def testMemberApproval(self):
-        pass
+
+        response = self.client.put(
+            reverse("member-approve", kwargs={"pk": self.member_id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testMemberDelete(self):
         # i might consider using the deactivated fields here in order to revoke / re-enable requests
