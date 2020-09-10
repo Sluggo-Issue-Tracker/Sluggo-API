@@ -168,9 +168,9 @@ class MemberBaseBehavior(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def testMemberLeave(self):
+    def testMemberDelete(self):
 
-        response = self.client.put(
+        response = self.client.delete(
             reverse("member-leave", kwargs={"pk": self.member_id})
         )
 

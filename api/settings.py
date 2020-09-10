@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "bulma",
     "api.apps.SluggoApiConfig",
-    "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -54,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "sluggoAPI.urls"
+ROOT_URLCONF = "api.urls"
 
 TEMPLATES = [
     {
@@ -72,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "sluggoAPI.wsgi.application"
+WSGI_APPLICATION = "api.wsgi.application"
 
 
 # Database

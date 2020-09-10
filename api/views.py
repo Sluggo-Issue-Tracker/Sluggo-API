@@ -2,6 +2,9 @@ from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from rest_framework import exceptions
+
+from django.contrib.auth import get_user_model, get_user
 
 from .models import (
     Member,
@@ -39,7 +42,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
         try:
             team = Team.objects.get(id=team_id)
-            serializer = self.get_serializer(data=request.data)
+            serializer = MemberSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
             serializer.save(user=self.request.user, team=team)
@@ -49,10 +52,35 @@ class MemberViewSet(viewsets.ModelViewSet):
         except Team.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    # requiring that all updates are partial instead of full
+    # this facilitates editing the user profile associated with a team
+    # this function is keyed in by the join_id which is the team_id
+    # concatenated with the md5 of the user_id
+    #
+    # affects both the member record and the associated user record
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
-        return super().update(request, *args, **kwargs)
+        pk = kwargs.pop("pk")
+
+        # serialize the input, then update only a select number of fields
+        try:
+            authUser = request.user
+
+            serializer = MemberSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+
+            # only update the fields that the user has access to
+            Member.objects.filter(pk=pk).update(
+                bio=instance.bio,
+            )
+
+        except Member.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        except exceptions.ValidationError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return super().update(request, partial=True)
 
     @action(detail=True, methods=["put"])
     def approve(self, request, pk=None):
@@ -60,7 +88,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         try:
             member = Member.objects.get(pk=pk)
             member.activated = timezone.now()
-            member.save()
+            member.save(update_fields=["activated"])
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 

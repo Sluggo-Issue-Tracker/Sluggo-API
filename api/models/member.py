@@ -51,7 +51,7 @@ class Member(models.Model):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.email)
-    join_id = models.CharField(max_length=256, unique=True, editable=False)
+    join_id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
@@ -73,7 +73,7 @@ class Member(models.Model):
     objects = MemberManager()
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["created"]
         app_label = "api"
 
     def __str__(self):

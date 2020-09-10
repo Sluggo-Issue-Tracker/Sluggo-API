@@ -52,7 +52,6 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = api_models.Member
         fields = [
-            "id",
             "join_id",
             "user",
             "team_id",
