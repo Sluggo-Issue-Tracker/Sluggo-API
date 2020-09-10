@@ -31,6 +31,7 @@ class Team(models.Model):
     objects = TeamManager()
 
     class Meta:
+        ordering = ["created"]
         app_label = "api"
 
     def __str__(self):

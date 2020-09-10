@@ -11,9 +11,13 @@ import datetime
 
 User = get_user_model()
 
-user_dict = dict(email="adam@sicmundus.org", first_name="Jonas", last_name="Kahnwald")
+user_dict = dict(username="org.sicmundus.adam",
+                 email="adam@sicmundus.org",
+                 first_name="Jonas",
+                 last_name="Kahnwald")
 
 admin_dict = dict(
+    username="gov.wnpp.Claudia",
     email="Claudia@wnpp.gov",
     first_name="Claudia",
     last_name="Tiedemann"
@@ -120,6 +124,7 @@ class MemberBaseBehavior(TestCase):
             reverse("member-list"), self.member_data, format="json"
         )
 
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         for k, v in self.member_data.items():
@@ -129,7 +134,7 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberCreate(self):
         # create a new record. this call should return the newly created record
-        record = Member.objects.get(id=1)
+        record = Member.objects.get(id=self.member_id)
         self.assertEqual(Member.objects.count(), 1)
 
     def testMemberRead(self):
@@ -146,7 +151,11 @@ class MemberBaseBehavior(TestCase):
     def testMemberUpdate(self):
         # change the record's values. this call should return the newly updated record
         new_data = {
-            "bio": "no longer a cool dude"
+            "bio": "no longer a cool dude",
+            "user": {
+                "first_name": "Robert",
+                "last_name": "Sutton"
+            }
         }
 
         response = self.client.put(
@@ -158,7 +167,11 @@ class MemberBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         for k, v in new_data.items():
-            self.assertEqual(v, response.data.get(k))
+            if type(v) is dict:
+                for i, j in new_data[k].items():
+                    self.assertEqual(j, response.data.get(k).get(i))
+            else:
+                self.assertEqual(v, response.data.get(k))
 
     def testMemberApproval(self):
 
@@ -170,24 +183,11 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberDelete(self):
 
-        response = self.client.delete(
+        response = self.client.put(
             reverse("member-leave", kwargs={"pk": self.member_id})
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def testMemberDelete(self):
-        # i might consider using the deactivated fields here in order to revoke / re-enable requests
-        # althought hard deletion may be okay for this
-        old_count = Member.objects.count()
-
-        response = self.client.delete(
-            reverse("member-detail", kwargs={"pk": self.member_id})
-        )
-
-        new_count = Member.objects.count()
-
-        self.assertGreater(old_count, new_count)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 

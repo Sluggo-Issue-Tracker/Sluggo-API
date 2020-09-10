@@ -16,8 +16,7 @@ class MemberManager(models.Manager):
         if not user or not team:
             raise ValueError("missing name or team")
 
-        join_id = team.id + md5(user.email.encode()).hexdigest()
-        obj_data["join_id"] = join_id
+        obj_data["id"] = team.id + md5(user.email.encode()).hexdigest()
         return super().create(**obj_data)
 
 
@@ -51,7 +50,7 @@ class Member(models.Model):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.email)
-    join_id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
+    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False

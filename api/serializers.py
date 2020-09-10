@@ -6,17 +6,17 @@ named serializers.py and create your classes.
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+from rest_framework.utils import model_meta
 
 from django.conf import settings
 from . import models as api_models
 
 
 class UserSerializer(serializers.ModelSerializer):
-    fullname = serializers.ReadOnlyField(source="get_full_name")
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "email", "fullname"]
+        fields = ["id", "email", "first_name", "last_name"]
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -42,9 +42,9 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
     user = UserSerializer(many=False, read_only=True)
     team_id = serializers.ReadOnlyField(source="team.id")
-    join_id = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -52,7 +52,7 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = api_models.Member
         fields = [
-            "join_id",
+            "id",
             "user",
             "team_id",
             "role",

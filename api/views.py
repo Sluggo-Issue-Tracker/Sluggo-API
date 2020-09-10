@@ -18,6 +18,7 @@ from .serializers import (
     MemberSerializer,
     TeamSerializer,
     TicketCommentSerializer,
+    UserSerializer
 )
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
@@ -48,9 +49,10 @@ class MemberViewSet(viewsets.ModelViewSet):
             serializer.save(user=self.request.user, team=team)
 
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except Team.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     # this facilitates editing the user profile associated with a team
     # this function is keyed in by the join_id which is the team_id
@@ -63,22 +65,31 @@ class MemberViewSet(viewsets.ModelViewSet):
 
         # serialize the input, then update only a select number of fields
         try:
-            authUser = request.user
+            member_serializer = MemberSerializer(data=request.data)
+            member_serializer.is_valid(raise_exception=True)
+            member_data = member_serializer.validated_data
 
-            serializer = MemberSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
+            user_serializer = UserSerializer(data=request.data.get("user"))
+            user_serializer.is_valid(raise_exception=True)
+            user_data = user_serializer.validated_data
 
             # only update the fields that the user has access to
+            # in their edit profile dialog
+            member = Member.objects.get(pk=pk)
             Member.objects.filter(pk=pk).update(
-                bio=instance.bio,
+                bio=member_data.get("bio"),
             )
 
-        except Member.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            get_user_model().objects.filter(pk=member.user.id).update(
+                first_name=user_data.get("first_name"),
+                last_name=user_data.get("last_name")
+            )
 
-        except exceptions.ValidationError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Member.DoesNotExist as e:
+            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
+
+        except exceptions.ValidationError as e:
+            return Response({"msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return super().update(request, partial=True)
 
