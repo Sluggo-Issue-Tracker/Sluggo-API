@@ -101,6 +101,14 @@ class TeamBaseBehavior(TestCase):
         self.assertGreater(old_count, new_count)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def testTeamSearch(self):
+        response = self.client.get(
+            reverse("team-search", kwargs={"q": "bugslotics a very cool team"})
+        )
+
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class MemberBaseBehavior(TestCase):
 

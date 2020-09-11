@@ -131,8 +131,19 @@ class TeamViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"])
-    def search(self, request, search_term=None):
-        """ retrieve teams based on a user search term. ideally i would want to use something like
-            cosine similarity
+    def search(self, request, q=None):
+        """ retrieve teams based on a user query. this should rank the team queryset by
+            1. existence of search terms in the record's title + description
+            2. similarity of search terms to words in the record's description + description
         """
-        pass
+        queryset = self.filter_queryset(self.get_queryset())
+
+        print(q)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
