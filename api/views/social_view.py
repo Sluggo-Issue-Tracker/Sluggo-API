@@ -25,7 +25,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     queryset = Member.objects.all()
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
+        permissions.IsAuthenticated,
     ]
 
     serializer_class = MemberSerializer
@@ -119,8 +119,7 @@ class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        # IsOwnerOrReadOnly | IsAdminOrReadOnly
+        permissions.IsAuthenticated,
     ]
 
     serializer_class = TeamSerializer

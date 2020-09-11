@@ -16,7 +16,7 @@ from ..serializers import (
     TicketCommentSerializer,
     TicketStatusSerializer
 )
-from ..permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
+from ..permissions import IsTicketOwnerOrReadOnly, IsAdminOrReadOnly
 
 
 class TicketViewSet(viewsets.ModelViewSet):
@@ -25,8 +25,8 @@ class TicketViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        # IsOwnerOrReadOnly | IsAdminOrReadOnly, ignoring these until we get owner field squared away
+        permissions.IsAuthenticated,
+        IsTicketOwnerOrReadOnly
     ]
 
     queryset = Ticket.objects.all()
@@ -48,8 +48,8 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly,
+        permissions.IsAuthenticated,
+        IsTicketOwnerOrReadOnly | IsAdminOrReadOnly,
     ]
 
     queryset = TicketComment.objects.all()
@@ -63,8 +63,7 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 
 class TicketStatusViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly | IsAdminOrReadOnly
+        permissions.IsAuthenticated,
     ]
 
     queryset = TicketStatus.objects.all()
