@@ -11,10 +11,11 @@ import datetime
 
 User = get_user_model()
 
-user_dict = dict(username="org.sicmundus.adam",
-                 email="adam@sicmundus.org",
-                 first_name="Jonas",
-                 last_name="Kahnwald")
+user_dict = dict(
+    username="org.sicmundus.adam",
+    email="adam@sicmundus.org",
+    first_name="Jonas",
+    last_name="Kahnwald")
 
 admin_dict = dict(
     username="gov.wnpp.Claudia",
