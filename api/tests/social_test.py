@@ -52,7 +52,7 @@ class TeamBaseBehavior(TestCase):
         }
 
         response = self.client.post(
-            reverse("team-list"), team_data, format="json"
+            '/team/', team_data, format="json"
         )
 
         for k, v in team_data.items():

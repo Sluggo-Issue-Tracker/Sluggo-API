@@ -1,2 +1,2 @@
-django-bulma==0.8.0
-dj-rest-auth
+django-bulma==0.8.0,
+dj-rest-auth[with_social]
