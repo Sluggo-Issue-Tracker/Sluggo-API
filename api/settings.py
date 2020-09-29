@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "bulma",
     "api.apps.SluggoApiConfig",
-    "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -54,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "sluggoAPI.urls"
+ROOT_URLCONF = "api.urls"
 
 TEMPLATES = [
     {
@@ -72,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "sluggoAPI.wsgi.application"
+WSGI_APPLICATION = "api.wsgi.application"
 
 
 # Database
@@ -98,7 +97,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
 ]
 
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "auth.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -118,7 +117,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
