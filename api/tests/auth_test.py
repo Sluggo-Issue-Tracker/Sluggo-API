@@ -13,7 +13,6 @@ class AuthenticationBaseBehavior(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def testRegister(self):
         response = self.client.post(
             reverse('rest_register'),
             {
@@ -26,6 +25,8 @@ class AuthenticationBaseBehavior(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreater(User.objects.count(), 0)
+
+    def testRegister(self):
 
         response = self.client.post(
             reverse('rest_login'),
@@ -41,6 +42,24 @@ class AuthenticationBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testLogout(self):
-        pass
+
+        response = self.client.post(
+            reverse('rest_login'),
+            {
+                'username': 'sschmidt',
+                'email': 'sadschmi@test.com',
+                'password': 'p@ssw0rd90'
+            }
+        )
+
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(
+            reverse('rest_logout')
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

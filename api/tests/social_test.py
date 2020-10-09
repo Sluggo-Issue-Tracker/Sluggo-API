@@ -40,9 +40,24 @@ class TeamBaseBehavior(TestCase):
         self.user = User.objects.create_user(**user_dict)
         self.team = Team.objects.create(**team_dict)
         self.team.save()
-
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            reverse('rest_register'),
+            {
+                "username": "sschmidt",
+                "password1": "p@ssw0rd90",
+                "password2": "p@ssw0rd90",
+                "email": "sadschmi@test.com"
+            }
+        )
+
+        print(response.data)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data.get('key'))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertGreater(User.objects.count(), 0)
 
     def testTeamCreate(self):
 
@@ -199,4 +214,34 @@ class MemberBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class UnauthenticatedBehavior(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(**user_dict)
+        self.user.save()
+
+        self.team = Team.objects.create(**team_dict)
+        self.team.save()
+
+        self.member_data = {
+            "team_id": self.team.id,
+            "role": "AD",
+            "bio": "cool dude"
+        }
+
+        self.client = APIClient()
+
+        response = self.client.post(
+            reverse("member-list"), self.member_data, format="json"
+        )
+
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        for k, v in self.member_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+        self.member_id = response.data["id"]
+
+    def testUnauthenticated(self):
+        pass
 

@@ -87,7 +87,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
         return super().update(request, partial=True)
 
-    @action(detail=True, methods=["put"])
+    @action(detail=True, methods=["patch"])
     def approve(self, request, pk=None):
         """ approve the join request """
         try:
@@ -100,7 +100,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         except Member.DoesNotExist:
             return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
 
-    @action(detail=True, methods=["put"])
+    @action(detail=True, methods=["patch"])
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
 
