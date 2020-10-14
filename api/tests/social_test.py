@@ -199,7 +199,7 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberApproval(self):
 
-        response = self.client.put(
+        response = self.client.patch(
             reverse("member-approve", kwargs={"pk": self.member_id})
         )
 
@@ -207,7 +207,7 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberDelete(self):
 
-        response = self.client.put(
+        response = self.client.patch(
             reverse("member-leave", kwargs={"pk": self.member_id})
         )
 
@@ -236,11 +236,6 @@ class UnauthenticatedBehavior(TestCase):
 
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        for k, v in self.member_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        self.member_id = response.data["id"]
 
     def testUnauthenticated(self):
         pass
