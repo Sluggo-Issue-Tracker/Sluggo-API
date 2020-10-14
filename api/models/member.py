@@ -9,6 +9,8 @@ from .team import Team
 
 
 class MemberManager(models.Manager):
+    # this is a convenience class which handles defining the id before a save
+    # ( i think it gets automatically invoked on member instantiation before save)
     def create(self, **obj_data):
         team = obj_data.get("team")
         user = obj_data.get("user")
@@ -16,7 +18,9 @@ class MemberManager(models.Manager):
         if not user or not team:
             raise ValueError("missing name or team")
 
-        obj_data["id"] = team.id + md5(user.email.encode()).hexdigest()
+        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
+
+        obj_data["id"] = md5("f{team.id}".encode()).hexdigest() + md5(user.username.encode()).hexdigest()
         return super().create(**obj_data)
 
 
@@ -36,6 +40,8 @@ class Member(models.Model):
     """
 
     class Roles(models.TextChoices):
+        # TODO: Samuel Schmidt 10/13/2020 this needs to be refactored its own table,
+        # i think having custom roles is a feature we want to implement
         """
         A private class containing 3 options for Roles stored in multiple versions. A full name, "pretty" name, and 2-letter representation.
 
@@ -49,7 +55,7 @@ class Member(models.Model):
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
-    # team.team_id + md5 (user.email)
+    # team.team_id + md5 (user.username)
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
     user = models.ForeignKey(
