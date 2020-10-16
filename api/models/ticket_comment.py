@@ -18,7 +18,7 @@ class TicketComment(models.Model):
         Team,
         on_delete=models.CASCADE
     )
-    author = models.ForeignKey(
+    owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True

@@ -1,8 +1,15 @@
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
+from rest_framework.settings import api_settings
+
+from ..permissions import (
+    IsAdminMemberOrReadOnly,
+    IsOwnerOrReadOnly,
+    IsMemberUser
+)
 
 from django.contrib.auth import get_user_model
 
@@ -17,22 +24,35 @@ from ..serializers import (
 )
 
 
-class MemberViewSet(viewsets.ModelViewSet):
+class MemberViewSet(mixins.RetrieveModelMixin,
+                    mixins.ListModelMixin,
+                    mixins.UpdateModelMixin,
+                    viewsets.GenericViewSet):
     """
-    CRUD stuff inherited from ModelViewSet
+    Reads handled by the mixins, and use permission_classes
     """
 
     queryset = Member.objects.all()
 
     permission_classes = [
         permissions.IsAuthenticated,
+        IsMemberUser,
+        IsOwnerOrReadOnly
     ]
 
     serializer_class = MemberSerializer
 
-    # i think it should be reasonable that when members are created, the authenticated user
-    # is the one that the member record references
-    def create(self, request, *args, **kwargs):
+    @staticmethod
+    def get_success_headers(data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
+    # require only that the user is authenticated to create their profile / join a team
+    # manually defining this since we want to offer this endpoint for any authenticated user
+    @action(methods=["POST"], detail=True, permission_classes=[permissions.IsAuthenticated])
+    def create_record(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
 
         try:
@@ -40,7 +60,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             serializer = MemberSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            serializer.save(user=self.request.user, team=team)
+            serializer.save(owner=self.request.user, team=team)
 
             headers = self.get_success_headers(serializer.data)
         except Team.DoesNotExist:
@@ -87,7 +107,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
         return super().update(request, partial=True)
 
-    @action(detail=True, methods=["patch"])
+    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
     def approve(self, request, pk=None):
         """ approve the join request """
         try:
@@ -100,7 +120,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         except Member.DoesNotExist:
             return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
 
-    @action(detail=True, methods=["patch"])
+    @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
 
@@ -120,6 +140,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
+        IsAdminMemberOrReadOnly
     ]
 
     serializer_class = TeamSerializer
@@ -129,7 +150,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["GET"])
     def search(self, request, q=None):
         """ retrieve teams based on a user query. this should rank the team queryset by
             1. existence of search terms in the record's title + description

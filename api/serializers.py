@@ -43,7 +43,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class MemberSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    user = UserSerializer(many=False, read_only=True)
+    owner = UserSerializer(many=False, read_only=True)
     team_id = serializers.ReadOnlyField(source="team.id")
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
@@ -53,7 +53,7 @@ class MemberSerializer(serializers.ModelSerializer):
         model = api_models.Member
         fields = [
             "id",
-            "user",
+            "owner",
             "team_id",
             "role",
             "bio",
@@ -72,13 +72,13 @@ class TicketCommentSerializer(serializers.ModelSerializer):
         model = api_models.TicketComment
         ticket_id = serializers.ReadOnlyField(source="ticket.id")
         team_id = serializers.ReadOnlyField(source="team.id")
-        author = UserSerializer(many=False, read_only=True)
+        owner = UserSerializer(many=False, read_only=True)
 
         fields = [
             "id",
             "ticket_id",
             "team_id",
-            "author",
+            "owner",
             "content",
             "created",
             "activated",

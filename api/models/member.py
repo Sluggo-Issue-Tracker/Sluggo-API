@@ -58,7 +58,7 @@ class Member(models.Model):
     # team.team_id + md5 (user.username)
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
     )
 
@@ -82,4 +82,4 @@ class Member(models.Model):
         app_label = "api"
 
     def __str__(self):
-        return f"Member: {self.user.get_full_name}"
+        return f"Member: {self.owner.get_full_name}"
