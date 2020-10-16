@@ -13,14 +13,14 @@ class MemberManager(models.Manager):
     # ( i think it gets automatically invoked on member instantiation before save)
     def create(self, **obj_data):
         team = obj_data.get("team")
-        user = obj_data.get("user")
+        owner = obj_data.get("owner")
 
-        if not user or not team:
+        if not owner or not team:
             raise ValueError("missing name or team")
 
         # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
 
-        obj_data["id"] = md5("f{team.id}".encode()).hexdigest() + md5(user.username.encode()).hexdigest()
+        obj_data["id"] = md5("f{team.id}".encode()).hexdigest() + md5(owner.username.encode()).hexdigest()
         return super().create(**obj_data)
 
 

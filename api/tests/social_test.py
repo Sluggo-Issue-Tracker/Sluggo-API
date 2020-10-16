@@ -5,6 +5,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from ..models import Team, Member
+from ..views import MemberViewSet
 from ..serializers import TeamSerializer, MemberSerializer
 
 import datetime
@@ -128,6 +129,7 @@ class TeamBaseBehavior(TestCase):
 class MemberBaseBehavior(TestCase):
 
     def setUp(self):
+
         self.user = User.objects.create_user(**user_dict)
         self.user.save()
 
@@ -144,8 +146,10 @@ class MemberBaseBehavior(TestCase):
         client.force_authenticate(user=self.user)
         self.client = client
 
+        print(MemberViewSet.create_record.url_name)
+
         response = client.post(
-            reverse("member-list"), self.member_data, format="json"
+            reverse("member-create-record"), self.member_data, format="json"
         )
 
         print(response.data)

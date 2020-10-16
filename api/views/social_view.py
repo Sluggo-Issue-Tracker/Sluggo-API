@@ -51,7 +51,7 @@ class MemberViewSet(mixins.RetrieveModelMixin,
 
     # require only that the user is authenticated to create their profile / join a team
     # manually defining this since we want to offer this endpoint for any authenticated user
-    @action(methods=["POST"], detail=True, permission_classes=[permissions.IsAuthenticated])
+    @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
     def create_record(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
 
@@ -94,7 +94,7 @@ class MemberViewSet(mixins.RetrieveModelMixin,
                 bio=member_data.get("bio"),
             )
 
-            get_user_model().objects.filter(pk=member.user.id).update(
+            get_user_model().objects.filter(pk=member.owner.id).update(
                 first_name=user_data.get("first_name"),
                 last_name=user_data.get("last_name")
             )
