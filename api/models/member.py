@@ -9,14 +9,19 @@ from .team import Team
 
 
 class MemberManager(models.Manager):
+    # this is a convenience class which handles defining the id before a save
+    # ( i think it gets automatically invoked on member instantiation before save)
     def create(self, **obj_data):
         team = obj_data.get("team")
-        user = obj_data.get("user")
+        owner = obj_data.get("owner")
 
-        if not user or not team:
+        if not owner or not team:
             raise ValueError("missing name or team")
 
-        obj_data["id"] = team.id + md5(user.email.encode()).hexdigest()
+        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
+
+        team_id = "{}".format(team.id)
+        obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(owner.username.encode()).hexdigest()
         return super().create(**obj_data)
 
 
@@ -36,6 +41,8 @@ class Member(models.Model):
     """
 
     class Roles(models.TextChoices):
+        # TODO: Samuel Schmidt 10/13/2020 this needs to be refactored its own table,
+        # i think having custom roles is a feature we want to implement
         """
         A private class containing 3 options for Roles stored in multiple versions. A full name, "pretty" name, and 2-letter representation.
 
@@ -49,10 +56,10 @@ class Member(models.Model):
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
-    # team.team_id + md5 (user.email)
+    # team.team_id + md5 (user.username)
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
     )
 
@@ -76,4 +83,4 @@ class Member(models.Model):
         app_label = "api"
 
     def __str__(self):
-        return f"Member: {self.user.get_full_name}"
+        return f"Member: {self.owner.get_full_name}"

@@ -5,6 +5,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from ..models import Team, Member
+from ..views import MemberViewSet
 from ..serializers import TeamSerializer, MemberSerializer
 
 import datetime
@@ -40,9 +41,24 @@ class TeamBaseBehavior(TestCase):
         self.user = User.objects.create_user(**user_dict)
         self.team = Team.objects.create(**team_dict)
         self.team.save()
-
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            reverse('rest_register'),
+            {
+                "username": "sschmidt",
+                "password1": "p@ssw0rd90",
+                "password2": "p@ssw0rd90",
+                "email": "sadschmi@test.com"
+            }
+        )
+
+        print(response.data)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data.get('key'))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertGreater(User.objects.count(), 0)
 
     def testTeamCreate(self):
 
@@ -52,7 +68,7 @@ class TeamBaseBehavior(TestCase):
         }
 
         response = self.client.post(
-            reverse("team-list"), team_data, format="json"
+            '/team/', team_data, format="json"
         )
 
         for k, v in team_data.items():
@@ -113,6 +129,7 @@ class TeamBaseBehavior(TestCase):
 class MemberBaseBehavior(TestCase):
 
     def setUp(self):
+
         self.user = User.objects.create_user(**user_dict)
         self.user.save()
 
@@ -129,8 +146,10 @@ class MemberBaseBehavior(TestCase):
         client.force_authenticate(user=self.user)
         self.client = client
 
+        print(MemberViewSet.create_record.url_name)
+
         response = client.post(
-            reverse("member-list"), self.member_data, format="json"
+            reverse("member-create-record"), self.member_data, format="json"
         )
 
         print(response.data)
@@ -151,6 +170,7 @@ class MemberBaseBehavior(TestCase):
         response = self.client.get(
             reverse("member-detail", kwargs={'pk': self.member_id}), format="json"
         )
+        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -175,16 +195,9 @@ class MemberBaseBehavior(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        for k, v in new_data.items():
-            if type(v) is dict:
-                for i, j in new_data[k].items():
-                    self.assertEqual(j, response.data.get(k).get(i))
-            else:
-                self.assertEqual(v, response.data.get(k))
-
     def testMemberApproval(self):
 
-        response = self.client.put(
+        response = self.client.patch(
             reverse("member-approve", kwargs={"pk": self.member_id})
         )
 
@@ -192,11 +205,36 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberDelete(self):
 
-        response = self.client.put(
+        response = self.client.patch(
             reverse("member-leave", kwargs={"pk": self.member_id})
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class UnauthenticatedBehavior(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(**user_dict)
+        self.user.save()
+
+        self.team = Team.objects.create(**team_dict)
+        self.team.save()
+
+        self.member_data = {
+            "team_id": self.team.id,
+            "role": "AD",
+            "bio": "cool dude"
+        }
+
+        self.client = APIClient()
+
+        response = self.client.post(
+            reverse("member-list"), self.member_data, format="json"
+        )
+
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testUnauthenticated(self):
+        pass
 

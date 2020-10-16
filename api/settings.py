@@ -39,9 +39,21 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "bulma",
+    'rest_framework.authtoken',
     "api.apps.SluggoApiConfig",
+    "dj_rest_auth",
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
 ]
+
+REST_SESSION_LOGIN = True
+SITE_ID = 1
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -100,6 +112,11 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "auth.User"
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
 }

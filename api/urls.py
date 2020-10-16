@@ -20,11 +20,14 @@ router.register(r"ticket", api_views.TicketViewSet)
 router.register(r"ticket-comment", api_views.TicketCommentViewSet)
 router.register(r"ticket-status", api_views.TicketStatusViewSet)
 
+
 urlpatterns = [
     path("", include(router.urls)),
-    path('team/search/<str:q>', team_search, name='team-search')
-]
+    path('team/search/<str:q>', team_search, name='team-search'),
 
-urlpatterns += [
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('dj-rest-auth/registration', include('dj_rest_auth.registration.urls')),
+
     path("api-auth/", include("rest_framework.urls")),
 ]
+
