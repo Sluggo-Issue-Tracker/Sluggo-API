@@ -20,7 +20,8 @@ class MemberManager(models.Manager):
 
         # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
 
-        obj_data["id"] = md5("f{team.id}".encode()).hexdigest() + md5(owner.username.encode()).hexdigest()
+        team_id = "{}".format(team.id)
+        obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(owner.username.encode()).hexdigest()
         return super().create(**obj_data)
 
 
