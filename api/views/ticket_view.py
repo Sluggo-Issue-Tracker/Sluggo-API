@@ -6,15 +6,11 @@ from rest_framework import exceptions
 
 from django.contrib.auth import get_user_model, get_user
 
-from ..models import (
-    Ticket,
-    TicketComment,
-    TicketStatus
-)
+from ..models import Ticket, TicketComment, TicketStatus
 from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
-    TicketStatusSerializer
+    TicketStatusSerializer,
 )
 from ..permissions import IsOwnerOrReadOnly, IsAdminMemberOrReadOnly
 
@@ -24,10 +20,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     This viewset automatically provides `list` and `detail` actions.
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsOwnerOrReadOnly
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer

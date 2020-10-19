@@ -16,19 +16,17 @@ user_dict = dict(
     username="org.sicmundus.adam",
     email="adam@sicmundus.org",
     first_name="Jonas",
-    last_name="Kahnwald")
+    last_name="Kahnwald",
+)
 
 admin_dict = dict(
     username="gov.wnpp.Claudia",
     email="Claudia@wnpp.gov",
     first_name="Claudia",
-    last_name="Tiedemann"
+    last_name="Tiedemann",
 )
 
-team_dict = {
-    "name": "bugslotics",
-    "description": "a pretty cool team"
-}
+team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
 
 """
 each test validates basic CRUD functionality
@@ -36,7 +34,6 @@ each test validates basic CRUD functionality
 
 
 class TeamBaseBehavior(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(**user_dict)
         self.team = Team.objects.create(**team_dict)
@@ -44,32 +41,27 @@ class TeamBaseBehavior(TestCase):
         self.client = APIClient()
 
         response = self.client.post(
-            reverse('rest_register'),
+            reverse("rest_register"),
             {
                 "username": "sschmidt",
                 "password1": "p@ssw0rd90",
                 "password2": "p@ssw0rd90",
-                "email": "sadschmi@test.com"
-            }
+                "email": "sadschmi@test.com",
+            },
         )
 
         print(response.data)
 
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data.get('key'))
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + response.data.get("key"))
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreater(User.objects.count(), 0)
 
     def testTeamCreate(self):
 
-        team_data = {
-            "name": "slugbotics",
-            "description": "a medium cool team"
-        }
+        team_data = {"name": "slugbotics", "description": "a medium cool team"}
 
-        response = self.client.post(
-            '/team/', team_data, format="json"
-        )
+        response = self.client.post("/team/", team_data, format="json")
 
         for k, v in team_data.items():
             self.assertEqual(v, response.data.get(k))
@@ -79,7 +71,7 @@ class TeamBaseBehavior(TestCase):
     def testTeamRead(self):
 
         response = self.client.get(
-            reverse("team-detail", kwargs={'pk': self.team.id}), format="json"
+            reverse("team-detail", kwargs={"pk": self.team.id}), format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -89,14 +81,12 @@ class TeamBaseBehavior(TestCase):
 
     def testTeamUpdate(self):
 
-        updated_data = {
-            "description": "a very cool team"
-        }
+        updated_data = {"description": "a very cool team"}
 
         response = self.client.put(
-            reverse("team-detail", kwargs={'pk': self.team.id}),
+            reverse("team-detail", kwargs={"pk": self.team.id}),
             updated_data,
-            format="json"
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -127,7 +117,6 @@ class TeamBaseBehavior(TestCase):
 
 
 class MemberBaseBehavior(TestCase):
-
     def setUp(self):
 
         self.user = User.objects.create_user(**user_dict)
@@ -136,11 +125,7 @@ class MemberBaseBehavior(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {
-            "team_id": self.team.id,
-            "role": "AD",
-            "bio": "cool dude"
-        }
+        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         client = APIClient()
         client.force_authenticate(user=self.user)
@@ -168,7 +153,7 @@ class MemberBaseBehavior(TestCase):
     def testMemberRead(self):
         # read the record created in setUp. confirm the results are expected
         response = self.client.get(
-            reverse("member-detail", kwargs={'pk': self.member_id}), format="json"
+            reverse("member-detail", kwargs={"pk": self.member_id}), format="json"
         )
         print(response.data)
 
@@ -181,16 +166,13 @@ class MemberBaseBehavior(TestCase):
         # change the record's values. this call should return the newly updated record
         new_data = {
             "bio": "no longer a cool dude",
-            "user": {
-                "first_name": "Robert",
-                "last_name": "Sutton"
-            }
+            "user": {"first_name": "Robert", "last_name": "Sutton"},
         }
 
         response = self.client.put(
-            reverse("member-detail", kwargs={'pk': self.member_id}),
+            reverse("member-detail", kwargs={"pk": self.member_id}),
             new_data,
-            format="json"
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -220,11 +202,7 @@ class UnauthenticatedBehavior(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {
-            "team_id": self.team.id,
-            "role": "AD",
-            "bio": "cool dude"
-        }
+        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         self.client = APIClient()
 
