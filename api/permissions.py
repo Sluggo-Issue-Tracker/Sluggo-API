@@ -30,11 +30,12 @@ class BaseMemberPermissions(permissions.BasePermission):
         return Member.objects.get(pk=member_pk)
 
 
+# only permit this if the user is approved
 class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         try:
             self.retrieveMemberRecord(request.user.username, obj.team.id)
-            permit = True
+            permit = Member.Roles.APPROVED
         except Member.DoesNotExist:
             permit = False
 
@@ -46,9 +47,14 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
     Custom permission to allow admin of an object to edit it.
     """
 
+    def has_permission(self, request, view):
+        print("this calls fufck")
+        return False
+
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
+        # so we'll always allow GET, HEAD or OPTIONS requestso.
+        print("what the hell")
 
         team_id = obj.id if isinstance(obj, Team) else obj.team.id
 
@@ -56,7 +62,7 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
             try:
                 # Write permissions are only allowed to the owner of the object, or admin.
                 member_record = self.retrieveMemberRecord(request.user.username, team_id)
-                permit = member_record.role == "AD"
+                permit = member_record.role == Member.Roles.ADMIN
 
             except Member.DoesNotExist:
                 permit = False

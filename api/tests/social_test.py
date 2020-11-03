@@ -113,6 +113,7 @@ class TeamBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+
 class MemberBaseBehavior(TestCase):
     def setUp(self):
 
@@ -122,7 +123,11 @@ class MemberBaseBehavior(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
+        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "cool dude"}
+        self.created_member_data = {
+            "team_id": self.team.id,
+            "bio": "biography"
+        }
 
         client = APIClient()
         client.force_authenticate(user=self.user)
@@ -171,10 +176,33 @@ class MemberBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testMemberApproval(self):
-
         response = self.client.patch(
             reverse("member-approve", kwargs={"pk": self.member_id})
         )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testMemberMakeAdmin(self):
+
+        user = User.objects.create_user(**admin_dict)
+        user.save()
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        member_data = {"team_id": self.team.id, "role": "AP", "bio": "cool dude"}
+
+        response = client.post(
+            reverse("member-create-record"), member_data, format="json"
+        )
+
+        id = response.data["id"]
+
+        response = self.client.patch(
+            reverse("member-make-admin", kwargs={"pk": id})
+        )
+
+        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

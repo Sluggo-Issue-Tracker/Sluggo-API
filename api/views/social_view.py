@@ -107,13 +107,18 @@ class MemberViewSet(mixins.RetrieveModelMixin,
 
         return super().update(request, partial=True)
 
-    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
+    # approve the user if not done already
+    # this call is essentially idempotent and only modifies the user record when user was not previously activated
+    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated & IsAdminMemberOrReadOnly])
     def approve(self, request, pk=None):
         """ approve the join request """
         try:
             member = Member.objects.get(pk=pk)
             member.activated = timezone.now()
-            member.save(update_fields=["activated"])
+
+            if member.role == Member.Roles.UNAPPROVED:
+                member.role = Member.Roles.APPROVED
+                member.save(update_fields=["activated", "role"])
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
@@ -121,6 +126,24 @@ class MemberViewSet(mixins.RetrieveModelMixin,
             return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
 
     # TODO: make the target user an admin
+
+    # make the user an admin if not done already
+    # this call is essentially idempotent and only modifies the user record when user was not previously activated
+    # the user does not need to be approved for them to become an admin
+    @action(detail=True, methods=["patch"], permission_classes=[IsAdminMemberOrReadOnly])
+    def make_admin(self, request, pk=None):
+        """ make the user an admin """
+        try:
+            member = Member.objects.get(pk=pk)
+            member.activated = timezone.now()
+
+            if member.role != Member.Roles.ADMIN:
+                member.save(update_fields=["role"])
+
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except Member.DoesNotExist:
+            return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
@@ -142,6 +165,7 @@ class TeamViewSet(mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
+
     queryset = Team.objects.all()
 
     permission_classes = [
@@ -173,8 +197,6 @@ class TeamViewSet(mixins.RetrieveModelMixin,
             activated=timezone.now()
         )
         member.save()
-        print("team_id: {}".format(team.id))
-        print("member_id: {}".format(member.id))
 
         headers = self.get_success_headers(team_serializer.data)
 
@@ -192,8 +214,6 @@ class TeamViewSet(mixins.RetrieveModelMixin,
             2. similarity of search terms to words in the record's description + description
         """
         queryset = self.filter_queryset(self.get_queryset())
-
-        print(q)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
