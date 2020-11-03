@@ -120,6 +120,8 @@ class MemberViewSet(mixins.RetrieveModelMixin,
         except Member.DoesNotExist:
             return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
 
+    # TODO: make the target user an admin
+
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
@@ -135,7 +137,11 @@ class MemberViewSet(mixins.RetrieveModelMixin,
             return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
-class TeamViewSet(viewsets.ModelViewSet):
+class TeamViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  viewsets.GenericViewSet):
     queryset = Team.objects.all()
 
     permission_classes = [
@@ -144,6 +150,35 @@ class TeamViewSet(viewsets.ModelViewSet):
     ]
 
     serializer_class = TeamSerializer
+
+    @staticmethod
+    def get_success_headers(data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
+    @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
+    def create_record(self, request, *args, **kwargs):
+        # serialize the request data.
+        team_serializer = TeamSerializer(data=request.data)
+        team_serializer.is_valid(raise_exception=True)
+        team = team_serializer.save()  # if we've made it this far, save the record
+
+        # construct a member record from the user information
+        member = Member.objects.create(
+            owner=request.user,
+            team=team,
+            role="AD",
+            activated=timezone.now()
+        )
+        member.save()
+        print("team_id: {}".format(team.id))
+        print("member_id: {}".format(member.id))
+
+        headers = self.get_success_headers(team_serializer.data)
+
+        return Response(team_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     # requiring that all updates are partial instead of full
     def update(self, request, *args, **kwargs):

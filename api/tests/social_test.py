@@ -35,9 +35,6 @@ each test validates basic CRUD functionality
 
 class TeamBaseBehavior(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(**user_dict)
-        self.team = Team.objects.create(**team_dict)
-        self.team.save()
         self.client = APIClient()
 
         response = self.client.post(
@@ -50,23 +47,23 @@ class TeamBaseBehavior(TestCase):
             },
         )
 
-        print(response.data)
-
         self.client.credentials(HTTP_AUTHORIZATION="Token " + response.data.get("key"))
+
+        # if team creation fails, then all other tests will fail
+
+        response = self.client.post(
+            reverse("team-create-record"),
+            team_dict,
+            format="json"
+        )
+
+        for k, v in team_dict.items():
+            self.assertEqual(v, response.data.get(k))
+
+        self.team = Team.objects.get(pk=response.data["id"])
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreater(User.objects.count(), 0)
-
-    def testTeamCreate(self):
-
-        team_data = {"name": "slugbotics", "description": "a medium cool team"}
-
-        response = self.client.post("/team/", team_data, format="json")
-
-        for k, v in team_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def testTeamRead(self):
 
@@ -103,6 +100,7 @@ class TeamBaseBehavior(TestCase):
         )
 
         new_count = Team.objects.count()
+        print(response.data)
 
         self.assertGreater(old_count, new_count)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -112,7 +110,6 @@ class TeamBaseBehavior(TestCase):
             reverse("team-search", kwargs={"q": "bugslotics a very cool team"})
         )
 
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
@@ -131,13 +128,10 @@ class MemberBaseBehavior(TestCase):
         client.force_authenticate(user=self.user)
         self.client = client
 
-        print(MemberViewSet.create_record.url_name)
-
         response = client.post(
             reverse("member-create-record"), self.member_data, format="json"
         )
 
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         for k, v in self.member_data.items():
@@ -155,7 +149,6 @@ class MemberBaseBehavior(TestCase):
         response = self.client.get(
             reverse("member-detail", kwargs={"pk": self.member_id}), format="json"
         )
-        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -210,7 +203,6 @@ class UnauthenticatedBehavior(TestCase):
             reverse("member-list"), self.member_data, format="json"
         )
 
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def testUnauthenticated(self):

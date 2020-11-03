@@ -27,7 +27,6 @@ class BaseMemberPermissions(permissions.BasePermission):
     def retrieveMemberRecord(self, username, team_id):
         team_id = "{}".format(team_id)
         member_pk = md5(team_id.encode()).hexdigest() + md5(username.encode()).hexdigest()
-        print(member_pk)
         return Member.objects.get(pk=member_pk)
 
 
