@@ -24,6 +24,9 @@ from ..serializers import (
 )
 
 
+User = get_user_model()
+
+
 class TicketViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -55,24 +58,28 @@ class TicketViewSet(
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
-    @action(methods=["POST"], detail=False)
+    @action(
+        methods=["POST"], detail=False,
+    )
     def create_record(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
+        assigned_id = request.data.get("assigned_id")
         try:
             team = Team.objects.get(id=team_id)
-            print(f"team is {team}")
+            assigned_user = User.objects.get(id=assigned_id)
+            is_approved_user = Member.objects.get(owner=assigned_user)
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
             serializer.save(
-                owner=self.request.user,
-                team=team,
-                assigned_user=request.data.get("assigned_user"),
+                owner=self.request.user, team=team, assigned_user=assigned_user,
             )
 
             headers = self.get_success_headers(serializer.data)
-        except Team.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Team.DoesNotExist as e:
+            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
+        except Member.DoesNotExist as e:
+            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
