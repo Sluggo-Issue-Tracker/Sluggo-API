@@ -7,6 +7,7 @@ from django.urls import reverse
 from ..models import Ticket
 from ..models import Member
 from ..models import Team, Member
+from ..views import TicketViewSet
 
 import datetime
 
@@ -98,7 +99,7 @@ class TicketViewTestCase(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
+        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
 
         self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
 
@@ -111,15 +112,14 @@ class TicketViewTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.ticket_data = {
-            # "owner_id": self.ticket_user.id,
-            "assigned_user": self.assigned_user,
+            "assigned_user": self.ticket_user,
             "title": "Sic Mundus Creatus Est",
             "ticket_number": 1,
             "team_id": self.team.id,
         }
-
+        print(self.ticket_data)
         self.response = self.ticket_client.post(
-            reverse("ticket-list"), self.ticket_data, format="json"
+            reverse("ticket-create-record"), self.ticket_data, format="json"
         )
         print(self.response.content)
 
@@ -127,30 +127,30 @@ class TicketViewTestCase(TestCase):
         """Test if the api can create a ticket."""
         self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
 
-    def test_authorization_is_enforced(self):
-        """Test that the api has user authorization"""
-        pass
+    # def test_authorization_is_enforced(self):
+    #     """Test that the api has user authorization"""
+    #     pass
 
-    def test_api_can_get_a_ticket(self):
-        """Test the api can get a given ticket."""
-        pass
+    # def test_api_can_get_a_ticket(self):
+    #     """Test the api can get a given ticket."""
+    #     pass
 
-    def test_api_auth_can_update_a_ticket(self):
-        """ Test that the ticket author can update the ticket"""
-        pass
+    # def test_api_auth_can_update_a_ticket(self):
+    #     """ Test that the ticket author can update the ticket"""
+    #     pass
 
-    def test_api_no_auth_cant_update_ticket(self):
-        """ Test that a non signed in user can't edit the ticket"""
-        pass
+    # def test_api_no_auth_cant_update_ticket(self):
+    #     """ Test that a non signed in user can't edit the ticket"""
+    #     pass
 
-    def test_api_not_owner_cant_update_ticket(self):
-        """ Test that only the owner can edit tickets"""
-        pass
+    # def test_api_not_owner_cant_update_ticket(self):
+    #     """ Test that only the owner can edit tickets"""
+    #     pass
 
-    def test_api_admin_can_update_ticket(self):
-        """ Test that admins have override ability to edit tickets"""
-        pass
+    # def test_api_admin_can_update_ticket(self):
+    #     """ Test that admins have override ability to edit tickets"""
+    #     pass
 
-    def test_api_auth_can_delete_a_ticket(self):
-        """ Test that owner/properly authenticated user can delete the ticket"""
-        pass
+    # def test_api_auth_can_delete_a_ticket(self):
+    #     """ Test that owner/properly authenticated user can delete the ticket"""
+    #     pass

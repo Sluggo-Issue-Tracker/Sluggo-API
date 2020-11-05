@@ -1,29 +1,51 @@
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
+from rest_framework.settings import api_settings
 
-from django.contrib.auth import get_user_model, get_user
+from django.contrib.auth import get_user_model
 
-from ..models import Ticket, TicketComment, TicketStatus
+from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
+
+from ..models import (
+    Ticket,
+    TicketComment,
+    TicketStatus,
+    Member,
+    Team,
+)
+
 from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
     TicketStatusSerializer,
 )
-from ..permissions import IsOwnerOrReadOnly, IsAdminMemberOrReadOnly
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     This viewset automatically provides `list` and `detail` actions.
     """
 
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-
     queryset = Ticket.objects.all()
+
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly, IsMemberUser]
+
     serializer_class = TicketSerializer
+
+    @staticmethod
+    def get_success_headers(data):
+        try:
+            return {"Location": str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
 
     @action(detail=False, methods=["get"])
     def list_team(self, request, pk=None):
@@ -31,8 +53,33 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+    # require that the user is a member of the team to create a ticket
+    # manually defining this since we want to offer this endpoint for any authenticated user
+    @action(methods=["POST"], detail=False)
+    def create_record(self, request, *args, **kwargs):
+        team_id = request.data.get("team_id")
+        try:
+            team = Team.objects.get(id=team_id)
+            print(f"team is {team}")
+            serializer = TicketSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save(
+                owner=self.request.user,
+                team=team,
+                assigned_user=request.data.get("assigned_user"),
+            )
+
+            headers = self.get_success_headers(serializer.data)
+        except Team.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    # def perform_create(self, serializer):
+    #     serializer.save(owner=self.request.user)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
