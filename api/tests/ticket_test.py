@@ -109,9 +109,9 @@ class TicketViewTestCase(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
+        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
 
-        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
+        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
@@ -188,13 +188,40 @@ class TicketViewTestCase(TestCase):
         for k, v in new_data.items():
             self.assertEqual(v, response.data.get(k))
 
-    # def test_authorization_is_enforced(self):
-    #     """Test that the api has user authorization"""
-    #     pass
+    def testTicketUpdateNotSignedIn(self):
+        """ Test that users not signed in can't edit tickets"""
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
 
-    # def test_api_no_auth_cant_update_ticket(self):
-    #     """ Test that a non signed in user can't edit the ticket"""
-    #     pass
+        client = APIClient()
+        response = client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketUpdateNotMember(self):
+        """ Test that users not signed in can't edit tickets"""
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
+        not_member = User.objects.create_user(**not_assigned_dict)
+        not_member.save()
+
+        client = APIClient()
+
+        client.force_authenticate(user=not_member)
+        response = client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def testTicketUpdateNotOwner(self):
         """ Test that only the owner can edit tickets"""
@@ -205,16 +232,16 @@ class TicketViewTestCase(TestCase):
         not_user = User.objects.create_user(**not_assigned_dict)
         not_user.save()
 
-        member_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
+        member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
 
-        not_assigned_client = APIClient()
-        not_assigned_client.force_authenticate(user=not_user)
-        mem_response = not_assigned_client.post(
+        client = APIClient()
+        client.force_authenticate(user=not_user)
+        mem_response = client.post(
             reverse("member-create-record"), member_data, format="json"
         )
 
         self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
-        response = not_assigned_client.put(
+        response = client.put(
             reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
             new_data,
             format="json",
@@ -222,10 +249,65 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_api_admin_can_update_ticket(self):
-    #     """ Test that admins have override ability to edit tickets"""
-    #     pass
+    def testTicketUpdateAuth(self):
+        """ Test that admins have override ability to edit tickets"""
+        change_ticket = {
+            "assigned_id": self.assigned_user.id,
+            "title": "It's Happening Again",
+            "ticket_number": 2,
+        }
+        response = self.admin_client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            change_ticket,
+            format="json",
+        )
 
-    # def test_api_auth_can_delete_a_ticket(self):
-    #     """ Test that owner/properly authenticated user can delete the ticket"""
-    #     pass
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testTicketDeleteAuth(self):
+        """ Test that admins/owners can delete ticket"""
+        ticket = Ticket.objects.get(id=1)
+        response = self.admin_client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testTicketDeleteNoAuth(self):
+        """ Test that not logged in users can't delete ticket"""
+        ticket = Ticket.objects.get(id=1)
+        client = APIClient()
+        response = client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketDeleteNotOwner(self):
+
+        not_user = User.objects.create_user(**not_assigned_dict)
+        not_user.save()
+
+        member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
+
+        client = APIClient()
+        client.force_authenticate(user=not_user)
+        mem_response = client.post(
+            reverse("member-create-record"), member_data, format="json"
+        )
+
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+        ticket = Ticket.objects.get(id=1)
+        response = client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        # Will solve this issue later, non owners can 'delete' ticket
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+

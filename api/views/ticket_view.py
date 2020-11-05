@@ -39,7 +39,11 @@ class TicketViewSet(
 
     queryset = Ticket.objects.all()
 
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly, IsMemberUser]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        IsMemberUser,
+    ]
 
     serializer_class = TicketSerializer
 
@@ -85,8 +89,25 @@ class TicketViewSet(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
-    # def perform_create(self, serializer):
-    #     serializer.save(owner=self.request.user)
+    @action(
+        detail=True,
+        methods=["delete"],
+        permission_classes=[
+            permissions.IsAuthenticated,
+            IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        ],
+    )
+    def delete(self, request, pk=None):
+        """ deactivate this ticket this is deletion but only to deactivate the record """
+        try:
+            ticket = Ticket.objects.get(pk=pk)
+            ticket.deactivated = timezone.now()
+            ticket.save()
+
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except Ticket.DoesNotExist:
+            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
