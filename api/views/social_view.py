@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
-from ..decorators import model_enforce
 
 from ..permissions import (
     IsAdminMemberOrReadOnly,
