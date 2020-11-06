@@ -308,6 +308,5 @@ class TicketViewTestCase(TestCase):
             follow=True,
         )
 
-        # Will solve this issue later, non owners can 'delete' ticket
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

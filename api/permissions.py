@@ -14,7 +14,7 @@ class BaseMemberPermissions(permissions.BasePermission):
         member_pk = (
             md5(team_id.encode()).hexdigest() + md5(username.encode()).hexdigest()
         )
-        print(member_pk)
+        # print(member_pk)
         return Member.objects.get(pk=member_pk)
 
 
@@ -22,7 +22,7 @@ class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         try:
             self.retrieveMemberRecord(request.user.username, obj.team.id)
-            permit = True
+            permit = Member.Roles.APPROVED
         except Member.DoesNotExist:
             permit = False
 
@@ -46,14 +46,13 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
                 member_record = self.retrieveMemberRecord(
                     request.user.username, team_id
                 )
-                permit = member_record.role == "AD"
+                permit = member_record.role == Member.Roles.ADMIN
 
             except Member.DoesNotExist:
                 permit = False
 
         else:
             permit = True
-        print(permit)
         return permit
 
 

@@ -58,6 +58,7 @@ class TicketViewSet(
     def list_team(self, request, pk=None):
         queryset = Ticket.objects.filter(team__id=pk)
         serializer = self.serializer_class(queryset, many=True)
+        self.check_object_permissions(request, self.get_object())
         return Response(serializer.data)
 
     # require that the user is a member of the team to create a ticket
@@ -103,10 +104,11 @@ class TicketViewSet(
             ticket = Ticket.objects.get(pk=pk)
             ticket.deactivated = timezone.now()
             ticket.save()
-
+            self.check_object_permissions(request, self.get_object())
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
         except Ticket.DoesNotExist:
+            self.check_object_permissions(request, self.get_object())
             return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
