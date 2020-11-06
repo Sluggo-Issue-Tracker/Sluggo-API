@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
+from ..decorators import model_enforce
 
 from ..permissions import (
     IsAdminMemberOrReadOnly,
@@ -33,6 +34,8 @@ class MemberViewSet(mixins.RetrieveModelMixin,
     """
 
     queryset = Member.objects.all()
+
+    model = Member
 
     permission_classes = [
         permissions.IsAuthenticated,
@@ -109,9 +112,11 @@ class MemberViewSet(mixins.RetrieveModelMixin,
 
     # approve the user if not done already
     # this call is essentially idempotent and only modifies the user record when user was not previously activated
-    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated & IsAdminMemberOrReadOnly])
+    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
     def approve(self, request, pk=None):
         """ approve the join request """
+        self.check_object_permissions(request, self.get_object())
+
         try:
             member = Member.objects.get(pk=pk)
             member.activated = timezone.now()
@@ -130,9 +135,11 @@ class MemberViewSet(mixins.RetrieveModelMixin,
     # make the user an admin if not done already
     # this call is essentially idempotent and only modifies the user record when user was not previously activated
     # the user does not need to be approved for them to become an admin
-    @action(detail=True, methods=["patch"], permission_classes=[IsAdminMemberOrReadOnly])
+    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
     def make_admin(self, request, pk=None):
         """ make the user an admin """
+        self.check_object_permissions(request, self.get_object())
+
         try:
             member = Member.objects.get(pk=pk)
             member.activated = timezone.now()
@@ -148,6 +155,7 @@ class MemberViewSet(mixins.RetrieveModelMixin,
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
+        self.check_object_permissions(request, self.get_object())
 
         try:
             member = Member.objects.get(pk=pk)

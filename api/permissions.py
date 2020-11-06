@@ -47,15 +47,9 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
     Custom permission to allow admin of an object to edit it.
     """
 
-    def has_permission(self, request, view):
-        print("this calls fufck")
-        return False
-
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requestso.
-        print("what the hell")
-
+        # so we'll always allow GET, HEAD or OPTIONS requests.
         team_id = obj.id if isinstance(obj, Team) else obj.team.id
 
         if request.method not in permissions.SAFE_METHODS:

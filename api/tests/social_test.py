@@ -123,7 +123,7 @@ class MemberBaseBehavior(TestCase):
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "cool dude"}
+        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
         self.created_member_data = {
             "team_id": self.team.id,
             "bio": "biography"
@@ -184,13 +184,14 @@ class MemberBaseBehavior(TestCase):
 
     def testMemberMakeAdmin(self):
 
+        # create a admin user
         user = User.objects.create_user(**admin_dict)
         user.save()
 
         client = APIClient()
         client.force_authenticate(user=user)
 
-        member_data = {"team_id": self.team.id, "role": "AP", "bio": "cool dude"}
+        member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         response = client.post(
             reverse("member-create-record"), member_data, format="json"
