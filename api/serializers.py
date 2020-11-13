@@ -103,10 +103,14 @@ class TicketSerializer(serializers.ModelSerializer):
         due_date: When the ticket is due
     """
 
+    id = serializers.ReadOnlyField()
     team_id = serializers.ReadOnlyField(source="team.id")
-    owner = serializers.ReadOnlyField(source="owner.email")
+    owner = UserSerializer(many=False, read_only=True)
     comments = TicketCommentSerializer(many=True, required=False)
-    assigned_user = UserSerializer(read_only=False)
+    assigned_user = UserSerializer(many=False, read_only=True)
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.Ticket
@@ -119,6 +123,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "comments",
+            "created",
             "activated",
             "deactivated",
         ]

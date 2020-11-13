@@ -7,6 +7,7 @@ from django.urls import reverse
 from ..models import Ticket
 from ..models import Member
 from ..models import Team, Member
+from ..views import TicketViewSet
 
 import datetime
 
@@ -25,6 +26,13 @@ user_dict = dict(
     email="adam@sicmundus.org",
     first_name="Jonas",
     last_name="Kahnwald",
+)
+
+not_assigned_dict = dict(
+    username="org.eritlux.eva",
+    email="eva@eritlux.org",
+    first_name="Martha",
+    last_name="Nielsen",
 )
 
 admin_dict = dict(
@@ -95,62 +103,210 @@ class TicketViewTestCase(TestCase):
         self.assigned_user = User.objects.create_user(**assigned_dict)
         self.assigned_user.save()
 
+        self.admin_user = User.objects.create_user(**admin_dict)
+        self.admin_user.save()
+
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
         self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
 
-        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "Cool Users"}
+        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
-        response = self.ticket_client.post(
+        mem_response = self.ticket_client.post(
             reverse("member-create-record"), self.member_data, format="json"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+
+        self.assigned_client = APIClient()
+        self.assigned_client.force_authenticate(user=self.assigned_user)
+        mem_response = self.assigned_client.post(
+            reverse("member-create-record"), self.member_data, format="json"
+        )
+
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+        mem_response = self.admin_client.post(
+            reverse("member-create-record"), self.admin_data, format="json"
+        )
+
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
 
         self.ticket_data = {
-            # "owner_id": self.ticket_user.id,
-            "assigned_user": self.assigned_user,
+            "assigned_id": self.assigned_user.id,
             "title": "Sic Mundus Creatus Est",
             "ticket_number": 1,
             "team_id": self.team.id,
         }
-
+        self.ticket_get_data = {
+            "title": "Sic Mundus Creatus Est",
+            "ticket_number": 1,
+            "team_id": self.team.id,
+        }
         self.response = self.ticket_client.post(
-            reverse("ticket-list"), self.ticket_data, format="json"
+            reverse("ticket-create-record"), self.ticket_data, format="json"
         )
-        print(self.response.content)
 
-    def test_api_can_create_a_ticket(self):
+        self.ticket_id = self.response.data["id"]
+
+    def testTicketCreate(self):
         """Test if the api can create a ticket."""
-        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+        record = Ticket.objects.get(id=self.ticket_id)
+        self.assertEqual(Ticket.objects.count(), 1)
 
-    def test_authorization_is_enforced(self):
-        """Test that the api has user authorization"""
-        pass
+    def testTicketRead(self):
+        # read the record created in setUp. confirm the results are expected
+        response = self.ticket_client.get(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}), format="json"
+        )
 
-    def test_api_can_get_a_ticket(self):
-        """Test the api can get a given ticket."""
-        pass
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_api_auth_can_update_a_ticket(self):
-        """ Test that the ticket author can update the ticket"""
-        pass
+        for k, v in self.ticket_get_data.items():
+            self.assertEqual(v, response.data.get(k))
 
-    def test_api_no_auth_cant_update_ticket(self):
-        """ Test that a non signed in user can't edit the ticket"""
-        pass
+    def testTicketUpdate(self):
+        # change the record's values. this call should return the newly updated record
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
 
-    def test_api_not_owner_cant_update_ticket(self):
+        response = self.ticket_client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for k, v in new_data.items():
+            self.assertEqual(v, response.data.get(k))
+
+    def testTicketUpdateNotSignedIn(self):
+        """ Test that users not signed in can't edit tickets"""
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
+
+        client = APIClient()
+        response = client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketUpdateNotMember(self):
+        """ Test that users not signed in can't edit tickets"""
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
+        not_member = User.objects.create_user(**not_assigned_dict)
+        not_member.save()
+
+        client = APIClient()
+
+        client.force_authenticate(user=not_member)
+        response = client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketUpdateNotOwner(self):
         """ Test that only the owner can edit tickets"""
-        pass
+        new_data = {
+            "title": "Erit Lux",
+            "ticket_number": 2,
+        }
+        not_user = User.objects.create_user(**not_assigned_dict)
+        not_user.save()
 
-    def test_api_admin_can_update_ticket(self):
+        member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
+
+        client = APIClient()
+        client.force_authenticate(user=not_user)
+        mem_response = client.post(
+            reverse("member-create-record"), member_data, format="json"
+        )
+
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+        response = client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            new_data,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketUpdateAuth(self):
         """ Test that admins have override ability to edit tickets"""
-        pass
+        change_ticket = {
+            "assigned_id": self.assigned_user.id,
+            "title": "It's Happening Again",
+            "ticket_number": 2,
+        }
+        response = self.admin_client.put(
+            reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
+            change_ticket,
+            format="json",
+        )
 
-    def test_api_auth_can_delete_a_ticket(self):
-        """ Test that owner/properly authenticated user can delete the ticket"""
-        pass
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testTicketDeleteAuth(self):
+        """ Test that admins/owners can delete ticket"""
+        ticket = Ticket.objects.get(id=1)
+        response = self.admin_client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testTicketDeleteNoAuth(self):
+        """ Test that not logged in users can't delete ticket"""
+        ticket = Ticket.objects.get(id=1)
+        client = APIClient()
+        response = client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def testTicketDeleteNotOwner(self):
+
+        not_user = User.objects.create_user(**not_assigned_dict)
+        not_user.save()
+
+        member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
+
+        client = APIClient()
+        client.force_authenticate(user=not_user)
+        mem_response = client.post(
+            reverse("member-create-record"), member_data, format="json"
+        )
+
+        self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+        ticket = Ticket.objects.get(id=1)
+        response = client.delete(
+            reverse("ticket-detail", kwargs={"pk": ticket.id}),
+            format="json",
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
