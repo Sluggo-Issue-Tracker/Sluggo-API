@@ -11,7 +11,6 @@ from ..views import TicketViewSet
 
 import datetime
 
-
 User = get_user_model()
 
 assigned_dict = dict(
@@ -161,14 +160,27 @@ class TicketViewTestCase(TestCase):
 
     def testTicketRead(self):
         # read the record created in setUp. confirm the results are expected
+        url = reverse("ticket-detail", kwargs={"pk": self.ticket_id})
+        print(url)
         response = self.ticket_client.get(
-            reverse("ticket-detail", kwargs={"pk": self.ticket_id}), format="json"
+            url, format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         for k, v in self.ticket_get_data.items():
             self.assertEqual(v, response.data.get(k))
+
+    def testTicketList(self):
+        # eat shit and die
+        url = reverse('ticket-list-team', kwargs={"pk": 1})
+        response = self.ticket_client.get(
+            url, format="json"
+        )
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
     def testTicketUpdate(self):
         # change the record's values. this call should return the newly updated record
@@ -309,4 +321,3 @@ class TicketViewTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-

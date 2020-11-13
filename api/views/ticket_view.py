@@ -46,7 +46,7 @@ class TicketViewSet(
     serializer_class = TicketSerializer
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['team__name', 'team__description', 'title', 'description']
+    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title']
     ordering_fields = ['created', 'activated']
 
     @staticmethod
@@ -56,9 +56,9 @@ class TicketViewSet(
         except (TypeError, KeyError):
             return {}
 
-    @action(detail=False, methods=["get"])
+    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
-        queryset = Ticket.objects.filter(team__id=pk)
+        queryset = self.get_object().filter(team__id=pk)
         serializer = self.serializer_class(queryset, many=True)
         self.check_object_permissions(request, self.get_object())
         return Response(serializer.data)
@@ -66,7 +66,7 @@ class TicketViewSet(
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
-        methods=["POST"], detail=False,
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
@@ -108,15 +108,10 @@ class TicketViewSet(
 
         return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
-
-
     @action(
         detail=True,
         methods=["delete"],
-        permission_classes=[
-            permissions.IsAuthenticated,
-            IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
-        ],
+        permission_classes=permission_classes,
     )
     def delete(self, request, pk=None):
         """ deactivate this ticket this is deletion but only to deactivate the record """
