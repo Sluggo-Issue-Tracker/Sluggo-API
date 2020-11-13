@@ -105,20 +105,21 @@ class TicketViewTestCase(TestCase):
         self.admin_user = User.objects.create_user(**admin_dict)
         self.admin_user.save()
 
-        self.team = Team.objects.create(**team_dict)
-        self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
-
-        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
         mem_response = self.ticket_client.post(
-            reverse("member-create-record"), self.member_data, format="json"
+            reverse("team-create-record"), team_dict, format="json"
         )
+        team_id = mem_response.data["id"]
+        self.team = Team.objects.get(pk=team_id)
 
         self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
+
+        self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
+
+        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
 
         self.assigned_client = APIClient()
         self.assigned_client.force_authenticate(user=self.assigned_user)
@@ -160,7 +161,8 @@ class TicketViewTestCase(TestCase):
 
     def testTicketRead(self):
         # read the record created in setUp. confirm the results are expected
-        url = reverse("ticket-detail", kwargs={"pk": self.ticket_id})
+        url = reverse("ticket-list")
+        url += "?search=booty"
         print(url)
         response = self.ticket_client.get(
             url, format="json"
@@ -168,12 +170,18 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        print(response.data)
+
         for k, v in self.ticket_get_data.items():
             self.assertEqual(v, response.data.get(k))
 
     def testTicketList(self):
         # eat shit and die
-        url = reverse('ticket-list-team', kwargs={"pk": 1})
+        url = reverse('ticket-list-team', kwargs={"pk": self.team.id})
+        url += '?search=Hanno'
+
+        print(url)
+
         response = self.ticket_client.get(
             url, format="json"
         )

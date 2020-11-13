@@ -46,7 +46,9 @@ class TicketViewSet(
     serializer_class = TicketSerializer
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title']
+    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
+                     '^assigned_user__first_name'
+                     ]
     ordering_fields = ['created', 'activated']
 
     @staticmethod
@@ -58,10 +60,18 @@ class TicketViewSet(
 
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
-        queryset = self.get_object().filter(team__id=pk)
+
+        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
         serializer = self.serializer_class(queryset, many=True)
-        self.check_object_permissions(request, self.get_object())
-        return Response(serializer.data)
+
+        try:
+            team = Team.objects.get(pk=pk)
+            self.check_object_permissions(request, team)
+            response = Response(serializer.data, status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+        return response
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
