@@ -22,8 +22,8 @@ class BaseMemberPermissions(permissions.BasePermission):
 class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         try:
-            self.retrieveMemberRecord(request.user.username, obj.team.id)
-            permit = Member.Roles.APPROVED
+            member_record = self.retrieveMemberRecord(request.user.username, obj.team.id)
+            permit = member_record.role == Member.Roles.APPROVED
         except Member.DoesNotExist:
             permit = False
 
