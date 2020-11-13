@@ -33,12 +33,16 @@ class Ticket(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="assigned_ticket",
+        null=True,
+        blank=True
     )
 
     status = models.ForeignKey(
         TicketStatus,
         on_delete=models.CASCADE,
-        related_name="status_ticket"
+        related_name="status_ticket",
+        blank=True,
+        null=True
     )
 
     title = models.CharField(max_length=100, blank=False)
