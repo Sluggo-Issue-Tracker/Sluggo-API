@@ -2,6 +2,7 @@
 This project will house Andrew's testing of REST API things
 """
 from django.urls import include, path
+from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 from . import views as api_views
 
@@ -29,5 +30,6 @@ urlpatterns = [
     path('dj-rest-auth/registration', include('dj_rest_auth.registration.urls')),
 
     path("api-auth/", include("rest_framework.urls")),
+    path('admin/', admin.site.urls)
 ]
 
