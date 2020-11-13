@@ -28,7 +28,13 @@ class MemberViewSet(
 
     queryset = Member.objects.all()
 
-    permission_classes = [permissions.IsAuthenticated, IsMemberUser, IsOwnerOrReadOnly]
+    model = Member
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsMemberUser,
+        IsOwnerOrReadOnly
+    ]
 
     serializer_class = MemberSerializer
 
@@ -99,17 +105,45 @@ class MemberViewSet(
 
         return super().update(request, partial=True)
 
-    @action(
+     @action(
         detail=True,
         methods=["patch"],
         permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
     )
+
     def approve(self, request, pk=None):
         """ approve the join request """
+        self.check_object_permissions(request, self.get_object())
+
         try:
             member = Member.objects.get(pk=pk)
             member.activated = timezone.now()
-            member.save(update_fields=["activated"])
+
+            if member.role == Member.Roles.UNAPPROVED:
+                member.role = Member.Roles.APPROVED
+                member.save(update_fields=["activated", "role"])
+
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except Member.DoesNotExist:
+            return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+    # TODO: make the target user an admin
+
+    # make the user an admin if not done already
+    # this call is essentially idempotent and only modifies the user record when user was not previously activated
+    # the user does not need to be approved for them to become an admin
+    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
+    def make_admin(self, request, pk=None):
+        """ make the user an admin """
+        self.check_object_permissions(request, self.get_object())
+
+        try:
+            member = Member.objects.get(pk=pk)
+            member.activated = timezone.now()
+
+            if member.role != Member.Roles.ADMIN:
+                member.save(update_fields=["role"])
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
@@ -119,6 +153,7 @@ class MemberViewSet(
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
         """ leave this team this is deletion but only to deactivate the record """
+        self.check_object_permissions(request, self.get_object())
 
         try:
             member = Member.objects.get(pk=pk)
@@ -131,12 +166,44 @@ class MemberViewSet(
             return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
-class TeamViewSet(viewsets.ModelViewSet):
+class TeamViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  viewsets.GenericViewSet):
+
     queryset = Team.objects.all()
 
     permission_classes = [permissions.IsAuthenticated, IsAdminMemberOrReadOnly]
 
     serializer_class = TeamSerializer
+
+    @staticmethod
+    def get_success_headers(data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
+    @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
+    def create_record(self, request, *args, **kwargs):
+        # serialize the request data.
+        team_serializer = TeamSerializer(data=request.data)
+        team_serializer.is_valid(raise_exception=True)
+        team = team_serializer.save()  # if we've made it this far, save the record
+
+        # construct a member record from the user information
+        member = Member.objects.create(
+            owner=request.user,
+            team=team,
+            role="AD",
+            activated=timezone.now()
+        )
+        member.save()
+
+        headers = self.get_success_headers(team_serializer.data)
+
+        return Response(team_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     # requiring that all updates are partial instead of full
     def update(self, request, *args, **kwargs):
@@ -150,8 +217,6 @@ class TeamViewSet(viewsets.ModelViewSet):
             2. similarity of search terms to words in the record's description + description
         """
         queryset = self.filter_queryset(self.get_queryset())
-
-        print(q)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

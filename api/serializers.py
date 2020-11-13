@@ -44,6 +44,7 @@ class MemberSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     owner = UserSerializer(many=False, read_only=True)
     team_id = serializers.ReadOnlyField(source="team.id")
+    role = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()

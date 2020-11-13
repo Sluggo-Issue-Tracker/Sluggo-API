@@ -41,8 +41,6 @@ class Member(models.Model):
     """
 
     class Roles(models.TextChoices):
-        # TODO: Samuel Schmidt 10/13/2020 this needs to be refactored its own table,
-        # i think having custom roles is a feature we want to implement
         """
         A private class containing 3 options for Roles stored in multiple versions. A full name, "pretty" name, and 2-letter representation.
 

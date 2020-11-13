@@ -18,6 +18,7 @@ class BaseMemberPermissions(permissions.BasePermission):
         return Member.objects.get(pk=member_pk)
 
 
+# only permit this if the user is approved
 class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         try:
@@ -37,12 +38,12 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-
         team_id = obj.id if isinstance(obj, Team) else obj.team.id
 
         if request.method not in permissions.SAFE_METHODS:
             try:
                 # Write permissions are only allowed to the owner of the object, or admin.
+
                 member_record = self.retrieveMemberRecord(
                     request.user.username, team_id
                 )
