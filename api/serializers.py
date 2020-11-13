@@ -13,7 +13,6 @@ from . import models as api_models
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = get_user_model()
         fields = ["id", "email", "first_name", "last_name"]
@@ -37,7 +36,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "ticket_head",
             "created",
             "activated",
-            "deactivated"
+            "deactivated",
         ]
 
 
@@ -59,7 +58,7 @@ class MemberSerializer(serializers.ModelSerializer):
             "bio",
             "created",
             "activated",
-            "deactivated"
+            "deactivated",
         ]
 
 
@@ -82,7 +81,7 @@ class TicketCommentSerializer(serializers.ModelSerializer):
             "content",
             "created",
             "activated",
-            "deactivated"
+            "deactivated",
         ]
 
 
@@ -103,10 +102,14 @@ class TicketSerializer(serializers.ModelSerializer):
         due_date: When the ticket is due
     """
 
+    id = serializers.ReadOnlyField()
     team_id = serializers.ReadOnlyField(source="team.id")
-    owner = serializers.ReadOnlyField(source="owner.email")
+    owner = UserSerializer(many=False, read_only=True)
     comments = TicketCommentSerializer(many=True, required=False)
-    assigned_user = UserSerializer(read_only=True)
+    assigned_user = UserSerializer(many=False, read_only=True)
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.Ticket
@@ -119,8 +122,9 @@ class TicketSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "comments",
+            "created",
             "activated",
-            "deactivated"
+            "deactivated",
         ]
 
 
@@ -129,11 +133,4 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = api_models.TicketStatus
-        fields = [
-            "id",
-            "team_id",
-            "title",
-            "created",
-            "activated",
-            "deactivated"
-        ]
+        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]

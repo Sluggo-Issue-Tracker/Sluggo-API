@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from .team import Team
+from .member import Member
 
 
 class Ticket(models.Model):
@@ -19,23 +20,18 @@ class Ticket(models.Model):
         due_date: The due date for the ticket, a date field that will keep track of when things are due.
     """
 
-    team = models.ForeignKey(
-        Team,
-        on_delete=models.CASCADE
-    )
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     ticket_number = models.IntegerField()
 
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='owned_ticket'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_ticket"
     )
 
     assigned_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='assigned_ticket'
+        related_name="assigned_ticket",
     )
 
     title = models.CharField(max_length=100, blank=False)

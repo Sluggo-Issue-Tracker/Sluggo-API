@@ -5,11 +5,7 @@ from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
 
-from ..permissions import (
-    IsAdminMemberOrReadOnly,
-    IsOwnerOrReadOnly,
-    IsMemberUser
-)
+from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
 
 from django.contrib.auth import get_user_model
 
@@ -17,41 +13,37 @@ from ..models import (
     Member,
     Team,
 )
-from ..serializers import (
-    MemberSerializer,
-    TeamSerializer,
-    UserSerializer
-)
+from ..serializers import MemberSerializer, TeamSerializer, UserSerializer
 
 
-class MemberViewSet(mixins.RetrieveModelMixin,
-                    mixins.ListModelMixin,
-                    mixins.UpdateModelMixin,
-                    viewsets.GenericViewSet):
+class MemberViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     Reads handled by the mixins, and use permission_classes
     """
 
     queryset = Member.objects.all()
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsMemberUser,
-        IsOwnerOrReadOnly
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsMemberUser, IsOwnerOrReadOnly]
 
     serializer_class = MemberSerializer
 
     @staticmethod
     def get_success_headers(data):
         try:
-            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+            return {"Location": str(data[api_settings.URL_FIELD_NAME])}
         except (TypeError, KeyError):
             return {}
 
     # require only that the user is authenticated to create their profile / join a team
     # manually defining this since we want to offer this endpoint for any authenticated user
-    @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated]
+    )
     def create_record(self, request, *args, **kwargs):
         team_id = request.data.get("team_id")
 
@@ -66,7 +58,9 @@ class MemberViewSet(mixins.RetrieveModelMixin,
         except Team.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     # this facilitates editing the user profile associated with a team
     # this function is keyed in by the join_id which is the team_id
@@ -90,13 +84,11 @@ class MemberViewSet(mixins.RetrieveModelMixin,
             # only update the fields that the user has access to
             # in their edit profile dialog
             member = Member.objects.get(pk=pk)
-            Member.objects.filter(pk=pk).update(
-                bio=member_data.get("bio"),
-            )
+            Member.objects.filter(pk=pk).update(bio=member_data.get("bio"),)
 
             get_user_model().objects.filter(pk=member.owner.id).update(
                 first_name=user_data.get("first_name"),
-                last_name=user_data.get("last_name")
+                last_name=user_data.get("last_name"),
             )
 
         except Member.DoesNotExist as e:
@@ -107,7 +99,11 @@ class MemberViewSet(mixins.RetrieveModelMixin,
 
         return super().update(request, partial=True)
 
-    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
+    @action(
+        detail=True,
+        methods=["patch"],
+        permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
+    )
     def approve(self, request, pk=None):
         """ approve the join request """
         try:
@@ -138,10 +134,7 @@ class MemberViewSet(mixins.RetrieveModelMixin,
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsAdminMemberOrReadOnly
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsAdminMemberOrReadOnly]
 
     serializer_class = TeamSerializer
 
