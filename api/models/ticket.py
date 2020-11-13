@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from .team import Team
+from .ticket_status import TicketStatus
 from .member import Member
 
 
@@ -32,6 +33,12 @@ class Ticket(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="assigned_ticket",
+    )
+
+    status = models.ForeignKey(
+        TicketStatus,
+        on_delete=models.CASCADE,
+        related_name="status_ticket"
     )
 
     title = models.CharField(max_length=100, blank=False)

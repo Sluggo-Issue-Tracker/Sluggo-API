@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
+from rest_framework import filters
 
 from django.contrib.auth import get_user_model
 
@@ -36,16 +37,17 @@ class TicketViewSet(
     """
     This viewset automatically provides `list` and `detail` actions.
     """
-
     queryset = Ticket.objects.all()
-
     permission_classes = [
         permissions.IsAuthenticated,
         IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
         IsMemberUser,
     ]
-
     serializer_class = TicketSerializer
+
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['team__name', 'team__description', 'title', 'description']
+    ordering_fields = ['created', 'activated']
 
     @staticmethod
     def get_success_headers(data):
@@ -92,6 +94,24 @@ class TicketViewSet(
 
     @action(
         detail=True,
+        methods=['patch'],
+        permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def update_status(self, request, pk=None):
+        self.check_object_permissions(request, self.get_object())
+
+        status_id = request.data('status_id')
+        ticket = Ticket.objects.get(pk=pk)
+        status = TicketStatus.objects.get(pk=status_id)
+        ticket.status = status
+        ticket.save(update_fields=['status'])
+
+        return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+
+
+    @action(
+        detail=True,
         methods=["delete"],
         permission_classes=[
             permissions.IsAuthenticated,
@@ -134,7 +154,12 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 class TicketStatusViewSet(viewsets.ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
+        IsMemberUser,
+        IsAdminMemberOrReadOnly
     ]
 
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
+
+
+

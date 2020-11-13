@@ -19,7 +19,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-
     # make the following fields read only
     id = serializers.ReadOnlyField()
     ticket_head = serializers.ReadOnlyField()
@@ -86,6 +85,14 @@ class TicketCommentSerializer(serializers.ModelSerializer):
         ]
 
 
+class TicketStatusSerializer(serializers.ModelSerializer):
+    team_id = serializers.ReadOnlyField(source="team.id")
+
+    class Meta:
+        model = api_models.TicketStatus
+        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -108,6 +115,7 @@ class TicketSerializer(serializers.ModelSerializer):
     owner = UserSerializer(many=False, read_only=True)
     comments = TicketCommentSerializer(many=True, required=False)
     assigned_user = UserSerializer(many=False, read_only=True)
+    status = TicketStatusSerializer(many=False, read_only=True)
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -120,6 +128,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "owner",
             "assigned_user",
+            "status",
             "title",
             "description",
             "comments",
@@ -127,11 +136,3 @@ class TicketSerializer(serializers.ModelSerializer):
             "activated",
             "deactivated",
         ]
-
-
-class TicketStatusSerializer(serializers.ModelSerializer):
-    team_id = serializers.ReadOnlyField(source="team.id")
-
-    class Meta:
-        model = api_models.TicketStatus
-        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
