@@ -113,6 +113,40 @@ class TeamBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class MemberTeamIntegration(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(**admin_dict)
+        self.admin.save()
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(
+            reverse("team-create-record"),
+            team_dict,
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.team_id = response.data["id"]
+
+    def testTeam(self):
+        self.user = User.objects.create_user(**user_dict)
+        self.user.save()
+
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response = self.client.post(
+            reverse("member-create-record"),
+            {"team_id": self.team_id, "role": "AD", "bio": "cool dude"},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+
+
 
 class MemberBaseBehavior(TestCase):
     def setUp(self):
@@ -236,4 +270,3 @@ class UnauthenticatedBehavior(TestCase):
 
     def testUnauthenticated(self):
         pass
-
