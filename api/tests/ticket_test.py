@@ -105,8 +105,6 @@ class TicketViewTestCase(TestCase):
         self.admin_user = User.objects.create_user(**admin_dict)
         self.admin_user.save()
 
-
-
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
         mem_response = self.ticket_client.post(
@@ -140,17 +138,19 @@ class TicketViewTestCase(TestCase):
         self.ticket_data = {
             "assigned_id": self.assigned_user.id,
             "title": "Sic Mundus Creatus Est",
-            "ticket_number": 1,
             "team_id": self.team.id,
         }
         self.ticket_get_data = {
             "title": "Sic Mundus Creatus Est",
-            "ticket_number": 1,
             "team_id": self.team.id,
         }
-        self.response = self.ticket_client.post(
-            reverse("ticket-create-record"), self.ticket_data, format="json"
-        )
+
+        self.reponse = None
+        for i in range(0,2):
+            self.response = self.ticket_client.post(
+                reverse("ticket-create-record"), self.ticket_data, format="json"
+            )
+
 
         self.ticket_id = self.response.data["id"]
 
@@ -170,15 +170,23 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        print(response.data)
-
-        for k, v in self.ticket_get_data.items():
-            self.assertEqual(v, response.data.get(k))
-
     def testTicketList(self):
         # eat shit and die
+
+        self.another_ticket = {
+            "title": "Ticket",
+            "description": "Fix the toaster",
+           "team_id": self.team.id,
+        }
+
+        self.ticket_client.post(
+            reverse("ticket-create-record"),
+            self.another_ticket,
+            format="json"
+        )
+
         url = reverse('ticket-list-team', kwargs={"pk": self.team.id})
-        url += '?search=Hanno'
+        url += '?ordering=-created'
 
         print(url)
 
@@ -188,7 +196,6 @@ class TicketViewTestCase(TestCase):
         print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
     def testTicketUpdate(self):
         # change the record's values. this call should return the newly updated record

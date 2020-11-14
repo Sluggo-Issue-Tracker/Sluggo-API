@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
 from rest_framework import filters
+from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
@@ -23,7 +24,6 @@ from ..serializers import (
     TicketCommentSerializer,
     TicketStatusSerializer,
 )
-
 
 User = get_user_model()
 
@@ -79,7 +79,7 @@ class TicketViewSet(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
-        team_id = request.data.get("team_id")
+        '''team_id = request.data.get("team_id")
         assigned_id = request.data.get("assigned_id")
         try:
             team = Team.objects.get(id=team_id)
@@ -93,14 +93,31 @@ class TicketViewSet(
             )
 
             headers = self.get_success_headers(serializer.data)
+
         except Team.DoesNotExist as e:
-            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"msg": "team_id is a required field"}, status=status.HTTP_404_NOT_FOUND)
+
         except Member.DoesNotExist as e:
-            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        )'''
+
+        try:
+            serializer = TicketSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            ticket = serializer.save(
+                owner=self.request.user
+            )
+
+            serialized = TicketSerializer(ticket)
+
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
 
     @action(
         detail=True,
@@ -165,6 +182,3 @@ class TicketStatusViewSet(viewsets.ModelViewSet):
 
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
-
-
-
