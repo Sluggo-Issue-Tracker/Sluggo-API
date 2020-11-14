@@ -172,8 +172,6 @@ class TicketSerializer(serializers.ModelSerializer):
         assigned_user, status = self.parse_fields(validated_data)
         instance.assigned_user = assigned_user
         instance.status = status
-        instance.save()
-
-        return instance
+        return super().update(instance, validated_data)
 
 

@@ -145,8 +145,8 @@ class TicketViewTestCase(TestCase):
             "team_id": self.team.id,
         }
 
-        self.reponse = None
-        for i in range(0,2):
+        self.response = None
+        for i in range(1):
             self.response = self.ticket_client.post(
                 reverse("ticket-create-record"), self.ticket_data, format="json"
             )
@@ -201,7 +201,7 @@ class TicketViewTestCase(TestCase):
         # change the record's values. this call should return the newly updated record
         new_data = {
             "title": "Erit Lux",
-            "ticket_number": 2,
+            "team_id": self.team.id
         }
 
         response = self.ticket_client.put(
@@ -209,6 +209,8 @@ class TicketViewTestCase(TestCase):
             new_data,
             format="json",
         )
+
+        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

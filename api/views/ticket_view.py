@@ -119,6 +119,14 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
+    # note: this is pretty hacky
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = TicketSerializer(instance)
+        return Response(serializer.data)
+
+
     @action(
         detail=True,
         methods=['patch'],
