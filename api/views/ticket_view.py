@@ -59,8 +59,6 @@ class TeamRelatedViewSet(
             serializer.is_valid(raise_exception=True)
             team = serializer.validated_data["team_id"]
 
-            print("epic gamer moment!")
-
             # make sure we're actually allowed to access this team
             self.check_object_permissions(request, team)
             status_record = serializer.save()
