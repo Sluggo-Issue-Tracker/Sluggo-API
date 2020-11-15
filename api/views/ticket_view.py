@@ -27,10 +27,8 @@ from ..serializers import (
 
 User = get_user_model()
 
-
 class TicketViewSet(
     mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
@@ -107,7 +105,10 @@ class TicketViewSet(
         try:
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
 
+            # once we have a team record, make sure we are allowed to access it
+            self.check_object_permissions(request, team)
             ticket = serializer.save(
                 owner=self.request.user
             )
@@ -151,14 +152,13 @@ class TicketViewSet(
     def delete(self, request, pk=None):
         """ deactivate this ticket this is deletion but only to deactivate the record """
         try:
-            ticket = Ticket.objects.get(pk=pk)
+            self.check_object_permissions(request, self.get_object())
+            ticket = self.get_object()
             ticket.deactivated = timezone.now()
             ticket.save()
-            self.check_object_permissions(request, self.get_object())
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
         except Ticket.DoesNotExist:
-            self.check_object_permissions(request, self.get_object())
             return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -181,7 +181,12 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
         pass
 
 
-class TicketStatusViewSet(viewsets.ModelViewSet):
+class TicketStatusViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = [
         permissions.IsAuthenticated,
         IsMemberUser,
@@ -190,3 +195,45 @@ class TicketStatusViewSet(viewsets.ModelViewSet):
 
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
+
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def create_record(self, request, *args, **kwargs):
+        try:
+            serializer = TicketStatusSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
+
+            # make sure we're actually allowed to access this team
+            self.check_object_permissions(request, team)
+            status = serializer.save()
+
+            serialized = TicketStatusSerializer(status)
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
+
+    # this is a duplicate and should eventually get moved to a base class
+    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
+    def list_team(self, request, pk=None):
+
+        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
+        serializer = self.serializer_class(queryset, many=True)
+
+        try:
+            team = Team.objects.get(pk=pk)
+            self.check_object_permissions(request, team)
+            response = Response(serializer.data, status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+        return response
+
+    # note: this is pretty hacky
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data)

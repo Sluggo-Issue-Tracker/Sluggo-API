@@ -86,11 +86,18 @@ class TicketCommentSerializer(serializers.ModelSerializer):
 
 
 class TicketStatusSerializer(serializers.ModelSerializer):
-    team_id = serializers.ReadOnlyField(source="team.id")
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
 
     class Meta:
         model = api_models.TicketStatus
         fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+
+    def create(self, validated_data):
+        validated_data['team'] = validated_data.pop('team_id')
+        status = api_models.TicketStatus.objects.create(**validated_data)
+        return status
 
 
 class TicketSerializer(serializers.ModelSerializer):
