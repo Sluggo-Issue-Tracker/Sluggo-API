@@ -11,8 +11,6 @@ router = DefaultRouter()
 # social stuff
 router.register(r"member", api_views.MemberViewSet)
 router.register(r"team", api_views.TeamViewSet)
-router.register(r"status", api_views.TicketStatusViewSet)
-router.register(r"tag", api_views.TagViewSet)
 
 team_search = api_views.TeamViewSet.as_view({
     'get': 'search'
@@ -21,8 +19,8 @@ team_search = api_views.TeamViewSet.as_view({
 # ticket stuff
 router.register(r"ticket", api_views.TicketViewSet)
 router.register(r"ticket-comment", api_views.TicketCommentViewSet)
-router.register(r"ticket-status", api_views.TicketStatusViewSet)
-
+router.register(r"status", api_views.TicketStatusViewSet)
+router.register(r"tag", api_views.TagViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -34,4 +32,3 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path('admin/', admin.site.urls)
 ]
-

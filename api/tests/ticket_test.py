@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from ..models import Ticket
 from ..models import Member
-from ..models import Team, Member, Tag
+from ..models import Team, Member, Tag, TicketStatus
 from ..views import TicketViewSet
 
 import datetime
@@ -151,7 +151,6 @@ class TicketViewTestCase(TestCase):
                 reverse("ticket-create-record"), self.ticket_data, format="json"
             )
 
-
         self.ticket_id = self.response.data["id"]
 
     def testTicketCreate(self):
@@ -176,7 +175,7 @@ class TicketViewTestCase(TestCase):
         self.another_ticket = {
             "title": "Ticket",
             "description": "Fix the toaster",
-           "team_id": self.team.id,
+            "team_id": self.team.id,
         }
 
         self.ticket_client.post(
@@ -339,6 +338,7 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+
 class TagViewTestCase(TestCase):
     def setUp(self):
         self.admin_user = User.objects.create_user(**admin_dict)
@@ -370,7 +370,6 @@ class TagViewTestCase(TestCase):
         print(response.data)
 
     def testUpdate(self):
-
         tag_dict = {
             "title": "asldkfj",
             "team_id": self.tag.team.id
@@ -387,6 +386,59 @@ class TagViewTestCase(TestCase):
     def testDelete(self):
         response = self.ticket_client.delete(
             reverse("tag-detail", kwargs={"pk": self.tag.id}),
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class StatusViewTestCase(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(**admin_dict)
+        self.admin_user.save()
+
+        self.ticket_client = APIClient()
+        self.ticket_client.force_authenticate(user=self.admin_user)
+        response = self.ticket_client.post(
+            reverse("team-create-record"), team_dict, format="json"
+        )
+        self.team = Team.objects.get(pk=response.data["id"])
+
+        status_dict = {
+            "team_id": self.team.id,
+            "title": "IN PROGRESS"
+        }
+        response = self.ticket_client.post(
+            reverse("ticketstatus-create-record"), status_dict, format="json"
+        )
+        self.status = TicketStatus.objects.get(pk=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def testRead(self):
+        response = self.ticket_client.get(
+            reverse("ticketstatus-detail", kwargs={"pk": self.status.id}), format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data)
+
+    def testUpdate(self):
+        status_dict = {
+            "title": "asldkfj",
+            "team_id": self.status.team.id
+        }
+
+        response = self.ticket_client.put(
+            reverse("ticketstatus-detail", kwargs={"pk": self.status.id}),
+            status_dict,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testDelete(self):
+        response = self.ticket_client.delete(
+            reverse("ticketstatus-detail", kwargs={"pk": self.status.id}),
             format="json"
         )
         print(response.data)

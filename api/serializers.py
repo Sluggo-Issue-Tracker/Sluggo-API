@@ -40,13 +40,13 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField
+    id = serializers.ReadOnlyField()
     team_id = serializers.PrimaryKeyRelatedField(
         many=False, read_only=False, queryset=api_models.Team.objects.all()
     )
-    created = serializers.ReadOnlyField
-    activated = serializers.ReadOnlyField
-    deactivated = serializers.ReadOnlyField
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.Tag
