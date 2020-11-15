@@ -28,8 +28,6 @@ class MemberViewSet(
 
     queryset = Member.objects.all()
 
-    model = Member
-
     permission_classes = [
         permissions.IsAuthenticated,
         IsMemberUser,
@@ -58,7 +56,7 @@ class MemberViewSet(
             serializer = MemberSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            serializer.save(owner=self.request.user, team=team)
+            serializer.save(owner=request.user, team=team)
 
             headers = self.get_success_headers(serializer.data)
         except Team.DoesNotExist:
@@ -90,7 +88,7 @@ class MemberViewSet(
             # only update the fields that the user has access to
             # in their edit profile dialog
             member = Member.objects.get(pk=pk)
-            Member.objects.filter(pk=pk).update(bio=member_data.get("bio"),)
+            Member.objects.filter(pk=pk).update(bio=member_data.get("bio"))
 
             get_user_model().objects.filter(pk=member.owner.id).update(
                 first_name=user_data.get("first_name"),
@@ -105,12 +103,11 @@ class MemberViewSet(
 
         return super().update(request, partial=True)
 
-     @action(
+    @action(
         detail=True,
         methods=["patch"],
         permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
     )
-
     def approve(self, request, pk=None):
         """ approve the join request """
         self.check_object_permissions(request, self.get_object())
@@ -143,6 +140,7 @@ class MemberViewSet(
             member.activated = timezone.now()
 
             if member.role != Member.Roles.ADMIN:
+                member.role = Member.Roles.ADMIN
                 member.save(update_fields=["role"])
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
@@ -171,7 +169,6 @@ class TeamViewSet(mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
-
     queryset = Team.objects.all()
 
     permission_classes = [permissions.IsAuthenticated, IsAdminMemberOrReadOnly]

@@ -115,7 +115,15 @@ class TeamBaseBehavior(TestCase):
 
 class MemberTeamIntegration(TestCase):
     def setUp(self):
-        self.admin = User.objects.create_user(**admin_dict)
+
+        test_dict = {
+            "username": "org.sicmundus.adam",
+            "email": "adam@sicmundus.org",
+            "first_name": "Jonas",
+            "last_name": "Kahnwald",
+        }
+
+        self.admin = User.objects.create_user(**test_dict)
         self.admin.save()
 
         self.client = APIClient()
@@ -129,23 +137,51 @@ class MemberTeamIntegration(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.team_id = response.data["id"]
 
+        print(self.team_id)
+
     def testTeam(self):
-        self.user = User.objects.create_user(**user_dict)
+        user = dict(
+            username="com.world",
+            email="hello@world.com",
+            first_name="hello",
+            last_name="world"
+        )
+        self.user = User.objects.create_user(**user)
         self.user.save()
 
-        client = APIClient()
-        client.force_authenticate(user=self.user)
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(
             reverse("member-create-record"),
             {"team_id": self.team_id, "role": "AD", "bio": "cool dude"},
             format="json"
         )
+        member_id = response.data["id"]
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        client = APIClient()
+        client.force_authenticate(user=self.admin)
 
+        response = client.patch(
+            reverse("member-approve", kwargs={"pk": member_id}), format="json"
+        )
 
+        print(response.data)
 
+        response = client.patch(
+            reverse("member-make-admin", kwargs={"pk": member_id}), format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(
+            reverse("member-list"), format="json"
+        )
+
+        print(response.data)
+
+    def testDummy(self):
+        pass
 
 
 class MemberBaseBehavior(TestCase):

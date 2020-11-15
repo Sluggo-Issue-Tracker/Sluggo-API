@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.settings import api_settings
+from rest_framework import filters
+from rest_framework import serializers
+from django.db import models
 
 from django.contrib.auth import get_user_model
 
@@ -13,39 +16,32 @@ from ..models import (
     Ticket,
     TicketComment,
     TicketStatus,
-    Member,
     Team,
+    Tag,
+    TicketTag
 )
 
 from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
     TicketStatusSerializer,
+    TagSerializer,
+    TicketTagSerializer
 )
-
 
 User = get_user_model()
 
 
-class TicketViewSet(
+class TeamRelatedViewSet(
     mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """
-    This viewset automatically provides `list` and `detail` actions.
-    """
-
-    queryset = Ticket.objects.all()
-
     permission_classes = [
         permissions.IsAuthenticated,
-        IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        IsAdminMemberOrReadOnly,
         IsMemberUser,
     ]
-
-    serializer_class = TicketSerializer
 
     @staticmethod
     def get_success_headers(data):
@@ -54,62 +50,132 @@ class TicketViewSet(
         except (TypeError, KeyError):
             return {}
 
-    @action(detail=False, methods=["get"])
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def create_record(self, request, *args, **kwargs):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
+
+            # make sure we're actually allowed to access this team
+            self.check_object_permissions(request, team)
+            status_record = serializer.save()
+
+            serialized = self.serializer_class(status_record)
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
+
+    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
-        queryset = Ticket.objects.filter(team__id=pk)
+
+        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
         serializer = self.serializer_class(queryset, many=True)
-        self.check_object_permissions(request, self.get_object())
+
+        try:
+            team = Team.objects.get(pk=pk)
+            self.check_object_permissions(request, team)
+            response = Response(serializer.data, status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+        return response
+
+    # note: this is pretty hacky
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
         return Response(serializer.data)
+
+
+class TicketViewSet(
+    TeamRelatedViewSet
+):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
+                     '^assigned_user__first_name']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        IsMemberUser,
+    ]
+    ordering_fields = ['created', 'activated']
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
-        methods=["POST"], detail=False,
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
-        team_id = request.data.get("team_id")
-        assigned_id = request.data.get("assigned_id")
         try:
-            team = Team.objects.get(id=team_id)
-            assigned_user = User.objects.get(id=assigned_id)
-            is_approved_user = Member.objects.get(owner=assigned_user)
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
+            tag_list = serializer.validated_data.pop("tag_id_list", None)
 
-            serializer.save(
-                owner=self.request.user, team=team, assigned_user=assigned_user,
+            # once we have a team record, make sure we are allowed to access it
+            self.check_object_permissions(request, team)
+            ticket = serializer.save(
+                owner=self.request.user
             )
 
-            headers = self.get_success_headers(serializer.data)
-        except Team.DoesNotExist as e:
-            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
-        except Member.DoesNotExist as e:
-            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
+            # the above serializer has already confirmed that each tag_id is valid
+            if tag_list:
+                for tag in tag_list:
+                    ticket_tag = TicketTag.objects.create(
+                        team=team, tag=tag, ticket=ticket
+                    )
+                    ticket_tag.save()
 
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+            serialized = TicketSerializer(ticket)
+
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except (serializers.ValidationError, Tag.DoesNotExist) as e:
+            return Response({"msg": e.detail}, e.status_code)
+
+    @action(
+        detail=True,
+        methods=['patch'],
+        permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def update_status(self, request, pk=None):
+        self.check_object_permissions(request, self.get_object())
+
+        status_id = request.data('status_id')
+        ticket = Ticket.objects.get(pk=pk)
+        status = TicketStatus.objects.get(pk=status_id)
+        ticket.status = status
+        ticket.save(update_fields=['status'])
+
+        return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
         methods=["delete"],
-        permission_classes=[
-            permissions.IsAuthenticated,
-            IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
-        ],
+        permission_classes=permission_classes,
     )
     def delete(self, request, pk=None):
         """ deactivate this ticket this is deletion but only to deactivate the record """
         try:
-            ticket = Ticket.objects.get(pk=pk)
-            ticket.deactivated = timezone.now()
-            ticket.save()
-            self.check_object_permissions(request, self.get_object())
+            instance = Ticket.objects.get(pk=pk)
+            self.check_object_permissions(request, instance)
+            instance.deactivated = timezone.now()
+            instance.save()
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
-        except Ticket.DoesNotExist:
-            self.check_object_permissions(request, self.get_object())
-            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
+        except Ticket.DoesNotExist as e:
+            return Response({"msg": e.detail}, status=e.status_code)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
@@ -131,10 +197,17 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
         pass
 
 
-class TicketStatusViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
-
+class TicketStatusViewSet(
+    TeamRelatedViewSet,
+    mixins.DestroyModelMixin
+):
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
+
+
+class TagViewSet(
+    TeamRelatedViewSet,
+    mixins.DestroyModelMixin
+):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer

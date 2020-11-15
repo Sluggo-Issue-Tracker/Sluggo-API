@@ -19,7 +19,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-
     # make the following fields read only
     id = serializers.ReadOnlyField()
     ticket_head = serializers.ReadOnlyField()
@@ -38,6 +37,29 @@ class TeamSerializer(serializers.ModelSerializer):
             "activated",
             "deactivated",
         ]
+
+
+class TagSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.Tag
+        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+
+    def create(self, validated_data):
+
+        validated_data['team'] = validated_data.pop('team_id')
+
+        tag = api_models.Tag.objects.create(
+            **validated_data
+        )
+        return tag
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -86,6 +108,32 @@ class TicketCommentSerializer(serializers.ModelSerializer):
         ]
 
 
+class TicketStatusSerializer(serializers.ModelSerializer):
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
+
+    class Meta:
+        model = api_models.TicketStatus
+        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+
+    def create(self, validated_data):
+        validated_data['team'] = validated_data.pop('team_id')
+        status = api_models.TicketStatus.objects.create(**validated_data)
+        return status
+
+
+class TicketTagSerializer(serializers.ModelSerializer):
+    tag = TagSerializer(many=False, read_only=True)
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.TicketTag
+        fields = ["tag", "created", "activated", "deactivated"]
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -98,16 +146,34 @@ class TicketSerializer(serializers.ModelSerializer):
         title: The title of the ticket
         description: The description of the ticket
         comments: The comments associated with this ticket
-        started: When the ticket was started
-        completed: When the ticket was finished
-        due_date: When the ticket is due
     """
 
     id = serializers.ReadOnlyField()
-    team_id = serializers.ReadOnlyField(source="team.id")
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
+
+    tag_list = TicketTagSerializer(many=True, read_only=True)
+    tag_id_list = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(many=False, write_only=True, queryset=api_models.Tag.objects.all()),
+        write_only=True,
+        required=False
+    )
+
     owner = UserSerializer(many=False, read_only=True)
+    ticket_number = serializers.ReadOnlyField()
     comments = TicketCommentSerializer(many=True, required=False)
+
     assigned_user = UserSerializer(many=False, read_only=True)
+    assigned_user_id = serializers.PrimaryKeyRelatedField(
+        many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
+    )
+
+    status = TicketStatusSerializer(many=False, read_only=True)
+    status_id = serializers.PrimaryKeyRelatedField(
+        many=False, write_only=True, required=False, queryset=api_models.TicketStatus.objects.all()
+    )
+
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -118,8 +184,13 @@ class TicketSerializer(serializers.ModelSerializer):
             "id",
             "team_id",
             "ticket_number",
+            "tag_list",
+            "tag_id_list",
             "owner",
             "assigned_user",
+            "assigned_user_id",
+            "status",
+            "status_id",
             "title",
             "description",
             "comments",
@@ -128,10 +199,24 @@ class TicketSerializer(serializers.ModelSerializer):
             "deactivated",
         ]
 
+    def create(self, validated_data):
 
-class TicketStatusSerializer(serializers.ModelSerializer):
-    team_id = serializers.ReadOnlyField(source="team.id")
+        validated_data['status'] = validated_data.pop('status_id', None)
+        validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
+        validated_data['team'] = validated_data.pop('team_id')
 
-    class Meta:
-        model = api_models.TicketStatus
-        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+        # this will remove the entry even if the call requesting using the
+        # serializer does not use the tag_id_list
+        validated_data.pop('tag_id_list', None)
+
+        ticket = api_models.Ticket.objects.create(
+            **validated_data
+        )
+
+        return ticket
+
+    def update(self, instance, validated_data):
+        validated_data['status'] = validated_data.pop('status_id', None)
+        validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
+        validated_data.pop('tag_id_list', None)
+        return super().update(instance, validated_data)

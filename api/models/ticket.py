@@ -2,8 +2,25 @@ from django.db import models
 from django.conf import settings
 
 from .team import Team
+from .ticket_status import TicketStatus
 from .member import Member
 
+
+class TicketManager(models.Manager):
+    # this is a convenience class which handles defining the id before a save
+    # ( i think it gets automatically invoked on member instantiation before save)
+    def create(self, **obj_data):
+        team = obj_data.get("team")
+        owner = obj_data.get('owner')
+
+        if not owner or not team:
+            raise ValueError("missing name or team")
+
+        team.ticket_head += 1
+        team.save()
+        obj_data["ticket_number"] = team.ticket_head
+
+        return super().create(**obj_data)
 
 class Ticket(models.Model):
     """
@@ -32,6 +49,16 @@ class Ticket(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="assigned_ticket",
+        null=True,
+        blank=True
+    )
+
+    status = models.ForeignKey(
+        TicketStatus,
+        on_delete=models.CASCADE,
+        related_name="status_ticket",
+        blank=True,
+        null=True
     )
 
     title = models.CharField(max_length=100, blank=False)
@@ -39,6 +66,8 @@ class Ticket(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+
+    objects = TicketManager()
 
     class Meta:
         ordering = ["id"]

@@ -9,7 +9,9 @@ these all need to be deprecated as they are reliant on the old profile
 
 class BaseMemberPermissions(permissions.BasePermission):
     # this will throw a member not found exception
-    def retrieveMemberRecord(self, username, team_id):
+
+    def retrieveMemberRecord(self, username, obj):
+        team_id = obj.id if isinstance(obj, Team) else obj.team.id
         team_id = "{}".format(team_id)
         member_pk = (
             md5(team_id.encode()).hexdigest() + md5(username.encode()).hexdigest()
@@ -21,9 +23,10 @@ class BaseMemberPermissions(permissions.BasePermission):
 # only permit this if the user is approved
 class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
+
         try:
-            self.retrieveMemberRecord(request.user.username, obj.team.id)
-            permit = Member.Roles.APPROVED
+            member_record = self.retrieveMemberRecord(request.user.username, obj)
+            permit = member_record.role != Member.Roles.UNAPPROVED
         except Member.DoesNotExist:
             permit = False
 
@@ -38,14 +41,12 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-        team_id = obj.id if isinstance(obj, Team) else obj.team.id
-
         if request.method not in permissions.SAFE_METHODS:
             try:
                 # Write permissions are only allowed to the owner of the object, or admin.
 
                 member_record = self.retrieveMemberRecord(
-                    request.user.username, team_id
+                    request.user.username, obj
                 )
                 permit = member_record.role == Member.Roles.ADMIN
 
