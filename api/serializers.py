@@ -52,6 +52,15 @@ class TagSerializer(serializers.ModelSerializer):
         model = api_models.Tag
         fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
 
+    def create(self, validated_data):
+
+        validated_data['team'] = validated_data.pop('team_id')
+
+        tag = api_models.Tag.objects.create(
+            **validated_data
+        )
+        return tag
+
 
 class MemberSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
@@ -194,6 +203,3 @@ class TicketSerializer(serializers.ModelSerializer):
         instance.assigned_user = assigned_user
         instance.status = status
         return super().update(instance, validated_data)
-
-
-

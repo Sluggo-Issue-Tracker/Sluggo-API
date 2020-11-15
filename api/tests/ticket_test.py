@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from ..models import Ticket
 from ..models import Member
-from ..models import Team, Member
+from ..models import Team, Member, Tag
 from ..views import TicketViewSet
 
 import datetime
@@ -338,3 +338,56 @@ class TicketViewTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class TagViewTestCase(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(**admin_dict)
+        self.admin_user.save()
+
+        self.ticket_client = APIClient()
+        self.ticket_client.force_authenticate(user=self.admin_user)
+        response = self.ticket_client.post(
+            reverse("team-create-record"), team_dict, format="json"
+        )
+        self.team = Team.objects.get(pk=response.data["id"])
+
+        tag_dict = {
+            "team_id": self.team.id,
+            "title": "TAG"
+        }
+        response = self.ticket_client.post(
+            reverse("tag-create-record"), tag_dict, format="json"
+        )
+        self.tag = Tag.objects.get(pk=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def testRead(self):
+        response = self.ticket_client.get(
+            reverse("tag-detail", kwargs={"pk": self.tag.id}), format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data)
+
+    def testUpdate(self):
+
+        tag_dict = {
+            "title": "asldkfj",
+            "team_id": self.tag.team.id
+        }
+
+        response = self.ticket_client.put(
+            reverse("tag-detail", kwargs={"pk": self.tag.id}),
+            tag_dict,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testDelete(self):
+        response = self.ticket_client.delete(
+            reverse("tag-detail", kwargs={"pk": self.tag.id}),
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

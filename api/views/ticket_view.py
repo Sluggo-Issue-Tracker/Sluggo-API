@@ -209,9 +209,9 @@ class TicketStatusViewSet(
 
             # make sure we're actually allowed to access this team
             self.check_object_permissions(request, team)
-            status = serializer.save()
+            status_record = serializer.save()
 
-            serialized = TicketStatusSerializer(status)
+            serialized = TicketStatusSerializer(status_record)
             return Response(serialized.data, status.HTTP_201_CREATED)
 
         except serializers.ValidationError as e:
@@ -260,7 +260,20 @@ class TagViewSet(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
-        pass
+        try:
+            serializer = TagSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
+
+            # make sure we're actually allowed to access this team
+            self.check_object_permissions(request, team)
+            status_record = serializer.save()
+
+            serialized = TagSerializer(status_record)
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
 
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):

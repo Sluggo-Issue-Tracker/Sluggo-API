@@ -11,6 +11,8 @@ router = DefaultRouter()
 # social stuff
 router.register(r"member", api_views.MemberViewSet)
 router.register(r"team", api_views.TeamViewSet)
+router.register(r"status", api_views.TicketStatusViewSet)
+router.register(r"tag", api_views.TagViewSet)
 
 team_search = api_views.TeamViewSet.as_view({
     'get': 'search'
