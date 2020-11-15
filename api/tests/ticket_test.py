@@ -6,9 +6,9 @@ from django.urls import reverse
 
 from ..models import Ticket
 from ..models import Member
-from ..models import Team, Member, Tag, TicketStatus
+from ..models import Team, Member, Tag, TicketStatus, TicketTag
 from ..views import TicketViewSet
-from ..serializers import UserSerializer, TicketStatusSerializer
+from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSerializer
 
 import datetime
 
@@ -405,8 +405,17 @@ class TagViewTestCase(TestCase):
             ticket_data,
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        ticket_tag = TicketTag.objects.get(team=self.team)
+
+        self.ticket = Ticket.objects.get(pk=response.data["id"])
+        response = self.ticket_client.get(
+            reverse("ticket-detail", kwargs={"pk": self.ticket.id}),
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class StatusViewTestCase(TestCase):

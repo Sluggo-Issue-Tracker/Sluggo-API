@@ -25,7 +25,8 @@ from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
     TicketStatusSerializer,
-    TagSerializer
+    TagSerializer,
+    TicketTagSerializer
 )
 
 User = get_user_model()
@@ -118,15 +119,21 @@ class TicketViewSet(
                 owner=self.request.user
             )
 
+            # the above serializer has already confirmed that each tag_id is valid
+            ticket_tag_list = []
             for tag in tag_list:
                 ticket_tag = TicketTag.objects.create(
                     team=team, tag=tag, ticket=ticket
                 )
                 ticket_tag.save()
-
+                serialized_tag = TicketTagSerializer(ticket_tag).data
+                ticket_tag_list.append(serialized_tag)
+#
             serialized = TicketSerializer(ticket)
+            data = serialized.data
+            data["tag_list"] = ticket_tag_list
 
-            return Response(serialized.data, status.HTTP_201_CREATED)
+            return Response(data, status.HTTP_201_CREATED)
 
         except (serializers.ValidationError, Tag.DoesNotExist) as e:
             return Response({"msg": e.detail}, e.status_code)
@@ -303,3 +310,19 @@ class TagViewSet(
         instance = self.get_object()
         serializer = self.serializer_class(instance)
         return Response(serializer.data)
+
+class TicketTagViewSet(
+    viewsets.GenericViewSet
+):
+    queryset = TicketTag
+    serializer_class = TicketTagSerializer
+
+    @action(methods=["get"], detail=False)
+    def fetch_ticket(self, pk=None):
+        tags = self.get_queryset().filter(ticket__id=pk)
+        serializer = self.serializer_class(tags, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+
+
+
