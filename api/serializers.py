@@ -39,6 +39,20 @@ class TeamSerializer(serializers.ModelSerializer):
         ]
 
 
+class TagSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
+    created = serializers.ReadOnlyField
+    activated = serializers.ReadOnlyField
+    deactivated = serializers.ReadOnlyField
+
+    class Meta:
+        model = api_models.Tag
+        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+
+
 class MemberSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     owner = UserSerializer(many=False, read_only=True)
@@ -180,5 +194,6 @@ class TicketSerializer(serializers.ModelSerializer):
         instance.assigned_user = assigned_user
         instance.status = status
         return super().update(instance, validated_data)
+
 
 

@@ -15,17 +15,20 @@ from ..models import (
     Ticket,
     TicketComment,
     TicketStatus,
-    Member,
     Team,
+    Tag,
+    TicketTag
 )
 
 from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
     TicketStatusSerializer,
+    TagSerializer
 )
 
 User = get_user_model()
+
 
 class TicketViewSet(
     mixins.RetrieveModelMixin,
@@ -127,7 +130,6 @@ class TicketViewSet(
         serializer = TicketSerializer(instance)
         return Response(serializer.data)
 
-
     @action(
         detail=True,
         methods=['patch'],
@@ -219,6 +221,49 @@ class TicketStatusViewSet(
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
 
+        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
+        serializer = self.serializer_class(queryset, many=True)
+
+        try:
+            team = Team.objects.get(pk=pk)
+            self.check_object_permissions(request, team)
+            response = Response(serializer.data, status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
+
+        return response
+
+    # note: this is pretty hacky
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data)
+
+
+class TagViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsMemberUser,
+        IsAdminMemberOrReadOnly
+    ]
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def create_record(self, request, *args, **kwargs):
+        pass
+
+    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
+    def list_team(self, request, pk=None):
         queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
         serializer = self.serializer_class(queryset, many=True)
 
