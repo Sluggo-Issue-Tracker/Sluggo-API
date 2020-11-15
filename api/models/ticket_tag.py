@@ -39,7 +39,7 @@ class TicketTag(models.Model):
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='tag_list')
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)

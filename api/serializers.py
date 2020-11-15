@@ -124,16 +124,14 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
 
 class TicketTagSerializer(serializers.ModelSerializer):
-    team_id = serializers.ReadOnlyField(source="team.id")
     tag = TagSerializer(many=False, read_only=True)
-    ticket_id = serializers.ReadOnlyField(source="ticket.id")
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.TicketTag
-        fields = ["id", "team_id", "tag", "ticket_id", "created", "activated", "deactivated"]
+        fields = ["tag", "created", "activated", "deactivated"]
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -220,5 +218,5 @@ class TicketSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
-        validated_data.pop('tag_list_id')
+        validated_data.pop('tag_id_list', None)
         return super().update(instance, validated_data)

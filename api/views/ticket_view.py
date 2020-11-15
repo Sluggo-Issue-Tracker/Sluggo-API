@@ -120,20 +120,15 @@ class TicketViewSet(
             )
 
             # the above serializer has already confirmed that each tag_id is valid
-            ticket_tag_list = []
             for tag in tag_list:
                 ticket_tag = TicketTag.objects.create(
                     team=team, tag=tag, ticket=ticket
                 )
                 ticket_tag.save()
-                serialized_tag = TicketTagSerializer(ticket_tag).data
-                ticket_tag_list.append(serialized_tag)
-#
-            serialized = TicketSerializer(ticket)
-            data = serialized.data
-            data["tag_list"] = ticket_tag_list
 
-            return Response(data, status.HTTP_201_CREATED)
+            serialized = TicketSerializer(ticket)
+
+            return Response(serialized.data, status.HTTP_201_CREATED)
 
         except (serializers.ValidationError, Tag.DoesNotExist) as e:
             return Response({"msg": e.detail}, e.status_code)
@@ -169,14 +164,14 @@ class TicketViewSet(
     def delete(self, request, pk=None):
         """ deactivate this ticket this is deletion but only to deactivate the record """
         try:
-            self.check_object_permissions(request, self.get_object())
-            ticket = self.get_object()
-            ticket.deactivated = timezone.now()
-            ticket.save()
+            instance = Ticket.objects.get(pk=pk)
+            self.check_object_permissions(request, instance)
+            instance.deactivated = timezone.now()
+            instance.save()
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
-        except Ticket.DoesNotExist:
-            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
+        except Ticket.DoesNotExist as e:
+            return Response({"msg": e.detail}, status=e.status_code)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
@@ -314,13 +309,13 @@ class TagViewSet(
 class TicketTagViewSet(
     viewsets.GenericViewSet
 ):
-    queryset = TicketTag
+    queryset = TicketTag.objects.all()
     serializer_class = TicketTagSerializer
 
-    @action(methods=["get"], detail=False)
-    def fetch_ticket(self, pk=None):
-        tags = self.get_queryset().filter(ticket__id=pk)
-        serializer = self.serializer_class(tags, many=True)
+    @action(methods=["get"], detail=True)
+    def fetch_ticket(self, request, pk=None):
+        query = self.get_queryset().filter(team__id=pk)
+        serializer = self.serializer_class(query, many=True)
         return Response(serializer.data, status.HTTP_200_OK)
 
 
