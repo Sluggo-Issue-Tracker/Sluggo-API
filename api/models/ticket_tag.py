@@ -36,9 +36,10 @@ class TicketTagManager(models.Manager):
 
 
 class TicketTag(models.Model):
+    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name="tagged_ticket")
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
@@ -46,7 +47,7 @@ class TicketTag(models.Model):
     objects = TicketTagManager()
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["created"]
         app_label = "api"
 
     def __str__(self):

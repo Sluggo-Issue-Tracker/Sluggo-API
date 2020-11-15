@@ -6,6 +6,7 @@ from rest_framework import exceptions
 from rest_framework.settings import api_settings
 from rest_framework import filters
 from rest_framework import serializers
+from django.db import models
 
 from django.contrib.auth import get_user_model
 
@@ -109,6 +110,7 @@ class TicketViewSet(
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             team = serializer.validated_data["team_id"]
+            tag_list = serializer.validated_data.pop("tag_id_list", None)
 
             # once we have a team record, make sure we are allowed to access it
             self.check_object_permissions(request, team)
@@ -116,11 +118,17 @@ class TicketViewSet(
                 owner=self.request.user
             )
 
+            for tag in tag_list:
+                ticket_tag = TicketTag.objects.create(
+                    team=team, tag=tag, ticket=ticket
+                )
+                ticket_tag.save()
+
             serialized = TicketSerializer(ticket)
 
             return Response(serialized.data, status.HTTP_201_CREATED)
 
-        except serializers.ValidationError as e:
+        except (serializers.ValidationError, Tag.DoesNotExist) as e:
             return Response({"msg": e.detail}, e.status_code)
 
     # note: this is pretty hacky

@@ -392,6 +392,22 @@ class TagViewTestCase(TestCase):
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def testTicket(self):
+        ticket_data = {
+            "title": "Sic Mundus Creatus Est",
+            "team_id": self.team.id,
+            "tag_id_list": [
+                self.tag.id,
+            ]
+        }
+        response = self.ticket_client.post(
+            reverse("ticket-create-record"),
+            ticket_data,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class StatusViewTestCase(TestCase):
     def setUp(self):

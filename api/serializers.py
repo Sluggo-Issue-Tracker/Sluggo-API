@@ -123,6 +123,16 @@ class TicketStatusSerializer(serializers.ModelSerializer):
         return status
 
 
+class TicketTagSerializer(serializers.ModelSerializer):
+    team_id = serializers.ReadOnlyField(source="team.id")
+    tag = TagSerializer(many=False, read_only=True)
+    created = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.TicketTag
+        fields = ["tag"]
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -141,9 +151,16 @@ class TicketSerializer(serializers.ModelSerializer):
     team_id = serializers.PrimaryKeyRelatedField(
         many=False, read_only=False, queryset=api_models.Team.objects.all()
     )
+
+    tag_list = TicketTagSerializer(many=True, read_only=True)
+    tag_id_list = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(many=False, write_only=True, queryset=api_models.Tag.objects.all()),
+        write_only=True,
+        required=False
+    )
+
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
-
     comments = TicketCommentSerializer(many=True, required=False)
 
     assigned_user = UserSerializer(many=False, read_only=True)
@@ -166,6 +183,8 @@ class TicketSerializer(serializers.ModelSerializer):
             "id",
             "team_id",
             "ticket_number",
+            "tag_list",
+            "tag_id_list",
             "owner",
             "assigned_user",
             "assigned_user_id",
@@ -185,12 +204,18 @@ class TicketSerializer(serializers.ModelSerializer):
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         validated_data['team'] = validated_data.pop('team_id')
 
+        # this will remove the entry even if the call requesting using the
+        # serializer does not use the tag_id_list
+        validated_data.pop('tag_id_list', None)
+
         ticket = api_models.Ticket.objects.create(
             **validated_data
         )
+
         return ticket
 
     def update(self, instance, validated_data):
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
+        validated_data.pop('tag_list_id')
         return super().update(instance, validated_data)
