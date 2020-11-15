@@ -145,8 +145,16 @@ class TicketSerializer(serializers.ModelSerializer):
     ticket_number = serializers.ReadOnlyField()
 
     comments = TicketCommentSerializer(many=True, required=False)
+
     assigned_user = UserSerializer(many=False, read_only=True)
+    assigned_user_id = serializers.PrimaryKeyRelatedField(
+        many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
+    )
+
     status = TicketStatusSerializer(many=False, read_only=True)
+    status_id = serializers.PrimaryKeyRelatedField(
+        many=False, write_only=True, required=False, queryset=api_models.TicketStatus.objects.all()
+    )
 
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
@@ -160,7 +168,9 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "owner",
             "assigned_user",
+            "assigned_user_id",
             "status",
+            "status_id",
             "title",
             "description",
             "comments",
@@ -169,37 +179,18 @@ class TicketSerializer(serializers.ModelSerializer):
             "deactivated",
         ]
 
-        # definition of fields that will be present only on writes
-        extra_kwargs = {
-            'assigned_user_id': {'write_only': True},
-            'status_id': {'write_only': True}
-        }
-
-    def parse_fields(self, validated_data):
-        assigned_user_id = validated_data.pop('assigned_user_id', None)
-        status_id = validated_data.pop('status_id', None)
-        assigned_user = None
-        status = None
-
-        if assigned_user_id:
-            assigned_user = get_user_model().objects.get(pk=assigned_user_id)
-        if status_id:
-            status = api_models.TicketStatus.objects.get(pk=status_id)
-
-        return assigned_user, status
-
     def create(self, validated_data):
 
-        assigned_user, status = self.parse_fields(validated_data)
+        validated_data['status'] = validated_data.pop('status_id', None)
+        validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         validated_data['team'] = validated_data.pop('team_id')
 
         ticket = api_models.Ticket.objects.create(
-            **validated_data, assigned_user=assigned_user, status=status
+            **validated_data
         )
         return ticket
 
     def update(self, instance, validated_data):
-        assigned_user, status = self.parse_fields(validated_data)
-        instance.assigned_user = assigned_user
-        instance.status = status
+        validated_data['status'] = validated_data.pop('status_id', None)
+        validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         return super().update(instance, validated_data)

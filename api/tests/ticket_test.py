@@ -8,6 +8,7 @@ from ..models import Ticket
 from ..models import Member
 from ..models import Team, Member, Tag, TicketStatus
 from ..views import TicketViewSet
+from ..serializers import UserSerializer, TicketStatusSerializer
 
 import datetime
 
@@ -419,8 +420,15 @@ class StatusViewTestCase(TestCase):
         response = self.ticket_client.get(
             reverse("ticketstatus-detail", kwargs={"pk": self.status.id}), format="json"
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
         print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def testList(self):
+        response = self.ticket_client.get(
+            reverse("ticketstatus-list-team", kwargs={"pk": self.team.id}), format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testUpdate(self):
         status_dict = {
@@ -433,7 +441,6 @@ class StatusViewTestCase(TestCase):
             status_dict,
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testDelete(self):
@@ -441,5 +448,20 @@ class StatusViewTestCase(TestCase):
             reverse("ticketstatus-detail", kwargs={"pk": self.status.id}),
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def testTicket(self):
+        serialized = TicketStatusSerializer(self.status)
+        ticket_data = {
+            "title": "Sic Mundus Creatus Est",
+            "team_id": self.team.id,
+            "status_id": self.status.id
+        }
+        print(ticket_data)
+        response = self.ticket_client.post(
+            reverse("ticket-create-record"),
+            ticket_data,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
