@@ -32,27 +32,16 @@ from ..serializers import (
 User = get_user_model()
 
 
-class TicketViewSet(
+class TeamRelatedViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """
-    This viewset automatically provides `list` and `detail` actions.
-    """
-    queryset = Ticket.objects.all()
     permission_classes = [
         permissions.IsAuthenticated,
-        IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        IsAdminMemberOrReadOnly,
         IsMemberUser,
     ]
-    serializer_class = TicketSerializer
-
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
-                     '^assigned_user__first_name'
-                     ]
-    ordering_fields = ['created', 'activated']
 
     @staticmethod
     def get_success_headers(data):
@@ -60,6 +49,27 @@ class TicketViewSet(
             return {"Location": str(data[api_settings.URL_FIELD_NAME])}
         except (TypeError, KeyError):
             return {}
+
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+    )
+    def create_record(self, request, *args, **kwargs):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            team = serializer.validated_data["team_id"]
+
+            print("epic gamer moment!")
+
+            # make sure we're actually allowed to access this team
+            self.check_object_permissions(request, team)
+            status_record = serializer.save()
+
+            serialized = self.serializer_class(status_record)
+            return Response(serialized.data, status.HTTP_201_CREATED)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
 
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
@@ -76,37 +86,39 @@ class TicketViewSet(
 
         return response
 
+    # note: this is pretty hacky
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data)
+
+
+class TicketViewSet(
+    TeamRelatedViewSet
+):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
+                     '^assigned_user__first_name']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
+        IsMemberUser,
+    ]
+    ordering_fields = ['created', 'activated']
+
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
-        '''team_id = request.data.get("team_id")
-        assigned_id = request.data.get("assigned_id")
-        try:
-            team = Team.objects.get(id=team_id)
-            assigned_user = User.objects.get(id=assigned_id)
-            is_approved_user = Member.objects.get(owner=assigned_user)
-            serializer = TicketSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-
-            serializer.save(
-                owner=self.request.user, team=team, assigned_user=assigned_user,
-            )
-
-            headers = self.get_success_headers(serializer.data)
-
-        except Team.DoesNotExist as e:
-            return Response({"msg": "team_id is a required field"}, status=status.HTTP_404_NOT_FOUND)
-
-        except Member.DoesNotExist as e:
-            return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )'''
-
         try:
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -120,11 +132,12 @@ class TicketViewSet(
             )
 
             # the above serializer has already confirmed that each tag_id is valid
-            for tag in tag_list:
-                ticket_tag = TicketTag.objects.create(
-                    team=team, tag=tag, ticket=ticket
-                )
-                ticket_tag.save()
+            if tag_list:
+                for tag in tag_list:
+                    ticket_tag = TicketTag.objects.create(
+                        team=team, tag=tag, ticket=ticket
+                    )
+                    ticket_tag.save()
 
             serialized = TicketSerializer(ticket)
 
@@ -132,13 +145,6 @@ class TicketViewSet(
 
         except (serializers.ValidationError, Tag.DoesNotExist) as e:
             return Response({"msg": e.detail}, e.status_code)
-
-    # note: this is pretty hacky
-    def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
-        instance = self.get_object()
-        serializer = TicketSerializer(instance)
-        return Response(serializer.data)
 
     @action(
         detail=True,
@@ -194,130 +200,16 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 
 
 class TicketStatusViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
+    TeamRelatedViewSet,
+    mixins.DestroyModelMixin
 ):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsMemberUser,
-        IsAdminMemberOrReadOnly
-    ]
-
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
 
-    @action(
-        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
-    )
-    def create_record(self, request, *args, **kwargs):
-        try:
-            serializer = TicketStatusSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            team = serializer.validated_data["team_id"]
-
-            # make sure we're actually allowed to access this team
-            self.check_object_permissions(request, team)
-            status_record = serializer.save()
-
-            serialized = TicketStatusSerializer(status_record)
-            return Response(serialized.data, status.HTTP_201_CREATED)
-
-        except serializers.ValidationError as e:
-            return Response({"msg": e.detail}, e.status_code)
-
-    # this is a duplicate and should eventually get moved to a base class
-    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
-    def list_team(self, request, pk=None):
-
-        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
-        serializer = self.serializer_class(queryset, many=True)
-
-        try:
-            team = Team.objects.get(pk=pk)
-            self.check_object_permissions(request, team)
-            response = Response(serializer.data, status.HTTP_200_OK)
-        except Team.DoesNotExist:
-            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
-
-        return response
-
-    # note: this is pretty hacky
-    def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(serializer.data)
-
 
 class TagViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
+    TeamRelatedViewSet,
+    mixins.DestroyModelMixin
 ):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsMemberUser,
-        IsAdminMemberOrReadOnly
-    ]
-
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-    @action(
-        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
-    )
-    def create_record(self, request, *args, **kwargs):
-        try:
-            serializer = TagSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            team = serializer.validated_data["team_id"]
-
-            # make sure we're actually allowed to access this team
-            self.check_object_permissions(request, team)
-            status_record = serializer.save()
-
-            serialized = TagSerializer(status_record)
-            return Response(serialized.data, status.HTTP_201_CREATED)
-
-        except serializers.ValidationError as e:
-            return Response({"msg": e.detail}, e.status_code)
-
-    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
-    def list_team(self, request, pk=None):
-        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
-        serializer = self.serializer_class(queryset, many=True)
-
-        try:
-            team = Team.objects.get(pk=pk)
-            self.check_object_permissions(request, team)
-            response = Response(serializer.data, status.HTTP_200_OK)
-        except Team.DoesNotExist:
-            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
-
-        return response
-
-    # note: this is pretty hacky
-    def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(serializer.data)
-
-class TicketTagViewSet(
-    viewsets.GenericViewSet
-):
-    queryset = TicketTag.objects.all()
-    serializer_class = TicketTagSerializer
-
-    @action(methods=["get"], detail=True)
-    def fetch_ticket(self, request, pk=None):
-        query = self.get_queryset().filter(team__id=pk)
-        serializer = self.serializer_class(query, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
-
-
-
-
