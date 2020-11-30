@@ -15,8 +15,11 @@ class MemberManager(models.Manager):
         team = obj_data.get("team")
         owner = obj_data.get("owner")
 
-        if not owner or not team:
-            raise ValueError("missing name or team")
+        if not owner:
+            raise ValueError("missing owner")
+
+        if not team:
+            raise ValueError("missing team")
 
         # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
 

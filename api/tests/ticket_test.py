@@ -106,6 +106,7 @@ class TicketViewTestCase(TestCase):
         self.admin_user = User.objects.create_user(**admin_dict)
         self.admin_user.save()
 
+
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
         mem_response = self.ticket_client.post(
@@ -118,7 +119,7 @@ class TicketViewTestCase(TestCase):
 
         self.member_data = {"team_id": self.team.id, "role": "AP", "bio": "Cool Users"}
 
-        self.admin_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
+        self.admin_data = {"owner": self.admin_user, "team": self.team, "role": "AD", "bio": "cool dude"}
 
         self.assigned_client = APIClient()
         self.assigned_client.force_authenticate(user=self.assigned_user)
@@ -128,11 +129,13 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
 
+        self.admin_member = Member.objects.create(**self.admin_data)
+        self.admin_member.save()
         self.admin_client = APIClient()
         self.admin_client.force_authenticate(user=self.admin_user)
-        mem_response = self.admin_client.post(
-            reverse("member-create-record"), self.admin_data, format="json"
-        )
+
+        member = Member.objects.get(owner=self.admin_user)
+        print(member.team_id)
 
         self.assertEqual(mem_response.status_code, status.HTTP_201_CREATED)
 
@@ -161,9 +164,7 @@ class TicketViewTestCase(TestCase):
 
     def testTicketRead(self):
         # read the record created in setUp. confirm the results are expected
-        url = reverse("ticket-list")
-        url += "?search=booty"
-        print(url)
+        url = reverse("ticket-detail", kwargs={"pk": self.ticket_id})
         response = self.ticket_client.get(
             url, format="json"
         )
@@ -222,6 +223,7 @@ class TicketViewTestCase(TestCase):
         new_data = {
             "title": "Erit Lux",
             "ticket_number": 2,
+            "team_id": self.team.id,
         }
 
         client = APIClient()
@@ -238,6 +240,7 @@ class TicketViewTestCase(TestCase):
         new_data = {
             "title": "Erit Lux",
             "ticket_number": 2,
+            "team_id": self.team.id,
         }
         not_member = User.objects.create_user(**not_assigned_dict)
         not_member.save()
@@ -257,6 +260,7 @@ class TicketViewTestCase(TestCase):
         new_data = {
             "title": "Erit Lux",
             "ticket_number": 2,
+            "team_id": self.team.id,
         }
         not_user = User.objects.create_user(**not_assigned_dict)
         not_user.save()
@@ -284,13 +288,16 @@ class TicketViewTestCase(TestCase):
             "assigned_id": self.assigned_user.id,
             "title": "It's Happening Again",
             "ticket_number": 2,
+            "team_id": self.team.id,
         }
+
         response = self.admin_client.put(
             reverse("ticket-detail", kwargs={"pk": self.ticket_id}),
             change_ticket,
             format="json",
         )
 
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testTicketDeleteAuth(self):
