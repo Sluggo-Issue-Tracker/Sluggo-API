@@ -509,13 +509,35 @@ class StatusViewTestCase(TestCase):
 class TicketNodeTestCase(TestCase):
     def setUp(self):
         # the following is lifted directly from the tutorial
+
+        self.team = Team.objects.create(**team_dict)
+        self.team.save()
+
+        self.admin_user = User.objects.create_user(**admin_dict)
+        self.admin_user.save()
+
+        self.root_ticket_data = {
+            "title": "Sic Mundus Creatus Est",
+            "team": self.team,
+            "owner": self.admin_user
+        }
+        self.root_ticket = Ticket.objects.create(**self.root_ticket_data)
+        self.root_ticket.save()
+
+        self.child_ticket_data = {
+            "title": "child",
+            "team": self.team,
+            "owner": self.admin_user
+        }
+        self.child_ticket = Ticket.objects.create(**self.child_ticket_data)
+        self.child_ticket.save()
+
+
+
         get = lambda node_id: TicketNode.objects.get(pk=node_id)
-        root = TicketNode.add_root(name='root')
-        node = get(root.pk).add_child(name="Memory")
-        get(node.pk).add_sibling(name="SSd")
-        get(node.pk).add_sibling(name="cinrge")
-        sibling = get(node.pk).add_sibling(name="alsdkjf")
-        get(sibling.pk).add_child(name=":fdad")
+        root = TicketNode.add_root(ticket=self.root_ticket)
+        child = get(root.pk).add_child(ticket=self.child_ticket)
+
 
     def testRead(self):
         print(TicketNode.dump_bulk())
