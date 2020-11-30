@@ -211,7 +211,6 @@ class TicketViewTestCase(TestCase):
             format="json",
         )
 
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         for k, v in new_data.items():
@@ -362,7 +361,6 @@ class TicketViewTestCase(TestCase):
         root_node = TicketNode.objects.get(ticket=self.ticket)
         self.assertEqual(root_node.get_children_count(), 1)
 
-
     def testAddSubticket(self):
         # create a ticket to be added
         subticket_data = Ticket(
@@ -386,8 +384,51 @@ class TicketViewTestCase(TestCase):
         root_node = TicketNode.objects.get(ticket=self.ticket)
         self.assertEqual(root_node.get_children_count(), 1)
 
-        print(TicketNode.dump_bulk())
+        root_sub_data = Ticket(
+            owner=self.ticket_user,
+            title="oh, so you're approaching me?",
+            ticket_number=123123,
+            team=self.team
+        )
+        root_sub_data.save()
+        TicketNode.add_root(ticket=root_sub_data)
 
+        response = self.admin_client.patch(
+            reverse("ticket-add-subticket", kwargs={"pk": root_sub_data.pk}),
+            {"parent_id": self.ticket_id},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        root_node = TicketNode.objects.get(ticket=self.ticket)
+        self.assertEqual(root_node.get_children_count(), 2)
+
+        existing_sub_data = {
+            "title": "sub ticket",
+            "ticket_number": 999,
+            "team_id": self.team.id,
+            "parent_id": self.ticket_id
+        }
+
+        response = self.admin_client.post(
+            reverse("ticket-create-record"),
+            existing_sub_data,
+            format="json"
+        )
+
+        existing_id = response.data["id"]
+
+        response = self.admin_client.patch(
+            reverse("ticket-add-subticket", kwargs={"pk": existing_id}),
+            {"parent_id": self.ticket_id},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        root_node = TicketNode.objects.get(ticket=self.ticket)
+        self.assertEqual(root_node.get_children_count(), 3)
+
+        print(TicketNode.dump_bulk())
 
 
 class TagViewTestCase(TestCase):

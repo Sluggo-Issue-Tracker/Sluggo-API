@@ -9,6 +9,7 @@ from rest_framework import serializers
 from django.db.models.base import ModelBase
 from treebeard import exceptions as t_except
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import SuspiciousOperation
 
 from django.contrib.auth import get_user_model
 
@@ -193,17 +194,21 @@ class TicketViewSet(
     def add_subticket(self, request, pk=None):
         try:
             # validate
+            ticket = self.get_object()
+            self.check_object_permissions(request, ticket)
             parent_id = request.data.pop("parent_id", None)
             parent = get_object_or_404(Ticket, pk=parent_id)
-            ticket = get_object_or_404(Ticket, pk=pk)
-            self.check_object_permissions(request, ticket)
 
             # fetch the associated node
             parent_node = get_object_or_404(TicketNode, ticket=parent)
-            ticket_node = get_object_or_404(TicketNode, ticket=ticket)
+            ticket_node_filter = TicketNode.objects.filter(ticket=ticket)
 
-            if ticket_node:
+            if ticket_node_filter:
                 # if it exists and is root, move as child
+                if len(ticket_node_filter) != 1:
+                    raise SuspiciousOperation("Invalid request; the tree got messed up")
+
+                ticket_node = ticket_node_filter[0]
                 if ticket_node.is_root():
                     ticket_node.move(target=parent_node, pos="last-child")
                 else:
