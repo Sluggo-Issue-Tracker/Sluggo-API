@@ -84,7 +84,6 @@ class MemberSerializer(serializers.ModelSerializer):
             "deactivated",
         ]
 
-
 class TicketCommentSerializer(serializers.ModelSerializer):
     """
     Serialzier for comments. to be used with tickets
@@ -160,6 +159,8 @@ class TicketSerializer(serializers.ModelSerializer):
         required=False
     )
 
+    parent_id = serializers.IntegerField(write_only=True, required=False)
+
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
     comments = TicketCommentSerializer(many=True, required=False)
@@ -186,6 +187,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "tag_list",
             "tag_id_list",
+            "parent_id",
             "owner",
             "assigned_user",
             "assigned_user_id",
@@ -208,6 +210,7 @@ class TicketSerializer(serializers.ModelSerializer):
         # this will remove the entry even if the call requesting using the
         # serializer does not use the tag_id_list
         validated_data.pop('tag_id_list', None)
+        validated_data.pop('parent_id', None)
 
         ticket = api_models.Ticket.objects.create(
             **validated_data

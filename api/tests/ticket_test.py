@@ -106,7 +106,6 @@ class TicketViewTestCase(TestCase):
         self.admin_user = User.objects.create_user(**admin_dict)
         self.admin_user.save()
 
-
         self.ticket_client = APIClient()
         self.ticket_client.force_authenticate(user=self.ticket_user)
         mem_response = self.ticket_client.post(
@@ -156,6 +155,7 @@ class TicketViewTestCase(TestCase):
             )
 
         self.ticket_id = self.response.data["id"]
+        self.ticket = Ticket.objects.get(pk=self.ticket_id)
 
     def testTicketCreate(self):
         """Test if the api can create a ticket."""
@@ -211,7 +211,6 @@ class TicketViewTestCase(TestCase):
             format="json",
         )
 
-        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -297,7 +296,6 @@ class TicketViewTestCase(TestCase):
             format="json",
         )
 
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testTicketDeleteAuth(self):
@@ -346,6 +344,51 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def testCreateSubticket(self):
+        subticket_data = {
+            "title": "sub ticket",
+            "ticket_number": 999,
+            "team_id": self.team.id,
+            "parent_id": self.ticket_id
+        }
+
+        response = self.admin_client.post(
+            reverse("ticket-create-record"),
+            subticket_data,
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        root_node = TicketNode.objects.get(ticket=self.ticket)
+        self.assertEqual(root_node.get_children_count(), 1)
+
+
+    def testAddSubticket(self):
+        # create a ticket to be added
+        subticket_data = Ticket(
+            owner=self.ticket_user,
+            title="yare yare daze",
+            ticket_number=1,
+            team=self.team,
+        )
+
+        subticket_data.save()
+
+        response = self.admin_client.patch(
+            reverse("ticket-add-subticket", kwargs={"pk": subticket_data.pk}),
+            {"parent_id": self.ticket_id},
+            format="json"
+        )
+
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        root_node = TicketNode.objects.get(ticket=self.ticket)
+        self.assertEqual(root_node.get_children_count(), 1)
+
+        print(TicketNode.dump_bulk())
+
+
 
 class TagViewTestCase(TestCase):
     def setUp(self):
@@ -367,7 +410,6 @@ class TagViewTestCase(TestCase):
             reverse("tag-create-record"), tag_dict, format="json"
         )
         self.tag = Tag.objects.get(pk=response.data["id"])
-        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -376,7 +418,6 @@ class TagViewTestCase(TestCase):
             reverse("tag-detail", kwargs={"pk": self.tag.id}), format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.data)
 
     def testUpdate(self):
         tag_dict = {
@@ -389,7 +430,6 @@ class TagViewTestCase(TestCase):
             tag_dict,
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testDelete(self):
@@ -397,7 +437,6 @@ class TagViewTestCase(TestCase):
             reverse("tag-detail", kwargs={"pk": self.tag.id}),
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def testTicket(self):
@@ -424,13 +463,12 @@ class TagViewTestCase(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
-        #response = self.ticket_client.get(
+        # response = self.ticket_client.get(
         #    reverse("tickettag-fetch-ticket", kwargs={"pk": self.ticket.id}),
         #    format="json"
-        #)
-        #print(response.data)
-        #self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # )
+        # print(response.data)
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class StatusViewTestCase(TestCase):
@@ -460,14 +498,12 @@ class StatusViewTestCase(TestCase):
         response = self.ticket_client.get(
             reverse("ticketstatus-detail", kwargs={"pk": self.status.id}), format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testList(self):
         response = self.ticket_client.get(
             reverse("ticketstatus-list-team", kwargs={"pk": self.team.id}), format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testUpdate(self):
@@ -497,14 +533,13 @@ class StatusViewTestCase(TestCase):
             "team_id": self.team.id,
             "status_id": self.status.id
         }
-        print(ticket_data)
         response = self.ticket_client.post(
             reverse("ticket-create-record"),
             ticket_data,
             format="json"
         )
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class TicketNodeTestCase(TestCase):
     def setUp(self):
@@ -532,12 +567,20 @@ class TicketNodeTestCase(TestCase):
         self.child_ticket = Ticket.objects.create(**self.child_ticket_data)
         self.child_ticket.save()
 
-
+        self.second_root_ticket_data = {
+            "title": "other root",
+            "team": self.team,
+            "owner": self.admin_user
+        }
+        self.second_root_ticket = Ticket.objects.create(**self.second_root_ticket_data)
+        self.second_root_ticket.save()
 
         get = lambda node_id: TicketNode.objects.get(pk=node_id)
         root = TicketNode.add_root(ticket=self.root_ticket)
+        root2 = TicketNode.add_root(ticket=self.second_root_ticket)
         child = get(root.pk).add_child(ticket=self.child_ticket)
 
+        root2.move(get(root.pk), pos="last-child")
 
     def testRead(self):
         print(TicketNode.dump_bulk())
