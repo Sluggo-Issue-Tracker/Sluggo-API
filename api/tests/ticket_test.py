@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from ..models import Ticket
 from ..models import Member
-from ..models import Team, Member, Tag, TicketStatus, TicketTag
+from ..models import Team, Member, Tag, TicketStatus, TicketTag, TicketNode
 from ..views import TicketViewSet
 from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSerializer
 
@@ -505,3 +505,17 @@ class StatusViewTestCase(TestCase):
         )
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+class TicketNodeTestCase(TestCase):
+    def setUp(self):
+        # the following is lifted directly from the tutorial
+        get = lambda node_id: TicketNode.objects.get(pk=node_id)
+        root = TicketNode.add_root(name='root')
+        node = get(root.pk).add_child(name="Memory")
+        get(node.pk).add_sibling(name="SSd")
+        get(node.pk).add_sibling(name="cinrge")
+        sibling = get(node.pk).add_sibling(name="alsdkjf")
+        get(sibling.pk).add_child(name=":fdad")
+
+    def testRead(self):
+        print(TicketNode.dump_bulk())
