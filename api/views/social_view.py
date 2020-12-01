@@ -205,19 +205,3 @@ class TeamViewSet(mixins.RetrieveModelMixin,
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
-
-    @action(detail=False, methods=["GET"])
-    def search(self, request, q=None):
-        """ retrieve teams based on a user query. this should rank the team queryset by
-            1. existence of search terms in the record's title + description
-            2. similarity of search terms to words in the record's description + description
-        """
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
