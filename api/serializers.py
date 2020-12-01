@@ -53,7 +53,6 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
 
     def create(self, validated_data):
-
         validated_data['team'] = validated_data.pop('team_id')
 
         tag = api_models.Tag.objects.create(
@@ -134,6 +133,15 @@ class TicketTagSerializer(serializers.ModelSerializer):
         fields = ["tag", "created", "activated", "deactivated"]
 
 
+class TicketNodeSerializer(serializers.ModelSerializer):
+    ticket_id = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.TicketNode
+        fields = ["ticket_id"]
+
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -159,6 +167,9 @@ class TicketSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+
+    parent_id = serializers.IntegerField(write_only=True, required=False)
+   # ticket_node = TicketNodeSerializer(many=False, read_only=True)
 
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
@@ -186,6 +197,8 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "tag_list",
             "tag_id_list",
+            "parent_id",
+    #        "ticket_node",
             "owner",
             "assigned_user",
             "assigned_user_id",
@@ -200,7 +213,6 @@ class TicketSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         validated_data['team'] = validated_data.pop('team_id')
@@ -208,6 +220,7 @@ class TicketSerializer(serializers.ModelSerializer):
         # this will remove the entry even if the call requesting using the
         # serializer does not use the tag_id_list
         validated_data.pop('tag_id_list', None)
+        validated_data.pop('parent_id', None)
 
         ticket = api_models.Ticket.objects.create(
             **validated_data

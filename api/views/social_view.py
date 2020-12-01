@@ -9,6 +9,8 @@ from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUs
 
 from django.contrib.auth import get_user_model
 
+from django.shortcuts import get_object_or_404
+
 from ..models import (
     Member,
     Team,
@@ -52,7 +54,7 @@ class MemberViewSet(
         team_id = request.data.get("team_id")
 
         try:
-            team = Team.objects.get(id=team_id)
+            team = get_object_or_404(Team, id=team_id)
             serializer = MemberSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
@@ -87,16 +89,13 @@ class MemberViewSet(
 
             # only update the fields that the user has access to
             # in their edit profile dialog
-            member = Member.objects.get(pk=pk)
+            member = get_object_or_404(Member, pk=pk)
             Member.objects.filter(pk=pk).update(bio=member_data.get("bio"))
 
             get_user_model().objects.filter(pk=member.owner.id).update(
                 first_name=user_data.get("first_name"),
                 last_name=user_data.get("last_name"),
             )
-
-        except Member.DoesNotExist as e:
-            return Response({"msg": e.message}, status=status.HTTP_404_NOT_FOUND)
 
         except exceptions.ValidationError as e:
             return Response({"msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -113,7 +112,7 @@ class MemberViewSet(
         self.check_object_permissions(request, self.get_object())
 
         try:
-            member = Member.objects.get(pk=pk)
+            member = get_object_or_404(Member, pk=pk)
             member.activated = timezone.now()
 
             if member.role == Member.Roles.UNAPPROVED:
@@ -136,7 +135,7 @@ class MemberViewSet(
         self.check_object_permissions(request, self.get_object())
 
         try:
-            member = Member.objects.get(pk=pk)
+            member = get_object_or_404(Member, pk=pk)
             member.activated = timezone.now()
 
             if member.role != Member.Roles.ADMIN:
@@ -154,7 +153,7 @@ class MemberViewSet(
         self.check_object_permissions(request, self.get_object())
 
         try:
-            member = Member.objects.get(pk=pk)
+            member = get_object_or_404(Member, pk=pk)
             member.deactivated = timezone.now()
             member.save()
 

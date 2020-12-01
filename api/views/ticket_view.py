@@ -6,7 +6,10 @@ from rest_framework import exceptions
 from rest_framework.settings import api_settings
 from rest_framework import filters
 from rest_framework import serializers
-from django.db import models
+from django.db.models.base import ModelBase
+from treebeard import exceptions as t_except
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import SuspiciousOperation
 
 from django.contrib.auth import get_user_model
 
@@ -18,7 +21,8 @@ from ..models import (
     TicketStatus,
     Team,
     Tag,
-    TicketTag
+    TicketTag,
+    TicketNode
 )
 
 from ..serializers import (
@@ -61,9 +65,9 @@ class TeamRelatedViewSet(
 
             # make sure we're actually allowed to access this team
             self.check_object_permissions(request, team)
-            status_record = serializer.save()
+            record = serializer.save()
 
-            serialized = self.serializer_class(status_record)
+            serialized = self.serializer_class(record)
             return Response(serialized.data, status.HTTP_201_CREATED)
 
         except serializers.ValidationError as e:
@@ -75,14 +79,9 @@ class TeamRelatedViewSet(
         queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
         serializer = self.serializer_class(queryset, many=True)
 
-        try:
-            team = Team.objects.get(pk=pk)
-            self.check_object_permissions(request, team)
-            response = Response(serializer.data, status.HTTP_200_OK)
-        except Team.DoesNotExist:
-            response = Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
-
-        return response
+        team = get_object_or_404(Team, pk=pk)
+        self.check_object_permissions(request, team)
+        return Response(serializer.data, status.HTTP_200_OK)
 
     # note: this is pretty hacky
     def update(self, request, *args, **kwargs):
@@ -111,6 +110,21 @@ class TicketViewSet(
     ]
     ordering_fields = ['created', 'activated']
 
+    def retrieve(self, request, *args, **kwargs):
+        # the hackiness continues. i'm sorry little one
+        response = super().retrieve(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            ticket_node = get_object_or_404(TicketNode, pk=self.get_object().pk)
+
+            response.data["children"] = []
+            for child_node in ticket_node.get_children():
+                child = TicketSerializer(child_node.ticket)
+                response.data["children"].append(child.data)
+
+        return response
+
+
+
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
@@ -122,6 +136,7 @@ class TicketViewSet(
             serializer.is_valid(raise_exception=True)
             team = serializer.validated_data["team_id"]
             tag_list = serializer.validated_data.pop("tag_id_list", None)
+            parent_id = serializer.validated_data.pop("parent_id", None)
 
             # once we have a team record, make sure we are allowed to access it
             self.check_object_permissions(request, team)
@@ -137,11 +152,20 @@ class TicketViewSet(
                     )
                     ticket_tag.save()
 
+            # query for the parent. If the id was included, query for the
+            # associated root node. if not, insert the ticket as a root
+            if parent_id:
+                parent_ticket = get_object_or_404(Ticket, pk=parent_id)
+                parent_node = get_object_or_404(TicketNode, ticket=parent_ticket)
+                parent_node.add_child(ticket=ticket)
+            else:
+                TicketNode.add_root(ticket=ticket)
+
             serialized = TicketSerializer(ticket)
 
             return Response(serialized.data, status.HTTP_201_CREATED)
 
-        except (serializers.ValidationError, Tag.DoesNotExist) as e:
+        except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
     @action(
@@ -153,9 +177,9 @@ class TicketViewSet(
         self.check_object_permissions(request, self.get_object())
 
         status_id = request.data('status_id')
-        ticket = Ticket.objects.get(pk=pk)
-        status = TicketStatus.objects.get(pk=status_id)
-        ticket.status = status
+        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket_status = get_object_or_404(TicketStatus, pk=status_id)
+        ticket.status = ticket_status
         ticket.save(update_fields=['status'])
 
         return Response({"msg": "okay"}, status=status.HTTP_200_OK)
@@ -168,14 +192,52 @@ class TicketViewSet(
     def delete(self, request, pk=None):
         """ deactivate this ticket this is deletion but only to deactivate the record """
         try:
-            instance = Ticket.objects.get(pk=pk)
+            instance = get_object_or_404(Ticket, pk=pk)
             self.check_object_permissions(request, instance)
             instance.deactivated = timezone.now()
             instance.save()
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
-        except Ticket.DoesNotExist as e:
-            return Response({"msg": e.detail}, status=e.status_code)
+        except Ticket.DoesNotExist:
+            return Response({"msg": "no such ticket"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(
+        detail=True,
+        methods=['patch'],
+        permission_classes=permission_classes
+    )
+    def add_subticket(self, request, pk=None):
+        try:
+            # validate
+            ticket = self.get_object()
+            self.check_object_permissions(request, ticket)
+            parent_id = request.data.pop("parent_id", None)
+            parent = get_object_or_404(Ticket, pk=parent_id)
+
+            # fetch the associated node
+            parent_node = get_object_or_404(TicketNode, ticket=parent)
+            ticket_node_filter = TicketNode.objects.filter(ticket=ticket)
+
+            if ticket_node_filter:
+                # if it exists and is root, move as child
+                if len(ticket_node_filter) != 1:
+                    raise SuspiciousOperation("Invalid request; the tree got messed up")
+
+                ticket_node = ticket_node_filter[0]
+                if ticket_node.is_root():
+                    ticket_node.move(target=parent_node, pos="last-child")
+                else:
+                    return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                parent_node.add_child(ticket=ticket)
+
+            return Response({"msg": "okay"}, status=status.HTTP_200_OK)
+
+        except (
+                t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
+                t_except.NodeAlreadySaved, t_except.PathOverflow
+        ):
+            return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
