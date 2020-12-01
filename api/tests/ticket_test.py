@@ -430,6 +430,15 @@ class TicketViewTestCase(TestCase):
 
         print(TicketNode.dump_bulk())
 
+        url = reverse("ticket-detail", kwargs={"pk": self.ticket_id})
+        response = self.ticket_client.get(
+            url, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data.get('children'), None)
+
+
 
 class TagViewTestCase(TestCase):
     def setUp(self):

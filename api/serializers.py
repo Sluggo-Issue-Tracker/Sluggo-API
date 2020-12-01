@@ -53,7 +53,6 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
 
     def create(self, validated_data):
-
         validated_data['team'] = validated_data.pop('team_id')
 
         tag = api_models.Tag.objects.create(
@@ -83,6 +82,7 @@ class MemberSerializer(serializers.ModelSerializer):
             "activated",
             "deactivated",
         ]
+
 
 class TicketCommentSerializer(serializers.ModelSerializer):
     """
@@ -133,6 +133,15 @@ class TicketTagSerializer(serializers.ModelSerializer):
         fields = ["tag", "created", "activated", "deactivated"]
 
 
+class TicketNodeSerializer(serializers.ModelSerializer):
+    ticket_id = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.TicketNode
+        fields = ["ticket_id"]
+
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
@@ -160,6 +169,7 @@ class TicketSerializer(serializers.ModelSerializer):
     )
 
     parent_id = serializers.IntegerField(write_only=True, required=False)
+   # ticket_node = TicketNodeSerializer(many=False, read_only=True)
 
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
@@ -188,6 +198,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "tag_list",
             "tag_id_list",
             "parent_id",
+    #        "ticket_node",
             "owner",
             "assigned_user",
             "assigned_user_id",
@@ -202,7 +213,6 @@ class TicketSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         validated_data['team'] = validated_data.pop('team_id')
