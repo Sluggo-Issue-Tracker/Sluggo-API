@@ -9,7 +9,8 @@ Rewrite of cse183 assignment
 
 `pip install -r ./requirements.txt`
 
-This repository takes use of an evironment variable `SLUGGO_DJANGO_KEY` that will be stored with conda, to get access to that please contact someone.
+Prereq:
+Set an environment variable `SLUGGO_DJANGO_KEY` to some random, unique value. 
 
 To run the program:
 
@@ -18,3 +19,7 @@ On first time setup, run the command `python manage.py migrate` to set all of th
 After every pull request merged, make sure to run `python manage.py makemigrations` and `python manage.py migrate` to get any new tables that are necessary. Migrations and the database table are automatically gitignored, so you will not be able to run the program without doing this.
 
 After that, to run the django server do `python manage.py runserver` and navigate to `localhost:8000`
+
+## Generating Documentation
+
+The documentation engine relies on a schema file. To generate do `python manage.py generateschema > schema.yml`.
