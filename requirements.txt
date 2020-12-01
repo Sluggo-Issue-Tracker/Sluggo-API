@@ -1,3 +1,5 @@
 dj-rest-auth[with_social]
 django-filter
 django-treebeard
+coreapi
+pyyaml
