@@ -7,3 +7,4 @@ private
 !*/migrations/__init__.py
 *.pyc
 .DS_Store
+sluggoAPI/**

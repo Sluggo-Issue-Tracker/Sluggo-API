@@ -3,22 +3,36 @@ Rewrite of cse183 assignment
 
 ## Installation
 
-`conda env create -f ./sluggo.yml`
+`python3 -m venv sluggoAPI`
 
-`conda activate sluggo`
+For mac / linux:
+`source ./sluggoAPI/bin/activate'
+
+For windows:
+`.\sluggoAPI\bin\activate.bat`
 
 `pip install -r ./requirements.txt`
 
 Prereq:
-Set an environment variable `SLUGGO_DJANGO_KEY` to some random, unique value. 
+Set an environment variable `SLUGGO_DJANGO_KEY` to some random, unique value (only important for production). 
+`export SLUGGO_DJANGO_KEY="not important for non producton"`
 
-To run the program:
+## To run the program:
 
-On first time setup, run the command `python manage.py migrate` to set all of the database tables correctly. This command will need to be ran in addition with `python manage.py makemigrations` everytime a new database table is created or a field is edited in a table.
+Activate the environment
 
-After every pull request merged, make sure to run `python manage.py makemigrations` and `python manage.py migrate` to get any new tables that are necessary. Migrations and the database table are automatically gitignored, so you will not be able to run the program without doing this.
+For mac / linux:
+`source ./sluggoAPI/bin/activate'
 
-After that, to run the django server do `python manage.py runserver` and navigate to `localhost:8000`
+For windows:
+`.\sluggoAPI\bin\activate.bat`
+
+Initial run / whenver you make database changes:
+`python manage.py makemigrations; python manage.py migrate`
+
+Run with:
+`python manage.py runserver`
+
 
 ## Generating Documentation
 
