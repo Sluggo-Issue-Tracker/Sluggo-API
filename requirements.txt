@@ -6,3 +6,4 @@ django-filter
 django-treebeard
 coreapi
 pyyaml
+pipenv

@@ -123,8 +123,6 @@ class TicketViewSet(
 
         return response
 
-
-
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
@@ -211,7 +209,11 @@ class TicketViewSet(
             # validate
             ticket = self.get_object()
             self.check_object_permissions(request, ticket)
-            parent_id = request.data.pop("parent_id", None)
+
+            # serialize the parent ticket
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            parent_id = serializer.validated_data["parent_id"]
             parent = get_object_or_404(Ticket, pk=parent_id)
 
             # fetch the associated node
@@ -238,6 +240,9 @@ class TicketViewSet(
                 t_except.NodeAlreadySaved, t_except.PathOverflow
         ):
             return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):

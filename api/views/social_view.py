@@ -20,7 +20,6 @@ from ..serializers import MemberSerializer, TeamSerializer, UserSerializer
 
 class MemberViewSet(
     mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
