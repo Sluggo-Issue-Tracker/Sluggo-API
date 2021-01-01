@@ -6,10 +6,10 @@ Rewrite of cse183 assignment
 `python3 -m venv sluggoAPI`
 
 For mac / linux:
-`source ./sluggoAPI/bin/activate'
+`source ./sluggoAPI/bin/activate`
 
 For windows:
-`.\sluggoAPI\bin\activate.bat`
+`.\sluggoAPI\Scripts\activate.bat`
 
 `pip install -r ./requirements.txt`
 
@@ -22,10 +22,10 @@ Set an environment variable `SLUGGO_DJANGO_KEY` to some random, unique value (on
 Activate the environment
 
 For mac / linux:
-`source ./sluggoAPI/bin/activate'
+`source ./sluggoAPI/bin/activate`
 
 For windows:
-`.\sluggoAPI\bin\activate.bat`
+`.\sluggoAPI\Scripts\activate.bat`
 
 Initial run / whenver you make database changes:
 `python manage.py makemigrations; python manage.py migrate`

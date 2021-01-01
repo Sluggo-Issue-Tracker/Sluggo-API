@@ -2,11 +2,9 @@ from rest_framework import permissions, viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from rest_framework import exceptions
 from rest_framework.settings import api_settings
 from rest_framework import filters
 from rest_framework import serializers
-from django.db.models.base import ModelBase
 from treebeard import exceptions as t_except
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import SuspiciousOperation
@@ -204,7 +202,7 @@ class TicketViewSet(
         methods=['patch'],
         permission_classes=permission_classes
     )
-    def add_subticket(self, request, pk=None):
+    def add_as_subticket(self, request, pk=None):
         try:
             # validate
             ticket = self.get_object()
@@ -243,6 +241,49 @@ class TicketViewSet(
 
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
+
+    @action(
+        detail=True,
+        methods=['patch'],
+        permission_classes=permission_classes
+    )
+    def add_subticket(self, request, pk=None):
+        try:
+            # validate
+            parent = self.get_object()
+            self.check_object_permissions(request, parent)
+
+            # serialize the child ticket
+            child_ticket = self.serializer_class(data=request.data)
+            child_ticket.is_valid(raise_exception=True)
+            child_id = child_ticket.validated_data["id"]
+            child = get_object_or_404(Ticket, pk=child_id)
+
+            # fetch the associated nodes
+            parent_node = get_object_or_404(TicketNode, ticket=parent)
+            ticket_node_filter = TicketNode.objects.filter(ticket=child)
+
+            if ticket_node_filter:
+                # if it exists and is root, move as child
+                if len(ticket_node_filter) != 1:
+                    raise SuspiciousOperation("Invalid request; the tree got messed up")
+
+                child_node = ticket_node_filter[0]
+                if child_node.is_root():
+                    child_node.move(target=parent_node, pos="last-child")
+                else:
+                    return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                parent_node.add_child(ticket=child)
+
+        except (
+                t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
+                t_except.NodeAlreadySaved, t_except.PathOverflow
+        ):
+            return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except serializers.ValidationError as e:
+            return Response({'msg': e.detail}, e.status_code)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
