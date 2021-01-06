@@ -6,7 +6,7 @@ openapi: 3.0.0
 paths:
   /member/:
     get:
-      description: Reads handled by the mixins, and use permission_classes
+      description: Returns the list of all members
       operationId: member_list
       parameters:
       - in: query
@@ -19,13 +19,13 @@ paths:
       - member
   /member/create_record/:
     post:
-      description: Reads handled by the mixins, and use permission_classes
+      description: Creates a member from json
       operationId: member_create_record
       tags:
       - member
   /member/{id}/:
     get:
-      description: Reads handled by the mixins, and use permission_classes
+      description: Returns the record associated with the primary key md5(teamid) + md5(user email)
       operationId: member_read
       parameters:
       - in: path
@@ -38,7 +38,7 @@ paths:
       tags:
       - member
     patch:
-      description: Reads handled by the mixins, and use permission_classes
+      description: Updates the record associated with the primary key with the included json
       operationId: member_partial_update
       parameters:
       - in: path
@@ -51,7 +51,7 @@ paths:
       tags:
       - member
     put:
-      description: Reads handled by the mixins, and use permission_classes
+      description: Replaces the record associated with the primary key with the included json
       operationId: member_update
       parameters:
       - in: path
@@ -65,7 +65,7 @@ paths:
       - member
   /member/{id}/approve/:
     patch:
-      description: approve the join request
+      description: Approve the join request (activate a record associated with id)
       operationId: member_approve
       parameters:
       - in: path
@@ -79,7 +79,7 @@ paths:
       - member
   /member/{id}/leave/:
     patch:
-      description: leave this team this is deletion but only to deactivate the record
+      description: leave this team. this is deletion but only to deactivate the record
       operationId: member_leave
       parameters:
       - in: path
@@ -107,11 +107,13 @@ paths:
       - member
   /status/create_record/:
     post:
+      description: insert a ticket status from the json
       operationId: status_create_record
       tags:
       - status
   /status/{id}/:
     delete:
+      description: delete a ticket status associated with id
       operationId: status_delete
       parameters:
       - in: path
@@ -124,6 +126,7 @@ paths:
       tags:
       - status
     get:
+      description: read the status associated with a given id
       operationId: status_read
       parameters:
       - in: path
@@ -136,6 +139,7 @@ paths:
       tags:
       - status
     patch:
+      description: perform a partial update
       operationId: status_partial_update
       parameters:
       - in: path
@@ -148,6 +152,7 @@ paths:
       tags:
       - status
     put:
+      description: replace the status associated with an id
       operationId: status_update
       parameters:
       - in: path
@@ -161,6 +166,7 @@ paths:
       - status
   /status/{id}/list_team/:
     get:
+      description: list the statuses associated with a team id
       operationId: status_list_team
       parameters:
       - in: path
@@ -174,11 +180,13 @@ paths:
       - status
   /tag/create_record/:
     post:
+      descriptipon: create a record from the json input
       operationId: tag_create_record
       tags:
       - tag
   /tag/{id}/:
     delete:
+      description: delete the tag associated with the id
       operationId: tag_delete
       parameters:
       - in: path
@@ -191,6 +199,7 @@ paths:
       tags:
       - tag
     get:
+      description: retrieve the tag record
       operationId: tag_read
       parameters:
       - in: path
@@ -203,6 +212,7 @@ paths:
       tags:
       - tag
     patch:
+      description: update only a portion of the tag
       operationId: tag_partial_update
       parameters:
       - in: path
@@ -215,6 +225,7 @@ paths:
       tags:
       - tag
     put:
+      description: replace the entire tag
       operationId: tag_update
       parameters:
       - in: path
@@ -228,6 +239,7 @@ paths:
       - tag
   /tag/{id}/list_team/:
     get:
+      description: list the tags associated with the team at id
       operationId: tag_list_team
       parameters:
       - in: path
@@ -241,6 +253,7 @@ paths:
       - tag
   /team/:
     get:
+      description: retrieve all teams
       operationId: team_list
       parameters:
       - in: query
@@ -253,11 +266,13 @@ paths:
       - team
   /team/create_record/:
     post:
+      description: create a team from json. the creating user becomes an admin of this team
       operationId: team_create_record
       tags:
       - team
   /team/{id}/:
     delete:
+      description: delete the team associated with the id
       operationId: team_delete
       parameters:
       - in: path
@@ -270,6 +285,7 @@ paths:
       tags:
       - team
     get:
+      description: retrieve the full record from the associated id
       operationId: team_read
       parameters:
       - in: path
@@ -282,6 +298,7 @@ paths:
       tags:
       - team
     patch:
+      description: update a portion of the fields
       operationId: team_partial_update
       parameters:
       - in: path
@@ -294,6 +311,7 @@ paths:
       tags:
       - team
     put:
+      description: replace all the fields
       operationId: team_update
       parameters:
       - in: path
@@ -307,8 +325,7 @@ paths:
       - team
   /ticket-comment/:
     get:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_list
       parameters:
       - in: query
@@ -320,22 +337,19 @@ paths:
       tags:
       - ticket-comment
     post:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_create
       tags:
       - ticket-comment
   /ticket-comment/recent_comments/:
     get:
-      description: This call returns the first page of comments associated with the
-        given team_id
+      description: not supported atm
       operationId: ticket-comment_recent_comments
       tags:
       - ticket-comment
   /ticket-comment/{id}/:
     delete:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_delete
       parameters:
       - in: path
@@ -348,8 +362,7 @@ paths:
       tags:
       - ticket-comment
     get:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_read
       parameters:
       - in: path
@@ -362,8 +375,7 @@ paths:
       tags:
       - ticket-comment
     patch:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_partial_update
       parameters:
       - in: path
@@ -376,8 +388,7 @@ paths:
       tags:
       - ticket-comment
     put:
-      description: Basic crud should be pre-generated, so we only need to do the more
-        complicated calls
+      description: not supported atm
       operationId: ticket-comment_update
       parameters:
       - in: path
@@ -391,13 +402,13 @@ paths:
       - ticket-comment
   /ticket/create_record/:
     post:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: Creates a record from json
       operationId: ticket_create_record
       tags:
       - ticket
   /ticket/{id}/:
     get:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: Returns the serialized ticket associated with id
       operationId: ticket_read
       parameters:
       - in: path
@@ -422,7 +433,7 @@ paths:
       tags:
       - ticket
     patch:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: Update only some of the fields associated with id
       operationId: ticket_partial_update
       parameters:
       - in: path
@@ -447,7 +458,7 @@ paths:
       tags:
       - ticket
     put:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: Completely replace a ticket
       operationId: ticket_update
       parameters:
       - in: path
@@ -473,7 +484,7 @@ paths:
       - ticket
   /ticket/{id}/add_subticket/:
     patch:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: add the ticket associated id as a subticket of the one passed in as json
       operationId: ticket_add_subticket
       parameters:
       - in: path
@@ -487,7 +498,7 @@ paths:
       - ticket
   /ticket/{id}/delete/:
     delete:
-      description: deactivate this ticket this is deletion but only to deactivate
+      description: deactivate the ticket associated with the primary key
         the record
       operationId: ticket_delete
       parameters:
@@ -502,7 +513,7 @@ paths:
       - ticket
   /ticket/{id}/list_team/:
     get:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: List all tickets associated with a team
       operationId: ticket_list_team
       parameters:
       - in: path
@@ -516,7 +527,7 @@ paths:
       - ticket
   /ticket/{id}/update_status/:
     patch:
-      description: This viewset automatically provides `list` and `detail` actions.
+      description: Update the status of a ticket associated with id with the status passe din as input
       operationId: ticket_update_status
       parameters:
       - in: path

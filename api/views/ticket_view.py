@@ -1,19 +1,7 @@
-from rest_framework import permissions, viewsets, status, mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.utils import timezone
-from rest_framework import exceptions
-from rest_framework.settings import api_settings
-from rest_framework import filters
-from rest_framework import serializers
-from django.db.models.base import ModelBase
 from treebeard import exceptions as t_except
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import SuspiciousOperation
-
 from django.contrib.auth import get_user_model
-
-from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
 
 from ..models import (
     Ticket,
@@ -30,65 +18,11 @@ from ..serializers import (
     TicketCommentSerializer,
     TicketStatusSerializer,
     TagSerializer,
-    TicketTagSerializer
 )
 
+from .team_base import *
+
 User = get_user_model()
-
-
-class TeamRelatedViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
-):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsAdminMemberOrReadOnly,
-        IsMemberUser,
-    ]
-
-    @staticmethod
-    def get_success_headers(data):
-        try:
-            return {"Location": str(data[api_settings.URL_FIELD_NAME])}
-        except (TypeError, KeyError):
-            return {}
-
-    @action(
-        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
-    )
-    def create_record(self, request, *args, **kwargs):
-        try:
-            serializer = self.serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            team = serializer.validated_data["team_id"]
-
-            # make sure we're actually allowed to access this team
-            self.check_object_permissions(request, team)
-            record = serializer.save()
-
-            serialized = self.serializer_class(record)
-            return Response(serialized.data, status.HTTP_201_CREATED)
-
-        except serializers.ValidationError as e:
-            return Response({"msg": e.detail}, e.status_code)
-
-    @action(detail=True, methods=["GET"], permission_classes=permission_classes)
-    def list_team(self, request, pk=None):
-
-        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
-        serializer = self.serializer_class(queryset, many=True)
-
-        team = get_object_or_404(Team, pk=pk)
-        self.check_object_permissions(request, team)
-        return Response(serializer.data, status.HTTP_200_OK)
-
-    # note: this is pretty hacky
-    def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(serializer.data)
 
 
 class TicketViewSet(
@@ -122,8 +56,6 @@ class TicketViewSet(
                 response.data["children"].append(child.data)
 
         return response
-
-
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
@@ -206,12 +138,16 @@ class TicketViewSet(
         methods=['patch'],
         permission_classes=permission_classes
     )
-    def add_subticket(self, request, pk=None):
+    def add_as_subticket(self, request, pk=None):
         try:
             # validate
             ticket = self.get_object()
             self.check_object_permissions(request, ticket)
-            parent_id = request.data.pop("parent_id", None)
+
+            # serialize the parent ticket
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            parent_id = serializer.validated_data["parent_id"]
             parent = get_object_or_404(Ticket, pk=parent_id)
 
             # fetch the associated node
@@ -238,6 +174,52 @@ class TicketViewSet(
                 t_except.NodeAlreadySaved, t_except.PathOverflow
         ):
             return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except serializers.ValidationError as e:
+            return Response({"msg": e.detail}, e.status_code)
+
+    @action(
+        detail=True,
+        methods=['patch'],
+        permission_classes=permission_classes
+    )
+    def add_subticket(self, request, pk=None):
+        try:
+            # validate
+            parent = self.get_object()
+            self.check_object_permissions(request, parent)
+
+            # serialize the child ticket
+            child_ticket = self.serializer_class(data=request.data)
+            child_ticket.is_valid(raise_exception=True)
+            child_id = child_ticket.validated_data["id"]
+            child = get_object_or_404(Ticket, pk=child_id)
+
+            # fetch the associated nodes
+            parent_node = get_object_or_404(TicketNode, ticket=parent)
+            ticket_node_filter = TicketNode.objects.filter(ticket=child)
+
+            if ticket_node_filter:
+                # if it exists and is root, move as child
+                if len(ticket_node_filter) != 1:
+                    raise SuspiciousOperation("Invalid request; the tree got messed up")
+
+                child_node = ticket_node_filter[0]
+                if child_node.is_root():
+                    child_node.move(target=parent_node, pos="last-child")
+                else:
+                    return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                parent_node.add_child(ticket=child)
+
+        except (
+                t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
+                t_except.NodeAlreadySaved, t_except.PathOverflow
+        ):
+            return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except serializers.ValidationError as e:
+            return Response({'msg': e.detail}, e.status_code)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):

@@ -1,15 +1,7 @@
-from rest_framework import permissions, viewsets, status, mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import exceptions
-from rest_framework.settings import api_settings
-
-from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
 
 from django.contrib.auth import get_user_model
-
-from django.shortcuts import get_object_or_404
 
 from ..models import (
     Member,
@@ -17,12 +9,11 @@ from ..models import (
 )
 from ..serializers import MemberSerializer, TeamSerializer, UserSerializer
 
+from .team_base import *
+
 
 class MemberViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
+    TeamRelatedViewSet
 ):
     """
     Reads handled by the mixins, and use permission_classes
