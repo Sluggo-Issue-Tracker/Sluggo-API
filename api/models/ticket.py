@@ -66,6 +66,7 @@ class Ticket(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticketUUID = models.UUIDField()
 
     objects = TicketManager()
 

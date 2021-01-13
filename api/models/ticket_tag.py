@@ -12,6 +12,7 @@ class Tag(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    tagUUID = models.UUIDField()
 
     class Meta:
         ordering = ["id"]
@@ -43,6 +44,7 @@ class TicketTag(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticket_tagUUID = models.UUIDField()
 
     objects = TicketTagManager()
 

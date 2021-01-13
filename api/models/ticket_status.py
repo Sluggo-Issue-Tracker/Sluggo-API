@@ -15,6 +15,7 @@ class TicketStatus(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticket_statusUUID = models.UUIDField()
 
     class Meta:
         ordering = ["id"]

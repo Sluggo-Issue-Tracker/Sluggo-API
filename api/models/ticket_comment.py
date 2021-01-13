@@ -28,6 +28,7 @@ class TicketComment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticket_commentUUID = models.UUIDField()
 
     class Meta:
        app_label = "api"
