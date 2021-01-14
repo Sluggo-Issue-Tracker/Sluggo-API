@@ -17,7 +17,7 @@ class Event(models.Model):
     edited = models.DateTimeField(auto_now_add=True)
     event_type = models.SmallIntegerField(choices=events)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
-    object = models.UUIDField()
+    object = models.UUIDField(null=True, blank=False)
 
     def is_create(self):
         return self.CREATE == self.event_type

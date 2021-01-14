@@ -10,7 +10,7 @@ class Team(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    teamUUID = models.UUIDField()
+    teamUUID = models.UUIDField(null=True, blank=False)
 
     class Meta:
         ordering = ["created"]

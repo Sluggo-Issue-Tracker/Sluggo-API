@@ -76,7 +76,7 @@ class Member(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    memberUUID = models.UUIDField()
+    memberUUID = models.UUIDField(null=True, blank=False)
 
     objects = MemberManager()
 
