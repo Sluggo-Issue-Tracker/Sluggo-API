@@ -168,7 +168,6 @@ class TicketSerializer(serializers.ModelSerializer):
     )
 
     parent_id = serializers.IntegerField(write_only=True, required=False)
-    ticket_node = TicketNodeSerializer(many=False, read_only=True)
 
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
@@ -197,7 +196,6 @@ class TicketSerializer(serializers.ModelSerializer):
             "tag_list",
             "tag_id_list",
             "parent_id",
-            "ticket_node",
             "owner",
             "assigned_user",
             "assigned_user_id",
