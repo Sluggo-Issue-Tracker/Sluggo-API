@@ -44,19 +44,6 @@ class TicketViewSet(
     ]
     ordering_fields = ['created', 'activated']
 
-    def retrieve(self, request, *args, **kwargs):
-        # the hackiness continues. i'm sorry little one
-        response = super().retrieve(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
-            ticket_node = get_object_or_404(TicketNode, pk=self.get_object().pk)
-
-            response.data["children"] = []
-            for child_node in ticket_node.get_children():
-                child = TicketSerializer(child_node.ticket)
-                response.data["children"].append(child.data)
-
-        return response
-
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(

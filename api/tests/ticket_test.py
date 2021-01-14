@@ -4,10 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 
-from ..models import Ticket
-from ..models import Member
-from ..models import Team, Member, Tag, TicketStatus, TicketTag, TicketNode
-from ..views import TicketViewSet
+from api.models import (Ticket, Team, Member, Tag, TicketStatus, TicketTag, TicketNode)
 from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSerializer
 
 import datetime
