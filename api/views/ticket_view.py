@@ -7,7 +7,6 @@ from ..models import (
     Ticket,
     TicketComment,
     TicketStatus,
-    Team,
     Tag,
     TicketTag,
     TicketNode
@@ -18,6 +17,7 @@ from ..serializers import (
     TicketCommentSerializer,
     TicketStatusSerializer,
     TagSerializer,
+    TicketNodeSerializer
 )
 
 from .team_base import *
@@ -43,19 +43,6 @@ class TicketViewSet(
         IsMemberUser,
     ]
     ordering_fields = ['created', 'activated']
-
-    def retrieve(self, request, *args, **kwargs):
-        # the hackiness continues. i'm sorry little one
-        response = super().retrieve(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
-            ticket_node = get_object_or_404(TicketNode, pk=self.get_object().pk)
-
-            response.data["children"] = []
-            for child_node in ticket_node.get_children():
-                child = TicketSerializer(child_node.ticket)
-                response.data["children"].append(child.data)
-
-        return response
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
@@ -100,6 +87,17 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        response = serializer.data
+        root = TicketNode.objects.get(ticket=instance)
+        if root:
+            response["children"] = [TicketNodeSerializer(child_instance).data for child_instance in root.get_children()]
+
+        return Response(response)
+
     @action(
         detail=True,
         methods=['patch'],
@@ -133,26 +131,11 @@ class TicketViewSet(
         except Ticket.DoesNotExist:
             return Response({"msg": "no such ticket"}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(
-        detail=True,
-        methods=['patch'],
-        permission_classes=permission_classes
-    )
-    def add_as_subticket(self, request, pk=None):
+    def _add_subticket(self, parent, child):
         try:
-            # validate
-            ticket = self.get_object()
-            self.check_object_permissions(request, ticket)
-
-            # serialize the parent ticket
-            serializer = self.serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            parent_id = serializer.validated_data["parent_id"]
-            parent = get_object_or_404(Ticket, pk=parent_id)
-
             # fetch the associated node
             parent_node = get_object_or_404(TicketNode, ticket=parent)
-            ticket_node_filter = TicketNode.objects.filter(ticket=ticket)
+            ticket_node_filter = TicketNode.objects.filter(ticket=child)
 
             if ticket_node_filter:
                 # if it exists and is root, move as child
@@ -165,15 +148,31 @@ class TicketViewSet(
                 else:
                     return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                parent_node.add_child(ticket=ticket)
+                parent_node.add_child(ticket=child)
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
-
         except (
                 t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
                 t_except.NodeAlreadySaved, t_except.PathOverflow
         ):
             return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        detail=True,
+        methods=['patch'],
+        permission_classes=permission_classes
+    )
+    def add_as_subticket(self, request, pk=None):
+        try:
+            # validate
+            ticket = self.get_object()
+            parent = get_object_or_404(Ticket, pk=request.data.get("parent_id"))
+            self.check_object_permissions(request, ticket)
+            self.check_object_permissions(request, parent)
+
+            # serialize the parent ticket
+
+            return self._add_subticket(parent, ticket)
 
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
@@ -187,36 +186,11 @@ class TicketViewSet(
         try:
             # validate
             parent = self.get_object()
+            child = get_object_or_404(Ticket, pk=request.data.get("child_id", None))
             self.check_object_permissions(request, parent)
+            self.check_object_permissions(request, child)
 
-            # serialize the child ticket
-            child_ticket = self.serializer_class(data=request.data)
-            child_ticket.is_valid(raise_exception=True)
-            child_id = child_ticket.validated_data["id"]
-            child = get_object_or_404(Ticket, pk=child_id)
-
-            # fetch the associated nodes
-            parent_node = get_object_or_404(TicketNode, ticket=parent)
-            ticket_node_filter = TicketNode.objects.filter(ticket=child)
-
-            if ticket_node_filter:
-                # if it exists and is root, move as child
-                if len(ticket_node_filter) != 1:
-                    raise SuspiciousOperation("Invalid request; the tree got messed up")
-
-                child_node = ticket_node_filter[0]
-                if child_node.is_root():
-                    child_node.move(target=parent_node, pos="last-child")
-                else:
-                    return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                parent_node.add_child(ticket=child)
-
-        except (
-                t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
-                t_except.NodeAlreadySaved, t_except.PathOverflow
-        ):
-            return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+            return self._add_subticket(parent, child)
 
         except serializers.ValidationError as e:
             return Response({'msg': e.detail}, e.status_code)

@@ -4,10 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 
-from ..models import Ticket
-from ..models import Member
-from ..models import Team, Member, Tag, TicketStatus, TicketTag, TicketNode
-from ..views import TicketViewSet
+from api.models import (Ticket, Team, Member, Tag, TicketStatus, TicketTag, TicketNode)
 from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSerializer
 
 import datetime
@@ -365,7 +362,7 @@ class TicketViewTestCase(TestCase):
         # create a ticket to be added
         subticket_data = Ticket(
             owner=self.ticket_user,
-            title="yare yare daze",
+            title="try not to cringe",
             ticket_number=1,
             team=self.team,
         )
@@ -373,7 +370,7 @@ class TicketViewTestCase(TestCase):
         subticket_data.save()
 
         response = self.admin_client.patch(
-            reverse("ticket-add-subticket", kwargs={"pk": subticket_data.pk}),
+            reverse("ticket-add-as-subticket", kwargs={"pk": subticket_data.pk}),
             {"parent_id": self.ticket_id},
             format="json"
         )
@@ -394,7 +391,7 @@ class TicketViewTestCase(TestCase):
         TicketNode.add_root(ticket=root_sub_data)
 
         response = self.admin_client.patch(
-            reverse("ticket-add-subticket", kwargs={"pk": root_sub_data.pk}),
+            reverse("ticket-add-as-subticket", kwargs={"pk": root_sub_data.pk}),
             {"parent_id": self.ticket_id},
             format="json"
         )
@@ -419,7 +416,7 @@ class TicketViewTestCase(TestCase):
         existing_id = response.data["id"]
 
         response = self.admin_client.patch(
-            reverse("ticket-add-subticket", kwargs={"pk": existing_id}),
+            reverse("ticket-add-as-subticket", kwargs={"pk": existing_id}),
             {"parent_id": self.ticket_id},
             format="json"
         )
@@ -435,9 +432,10 @@ class TicketViewTestCase(TestCase):
             url, format="json"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertNotEqual(response.data.get('children'), None)
+        children = response.data.get('children', None)
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(children, None)
 
 
 class TagViewTestCase(TestCase):

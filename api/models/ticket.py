@@ -22,6 +22,7 @@ class TicketManager(models.Manager):
 
         return super().create(**obj_data)
 
+
 class Ticket(models.Model):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
