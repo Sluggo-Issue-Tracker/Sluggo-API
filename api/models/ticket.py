@@ -83,8 +83,3 @@ class Ticket(HasUuid):
     def __str__(self):
         return f"Ticket: {self.title}"
 
-
-def save_model(sender, instance, created, **kwargs):
-    print("{} has been created".format(type(instance)))
-
-signals.post_save.connect(save_model, sender=Ticket, weak=False)

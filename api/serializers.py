@@ -32,6 +32,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "object_uuid",
             "ticket_head",
             "created",
             "activated",
@@ -50,7 +51,9 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = api_models.Tag
-        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+        fields = ["id", "team_id",
+                  "object_uuid",
+                  "title", "created", "activated", "deactivated"]
 
     def create(self, validated_data):
         validated_data['team'] = validated_data.pop('team_id')
@@ -76,6 +79,7 @@ class MemberSerializer(serializers.ModelSerializer):
             "id",
             "owner",
             "team_id",
+            "object_uuid",
             "role",
             "bio",
             "created",
@@ -100,6 +104,7 @@ class TicketCommentSerializer(serializers.ModelSerializer):
             "ticket_id",
             "team_id",
             "owner",
+            "object_uuid",
             "content",
             "created",
             "activated",
@@ -114,7 +119,9 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = api_models.TicketStatus
-        fields = ["id", "team_id", "title", "created", "activated", "deactivated"]
+        fields = ["id", "team_id",
+                  "object_uuid",
+                  "title", "created", "activated", "deactivated"]
 
     def create(self, validated_data):
         validated_data['team'] = validated_data.pop('team_id')
@@ -130,7 +137,9 @@ class TicketTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = api_models.TicketTag
-        fields = ["tag", "created", "activated", "deactivated"]
+        fields = ["tag", "created",
+                  "object_uuid",
+                  "activated", "deactivated"]
 
 
 class TicketNodeSerializer(serializers.ModelSerializer):
@@ -197,6 +206,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "tag_id_list",
             "parent_id",
             "owner",
+            "object_uuid",
             "assigned_user",
             "assigned_user_id",
             "status",
