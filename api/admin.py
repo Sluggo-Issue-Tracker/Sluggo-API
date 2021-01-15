@@ -3,7 +3,6 @@ from .models import (
     Ticket, Member, Team, TicketComment, TicketStatus, TicketNode, TicketTag
 )
 
-
 class TicketAdmin(admin.ModelAdmin):
     readonly_fields = ("created",)
 

@@ -86,7 +86,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class TicketCommentSerializer(serializers.ModelSerializer):
     """
-    Serialzier for comments. to be used with tickets
+    Serializer for comments. to be used with tickets
     """
 
     class Meta:

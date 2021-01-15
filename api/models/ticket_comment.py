@@ -3,7 +3,7 @@ from django.conf import settings
 
 from .ticket import Ticket
 from .team import Team
-
+import uuid
 
 class TicketComment(models.Model):
     """
@@ -28,6 +28,7 @@ class TicketComment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticket_commentUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
        app_label = "api"

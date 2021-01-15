@@ -1,6 +1,6 @@
 from django.db import models
 from .team import Team
-
+import uuid
 
 class TicketStatus(models.Model):
     """
@@ -15,6 +15,7 @@ class TicketStatus(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    ticket_statusUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         ordering = ["id"]

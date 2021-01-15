@@ -1,6 +1,7 @@
 # this here defines the ticket_tags
 from django.db import models
 from django.conf import settings
+import uuid
 from .team import Team
 from .ticket import Ticket
 from hashlib import md5
@@ -12,6 +13,7 @@ class Tag(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    tagUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         ordering = ["id"]
@@ -29,6 +31,7 @@ class TicketTagManager(models.Manager):
         if not tag or not ticket:
             raise ValueError("missing name or team")
 
+        ticket_tagUUID = uuid.uuid4()
         team_id = "{}".format(tag.id)
         ticket_id = "{}".format(ticket.id)
         obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(ticket_id.encode()).hexdigest()
@@ -43,7 +46,7 @@ class TicketTag(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-
+    ticket_tagUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
     objects = TicketTagManager()
 
     class Meta:
