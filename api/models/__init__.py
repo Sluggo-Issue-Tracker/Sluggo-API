@@ -5,4 +5,5 @@ from .ticket_comment import TicketComment
 from .ticket_status import TicketStatus
 from .ticket_tag import Tag, TicketTag
 from .ticket_node import TicketNode
-from.has_uuid import HasUuid
+from .has_uuid import HasUuid
+from .event import Event

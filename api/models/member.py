@@ -73,6 +73,8 @@ class Member(models.Model):
         max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
     )
 
+    pronouns = models.TextField(null=True)
+
     bio = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)

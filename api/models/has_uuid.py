@@ -11,3 +11,5 @@ class HasUuid(models.Model):
 
     def __str__(self):
         return f"HasUuid: {self.id}"
+
+
