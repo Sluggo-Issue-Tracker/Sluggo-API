@@ -1,9 +1,10 @@
 from django.db import models
 from hashlib import md5
 import uuid
+from .has_uuid import HasUuid
 
-class Team(models.Model):
 
+class Team(HasUuid):
     # id is implicitly defined by django
     name = models.CharField(max_length=100, unique=True, blank=False)
     description = models.TextField()
@@ -11,7 +12,6 @@ class Team(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    teamUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         ordering = ["created"]
