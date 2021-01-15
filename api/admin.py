@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import Ticket, Member, Team, TicketComment, TicketStatus
 
-
 class TicketAdmin(admin.ModelAdmin):
     readonly_fields = ("created",)
 

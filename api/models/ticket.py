@@ -4,6 +4,7 @@ from django.conf import settings
 from .team import Team
 from .ticket_status import TicketStatus
 from .member import Member
+import uuid
 
 
 class TicketManager(models.Manager):
@@ -16,6 +17,7 @@ class TicketManager(models.Manager):
         if not owner or not team:
             raise ValueError("missing name or team")
 
+        ticketUUID = uuid.uuid4()
         team.ticket_head += 1
         team.save()
         obj_data["ticket_number"] = team.ticket_head
@@ -66,7 +68,7 @@ class Ticket(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    ticketUUID = models.UUIDField(null=True, blank=False)
+    ticketUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     objects = TicketManager()
 

@@ -1,5 +1,6 @@
 from django.db import models
 from hashlib import md5
+import uuid
 
 class Team(models.Model):
 
@@ -10,7 +11,7 @@ class Team(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    teamUUID = models.UUIDField(null=True, blank=False)
+    teamUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         ordering = ["created"]

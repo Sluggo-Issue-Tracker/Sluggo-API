@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from hashlib import md5
+import uuid
 
 from .team import Team
 
@@ -76,7 +77,7 @@ class Member(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    memberUUID = models.UUIDField(null=True, blank=False)
+    memberUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     objects = MemberManager()
 
