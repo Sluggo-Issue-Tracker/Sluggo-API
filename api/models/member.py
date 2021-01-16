@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from hashlib import md5
 import uuid
 
+from .has_uuid import HasUuid
+
 from .team import Team
 
 
@@ -29,7 +31,7 @@ class MemberManager(models.Manager):
         return super().create(**obj_data)
 
 
-class Member(models.Model):
+class Member(HasUuid):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
 
@@ -72,6 +74,8 @@ class Member(models.Model):
     role = models.CharField(
         max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
     )
+
+    pronouns = models.TextField(null=True)
 
     bio = models.TextField()
     created = models.DateTimeField(auto_now_add=True)

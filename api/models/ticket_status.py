@@ -2,7 +2,10 @@ from django.db import models
 from .team import Team
 import uuid
 
-class TicketStatus(models.Model):
+from .has_uuid import HasUuid
+
+
+class TicketStatus(HasUuid):
     """
     This model represents custom statuses that teams can set.
     By default, they will be created, started, and completed

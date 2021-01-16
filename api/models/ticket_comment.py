@@ -3,9 +3,10 @@ from django.conf import settings
 
 from .ticket import Ticket
 from .team import Team
+from .has_uuid import HasUuid
 import uuid
 
-class TicketComment(models.Model):
+class TicketComment(HasUuid):
     """
     Comment object for tickets
     """

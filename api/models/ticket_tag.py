@@ -4,10 +4,11 @@ from django.conf import settings
 import uuid
 from .team import Team
 from .ticket import Ticket
+from .has_uuid import HasUuid
 from hashlib import md5
 
 
-class Tag(models.Model):
+class Tag(HasUuid):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, blank=False)
     created = models.DateTimeField(auto_now_add=True)

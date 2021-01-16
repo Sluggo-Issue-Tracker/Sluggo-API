@@ -1,9 +1,12 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import signals
+from django.dispatch import receiver
 
 from .team import Team
 from .ticket_status import TicketStatus
 from .member import Member
+from .has_uuid import HasUuid
 import uuid
 
 
@@ -25,7 +28,7 @@ class TicketManager(models.Manager):
         return super().create(**obj_data)
 
 
-class Ticket(models.Model):
+class Ticket(HasUuid):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
 
@@ -79,3 +82,4 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"Ticket: {self.title}"
+

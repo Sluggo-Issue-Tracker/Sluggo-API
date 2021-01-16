@@ -14,9 +14,10 @@ class Event(models.Model):
         (DELETE, "Delete"),
     ]
 
-    team = models.ForeignKey(Team, on_delete=models.SET_NULL)
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
     edited = models.DateTimeField(auto_now_add=True)
     event_type = models.SmallIntegerField(choices=events)
+    description = models.TextField(null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
     object = models.UUIDField(null=True, blank=False, default=uuid.uuid4)
 
@@ -30,3 +31,4 @@ class Event(models.Model):
     class Meta:
         ordering = ["-edited"]
         app_label = "api"
+
