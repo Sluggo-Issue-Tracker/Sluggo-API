@@ -15,7 +15,7 @@ class Event(models.Model):
     ]
 
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
-    edited = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     event_type = models.SmallIntegerField(choices=events)
     description = models.TextField(null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
