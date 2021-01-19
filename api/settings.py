@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
     'dj_rest_auth.registration',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.slack',
+    'allauth.socialaccount.providers.google',
     'django_filters',
     'treebeard'
 ]
@@ -116,7 +118,7 @@ AUTH_USER_MODEL = "auth.User"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'api.bearer_authentication.BearerAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',

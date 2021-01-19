@@ -30,8 +30,11 @@ urlpatterns = [
     path("", include(router.urls)),
 
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('dj-rest-auth/registration', include('dj_rest_auth.registration.urls')),
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('dj-rest-auth/slack/', api_views.SlackLogin.as_view(), name="slack_login"),
+    path('dj-rest-auth/google/', api_views.GoogleLogin.as_view(), name="google_login"),
 
     path("api-auth/", include("rest_framework.urls")),
+    path('accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls)
 ]
