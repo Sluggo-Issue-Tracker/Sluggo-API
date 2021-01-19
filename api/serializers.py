@@ -252,6 +252,8 @@ class EventSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(
         many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
     )
+    description = serializers.ReadOnlyField()
+    object_id = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.Event
@@ -260,19 +262,10 @@ class EventSerializer(serializers.ModelSerializer):
             "created",
             "event_type",
             "user",
+            "user_id",
             "description",
             "object_id"
             ]
 
-    def create(self, validated_data):
-        #validated_data['status'] = validated_data.pop('status_id', None)
-        #validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
-        #validated_data['team'] = validated_data.pop('team_id')
-
-        event = api_models.Event.objects.create(
-            **validated_data
-        )
-
-        return event
 
 

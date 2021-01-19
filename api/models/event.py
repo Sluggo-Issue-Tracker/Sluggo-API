@@ -29,6 +29,6 @@ class Event(models.Model):
         return self.DELETE == self.event_type
 
     class Meta:
-        ordering = ["-edited"]
+        ordering = ["-created"]
         app_label = "api"
 
