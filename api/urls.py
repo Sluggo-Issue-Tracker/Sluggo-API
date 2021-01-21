@@ -5,6 +5,7 @@ from rest_framework.schemas import get_schema_view
 from django.urls import include, path
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from . import views as api_views
 
 router = DefaultRouter()
@@ -26,7 +27,11 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('schema', schema_view),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
     path("", include(router.urls)),
 
     path('dj-rest-auth/', include('dj_rest_auth.urls')),

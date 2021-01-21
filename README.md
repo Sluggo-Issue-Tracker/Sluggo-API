@@ -51,10 +51,10 @@ upgraded:
 
 3. Run with:
 `python manage.py runserver`
-## Generating Documentation
 
-The documentation engine relies on a schema file. To generate do 
-`python manage.py generateschema > schema.yml`.
+## Documentation
+
+Navigate to `/api/schema/swagger-ui` for a browsable overview of the endpoints.
 
 ## Contributing
 Currently, we are not accepting third-party contributions to SluggoAPI.
