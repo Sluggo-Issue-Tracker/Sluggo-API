@@ -1,543 +1,2263 @@
+openapi: 3.0.3
 info:
-  description: ''
   title: ''
-  version: ''
-openapi: 3.0.0
+  version: 0.0.0
 paths:
-  /member/:
-    get:
-      description: Returns the list of all members
-      operationId: member_list
-      parameters:
-      - in: query
-        name: page
-        schema:
-          description: A page number within the paginated result set.
-          title: Page
-          type: integer
-      tags:
-      - member
-  /member/create_record/:
+  /dj-rest-auth/login/:
     post:
-      description: Creates a member from json
-      operationId: member_create_record
+      operationId: dj_rest_auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
       tags:
-      - member
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: ''
+  /dj-rest-auth/logout/:
+    post:
+      operationId: dj_rest_auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - dj-rest-auth
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /dj-rest-auth/password/change/:
+    post:
+      operationId: dj_rest_auth_password_change_create
+      description: |-
+        Calls Django Auth SetPasswordForm save method.
+
+        Accepts the following POST parameters: new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /dj-rest-auth/password/reset/:
+    post:
+      operationId: dj_rest_auth_password_reset_create
+      description: |-
+        Calls Django Auth PasswordResetForm save method.
+
+        Accepts the following POST parameters: email
+        Returns the success/fail message.
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /dj-rest-auth/password/reset/confirm/:
+    post:
+      operationId: dj_rest_auth_password_reset_confirm_create
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /dj-rest-auth/registration:
+    post:
+      operationId: dj_rest_auth_registration_create
+      description: ''
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: ''
+  /dj-rest-auth/registrationverify-email/:
+    post:
+      operationId: dj_rest_auth_registrationverify_email_create
+      description: ''
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /dj-rest-auth/user/:
+    get:
+      operationId: dj_rest_auth_user_retrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - dj-rest-auth
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    put:
+      operationId: dj_rest_auth_user_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
+    patch:
+      operationId: dj_rest_auth_user_partial_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - dj-rest-auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetails'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+          description: ''
   /member/{id}/:
     get:
-      description: Returns the record associated with the primary key md5(teamid) + md5(user email)
-      operationId: member_read
+      operationId: member_retrieve
+      description: Reads handled by the mixins, and use permission_classes
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique value identifying this member.
-          title: id
           type: string
+        description: A unique value identifying this member.
+        required: true
       tags:
       - member
-    patch:
-      description: Updates the record associated with the primary key with the included json
-      operationId: member_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique value identifying this member.
-          title: id
-          type: string
-      tags:
-      - member
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
     put:
-      description: Replaces the record associated with the primary key with the included json
       operationId: member_update
+      description: Reads handled by the mixins, and use permission_classes
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique value identifying this member.
-          title: id
           type: string
+        description: A unique value identifying this member.
+        required: true
       tags:
       - member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Member'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Member'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+    patch:
+      operationId: member_partial_update
+      description: Reads handled by the mixins, and use permission_classes
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this member.
+        required: true
+      tags:
+      - member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
   /member/{id}/approve/:
     patch:
-      description: Approve the join request (activate a record associated with id)
-      operationId: member_approve
+      operationId: member_approve_partial_update
+      description: 'approve the join request '
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique value identifying this member.
-          title: id
           type: string
+        description: A unique value identifying this member.
+        required: true
       tags:
       - member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
   /member/{id}/leave/:
     patch:
-      description: leave this team. this is deletion but only to deactivate the record
-      operationId: member_leave
+      operationId: member_leave_partial_update
+      description: 'leave this team this is deletion but only to deactivate the record '
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique value identifying this member.
-          title: id
           type: string
+        description: A unique value identifying this member.
+        required: true
       tags:
       - member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /member/{id}/list_team/:
+    get:
+      operationId: member_list_team_retrieve
+      description: Reads handled by the mixins, and use permission_classes
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this member.
+        required: true
+      tags:
+      - member
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
   /member/{id}/make_admin/:
     patch:
-      description: make the user an admin
-      operationId: member_make_admin
+      operationId: member_make_admin_partial_update
+      description: 'make the user an admin '
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique value identifying this member.
-          title: id
           type: string
+        description: A unique value identifying this member.
+        required: true
       tags:
       - member
-  /status/create_record/:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMember'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /member/create_record/:
     post:
-      description: insert a ticket status from the json
-      operationId: status_create_record
+      operationId: member_create_record_create
+      description: Reads handled by the mixins, and use permission_classes
       tags:
-      - status
+      - member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Member'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Member'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
   /status/{id}/:
-    delete:
-      description: delete a ticket status associated with id
-      operationId: status_delete
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket status.
-          title: ID
-          type: integer
-      tags:
-      - status
     get:
-      description: read the status associated with a given id
-      operationId: status_read
+      operationId: status_retrieve
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket status.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket status.
+        required: true
       tags:
       - status
-    patch:
-      description: perform a partial update
-      operationId: status_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket status.
-          title: ID
-          type: integer
-      tags:
-      - status
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketStatus'
+          description: ''
     put:
-      description: replace the status associated with an id
       operationId: status_update
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket status.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket status.
+        required: true
       tags:
       - status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketStatus'
+          description: ''
+    patch:
+      operationId: status_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket status.
+        required: true
+      tags:
+      - status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketStatus'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketStatus'
+          description: ''
+    delete:
+      operationId: status_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket status.
+        required: true
+      tags:
+      - status
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /status/{id}/list_team/:
     get:
-      description: list the statuses associated with a team id
-      operationId: status_list_team
+      operationId: status_list_team_retrieve
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket status.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket status.
+        required: true
       tags:
       - status
-  /tag/create_record/:
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketStatus'
+          description: ''
+  /status/create_record/:
     post:
-      descriptipon: create a record from the json input
-      operationId: tag_create_record
+      operationId: status_create_record_create
+      description: ''
       tags:
-      - tag
+      - status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketStatus'
+          description: ''
   /tag/{id}/:
-    delete:
-      description: delete the tag associated with the id
-      operationId: tag_delete
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this tag.
-          title: ID
-          type: integer
-      tags:
-      - tag
     get:
-      description: retrieve the tag record
-      operationId: tag_read
+      operationId: tag_retrieve
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this tag.
-          title: ID
           type: integer
+        description: A unique integer value identifying this tag.
+        required: true
       tags:
       - tag
-    patch:
-      description: update only a portion of the tag
-      operationId: tag_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this tag.
-          title: ID
-          type: integer
-      tags:
-      - tag
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
     put:
-      description: replace the entire tag
       operationId: tag_update
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this tag.
-          title: ID
           type: integer
+        description: A unique integer value identifying this tag.
+        required: true
       tags:
       - tag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    patch:
+      operationId: tag_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    delete:
+      operationId: tag_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tag
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /tag/{id}/list_team/:
     get:
-      description: list the tags associated with the team at id
-      operationId: tag_list_team
+      operationId: tag_list_team_retrieve
+      description: ''
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this tag.
-          title: ID
           type: integer
+        description: A unique integer value identifying this tag.
+        required: true
       tags:
       - tag
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /tag/create_record/:
+    post:
+      operationId: tag_create_record_create
+      description: ''
+      tags:
+      - tag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
   /team/:
     get:
-      description: retrieve all teams
       operationId: team_list
+      description: ''
       parameters:
-      - in: query
-        name: page
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
         schema:
-          description: A page number within the paginated result set.
-          title: Page
           type: integer
       tags:
       - team
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeamList'
+          description: ''
+  /team/{id}/:
+    get:
+      operationId: team_retrieve
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this team.
+        required: true
+      tags:
+      - team
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+    put:
+      operationId: team_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this team.
+        required: true
+      tags:
+      - team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Team'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Team'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Team'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+    patch:
+      operationId: team_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this team.
+        required: true
+      tags:
+      - team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTeam'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTeam'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTeam'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+    delete:
+      operationId: team_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this team.
+        required: true
+      tags:
+      - team
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /team/create_record/:
     post:
-      description: create a team from json. the creating user becomes an admin of this team
-      operationId: team_create_record
+      operationId: team_create_record_create
+      description: ''
       tags:
       - team
-  /team/{id}/:
-    delete:
-      description: delete the team associated with the id
-      operationId: team_delete
-      parameters:
-      - in: path
-        name: id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Team'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Team'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Team'
         required: true
-        schema:
-          description: A unique integer value identifying this team.
-          title: ID
-          type: integer
-      tags:
-      - team
-    get:
-      description: retrieve the full record from the associated id
-      operationId: team_read
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this team.
-          title: ID
-          type: integer
-      tags:
-      - team
-    patch:
-      description: update a portion of the fields
-      operationId: team_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this team.
-          title: ID
-          type: integer
-      tags:
-      - team
-    put:
-      description: replace all the fields
-      operationId: team_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this team.
-          title: ID
-          type: integer
-      tags:
-      - team
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
   /ticket-comment/:
     get:
-      description: not supported atm
-      operationId: ticket-comment_list
+      operationId: ticket_comment_list
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
       parameters:
-      - in: query
-        name: page
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
         schema:
-          description: A page number within the paginated result set.
-          title: Page
           type: integer
       tags:
       - ticket-comment
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTicketCommentList'
+          description: ''
     post:
-      description: not supported atm
-      operationId: ticket-comment_create
+      operationId: ticket_comment_create
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
       tags:
       - ticket-comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+          description: ''
+  /ticket-comment/{id}/:
+    get:
+      operationId: ticket_comment_retrieve
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket comment.
+        required: true
+      tags:
+      - ticket-comment
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+          description: ''
+    put:
+      operationId: ticket_comment_update
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket comment.
+        required: true
+      tags:
+      - ticket-comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketComment'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+          description: ''
+    patch:
+      operationId: ticket_comment_partial_update
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket comment.
+        required: true
+      tags:
+      - ticket-comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketComment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketComment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketComment'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+          description: ''
+    delete:
+      operationId: ticket_comment_destroy
+      description: Basic crud should be pre-generated, so we only need to do the more
+        complicated calls
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket comment.
+        required: true
+      tags:
+      - ticket-comment
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /ticket-comment/recent_comments/:
     get:
-      description: not supported atm
-      operationId: ticket-comment_recent_comments
+      operationId: ticket_comment_recent_comments_retrieve
+      description: 'This call returns the first page of comments associated with the
+        given team_id '
       tags:
       - ticket-comment
-  /ticket-comment/{id}/:
-    delete:
-      description: not supported atm
-      operationId: ticket-comment_delete
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket comment.
-          title: ID
-          type: integer
-      tags:
-      - ticket-comment
-    get:
-      description: not supported atm
-      operationId: ticket-comment_read
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket comment.
-          title: ID
-          type: integer
-      tags:
-      - ticket-comment
-    patch:
-      description: not supported atm
-      operationId: ticket-comment_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket comment.
-          title: ID
-          type: integer
-      tags:
-      - ticket-comment
-    put:
-      description: not supported atm
-      operationId: ticket-comment_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket comment.
-          title: ID
-          type: integer
-      tags:
-      - ticket-comment
-  /ticket/create_record/:
-    post:
-      description: Creates a record from json
-      operationId: ticket_create_record
-      tags:
-      - ticket
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+          description: ''
   /ticket/{id}/:
     get:
-      description: Returns the serialized ticket associated with id
-      operationId: ticket_read
+      operationId: ticket_retrieve
+      description: This viewset automatically provides `list` and `detail` actions.
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
-      - in: query
-        name: search
-        schema:
-          description: A search term.
-          title: Search
-          type: string
-      - in: query
-        name: ordering
-        schema:
-          description: Which field to use when ordering the results.
-          title: Ordering
-          type: string
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
-    patch:
-      description: Update only some of the fields associated with id
-      operationId: ticket_partial_update
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
-          type: integer
-      - in: query
-        name: search
-        schema:
-          description: A search term.
-          title: Search
-          type: string
-      - in: query
-        name: ordering
-        schema:
-          description: Which field to use when ordering the results.
-          title: Ordering
-          type: string
-      tags:
-      - ticket
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
     put:
-      description: Completely replace a ticket
       operationId: ticket_update
+      description: This viewset automatically provides `list` and `detail` actions.
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
-      - in: query
-        name: search
-        schema:
-          description: A search term.
-          title: Search
-          type: string
-      - in: query
-        name: ordering
-        schema:
-          description: Which field to use when ordering the results.
-          title: Ordering
-          type: string
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+    patch:
+      operationId: ticket_partial_update
+      description: This viewset automatically provides `list` and `detail` actions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
+      tags:
+      - ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /ticket/{id}/add_as_subticket/:
+    patch:
+      operationId: ticket_add_as_subticket_partial_update
+      description: This viewset automatically provides `list` and `detail` actions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
+      tags:
+      - ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /ticket/{id}/add_subticket/:
     patch:
-      description: add the ticket associated id as a subticket of the one passed in as json
-      operationId: ticket_add_subticket
+      operationId: ticket_add_subticket_partial_update
+      description: This viewset automatically provides `list` and `detail` actions.
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /ticket/{id}/delete/:
     delete:
-      description: deactivate the ticket associated with the primary key
-        the record
-      operationId: ticket_delete
+      operationId: ticket_delete_destroy
+      description: 'deactivate this ticket this is deletion but only to deactivate
+        the record '
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
   /ticket/{id}/list_team/:
     get:
-      description: List all tickets associated with a team
-      operationId: ticket_list_team
+      operationId: ticket_list_team_retrieve
+      description: This viewset automatically provides `list` and `detail` actions.
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /ticket/{id}/update_status/:
     patch:
-      description: Update the status of a ticket associated with id with the status passe din as input
-      operationId: ticket_update_status
+      operationId: ticket_update_status_partial_update
+      description: This viewset automatically provides `list` and `detail` actions.
       parameters:
       - in: path
         name: id
-        required: true
         schema:
-          description: A unique integer value identifying this ticket.
-          title: ID
           type: integer
+        description: A unique integer value identifying this ticket.
+        required: true
       tags:
       - ticket
-servers:
-- url: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicket'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /ticket/create_record/:
+    post:
+      operationId: ticket_create_record_create
+      description: This viewset automatically provides `list` and `detail` actions.
+      tags:
+      - ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+components:
+  schemas:
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - password
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        team_id:
+          type: integer
+          readOnly: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        bio:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - activated
+      - bio
+      - created
+      - deactivated
+      - id
+      - object_uuid
+      - owner
+      - role
+      - team_id
+    PaginatedTeamList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Team'
+    PaginatedTicketCommentList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketComment'
+    PasswordChange:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+      required:
+      - new_password1
+      - new_password2
+    PasswordReset:
+      type: object
+      description: Serializer for requesting a password reset e-mail.
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    PasswordResetConfirm:
+      type: object
+      description: Serializer for confirming a password reset attempt.
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
+    PatchedMember:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        team_id:
+          type: integer
+          readOnly: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        bio:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+    PatchedTag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+    PatchedTeam:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        ticket_head:
+          type: integer
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+    PatchedTicket:
+      type: object
+      description: |-
+        Serializer Class for the Ticket model.
+
+        The fields that are serialized and visible currently are:
+            id: The id of the Ticket
+            team_id: id of owner team
+            owner: The user that created the ticket
+            assigned_user: The user assigned to the ticket
+            title: The title of the ticket
+            description: The description of the ticket
+            comments: The comments associated with this ticket
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        ticket_number:
+          type: integer
+          readOnly: true
+        tag_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketTag'
+          readOnly: true
+        tag_id_list:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        parent_id:
+          type: integer
+          writeOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        assigned_user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        assigned_user_id:
+          type: integer
+          writeOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TicketStatus'
+          readOnly: true
+        status_id:
+          type: integer
+          writeOnly: true
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketComment'
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+    PatchedTicketComment:
+      type: object
+      description: Serializer for comments. to be used with tickets
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticket_id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+          readOnly: true
+        owner:
+          type: integer
+          nullable: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        content:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+    PatchedTicketStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+    PatchedUserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 150
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password1:
+          type: string
+          writeOnly: true
+        password2:
+          type: string
+          writeOnly: true
+      required:
+      - password1
+      - password2
+      - username
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    RoleEnum:
+      enum:
+      - UA
+      - AP
+      - AD
+      type: string
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - activated
+      - created
+      - deactivated
+      - id
+      - object_uuid
+      - team_id
+      - title
+    Team:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        ticket_head:
+          type: integer
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - activated
+      - created
+      - deactivated
+      - description
+      - id
+      - name
+      - object_uuid
+      - ticket_head
+    Ticket:
+      type: object
+      description: |-
+        Serializer Class for the Ticket model.
+
+        The fields that are serialized and visible currently are:
+            id: The id of the Ticket
+            team_id: id of owner team
+            owner: The user that created the ticket
+            assigned_user: The user assigned to the ticket
+            title: The title of the ticket
+            description: The description of the ticket
+            comments: The comments associated with this ticket
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        ticket_number:
+          type: integer
+          readOnly: true
+        tag_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketTag'
+          readOnly: true
+        tag_id_list:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        parent_id:
+          type: integer
+          writeOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        assigned_user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        assigned_user_id:
+          type: integer
+          writeOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TicketStatus'
+          readOnly: true
+        status_id:
+          type: integer
+          writeOnly: true
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketComment'
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - activated
+      - assigned_user
+      - created
+      - deactivated
+      - id
+      - object_uuid
+      - owner
+      - status
+      - tag_list
+      - team_id
+      - ticket_number
+      - title
+    TicketComment:
+      type: object
+      description: Serializer for comments. to be used with tickets
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticket_id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+          readOnly: true
+        owner:
+          type: integer
+          nullable: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        content:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - content
+      - created
+      - id
+      - object_uuid
+      - team_id
+      - ticket_id
+    TicketStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        team_id:
+          type: integer
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created
+      - id
+      - object_uuid
+      - team_id
+      - title
+    TicketTag:
+      type: object
+      properties:
+        tag:
+          allOf:
+          - $ref: '#/components/schemas/Tag'
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        object_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        activated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - activated
+      - created
+      - deactivated
+      - object_uuid
+      - tag
+    Token:
+      type: object
+      description: Serializer for Token model.
+      properties:
+        key:
+          type: string
+          maxLength: 40
+      required:
+      - key
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - id
+    UserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - pk
+      - username
+    VerifyEmail:
+      type: object
+      properties:
+        key:
+          type: string
+      required:
+      - key
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: Session
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
