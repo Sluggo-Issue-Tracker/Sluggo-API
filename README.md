@@ -53,8 +53,18 @@ upgraded:
 `python manage.py runserver`
 
 ## Documentation
+Documentation is hosted within the browser when you run a copy of the
+server, and is automatically updated to the latest changes made to
+the API. Additionally, the documentation is interactive, and will let
+you immediately experiment with the API and its various endpoints given
+input data. For more details, see [SwaggerUI's documentation](https://github.com/swagger-api/swagger-ui).
 
-Navigate to `/api/schema/swagger-ui` for a browsable overview of the endpoints.
+To launch the documentation server, simply run your Django server by 
+running `python manage.py runserver` as above.
+
+In your browser, navigate to `$HOST/api/schema/swagger-ui` for a 
+browsable overview of the endpoints, replacing `$HOST` with the IP and
+port on which you are running the API (for example, 127.0.0.1:8000).
 
 ## Contributing
 Currently, we are not accepting third-party contributions to SluggoAPI.
@@ -62,6 +72,9 @@ We are focusing our efforts on developing a solid core application which
 can accept more developers. We intend to determine the best way to
 approach accepting third party contributions, and will do so when
 we feel the project is in a good state to do so.
+
+For internal contributors to Slugbotics, please read CONTRIBUTING.md 
+for guidance on contribution standards.
 
 ## License
 We are currently still determining an acceptable license for the
