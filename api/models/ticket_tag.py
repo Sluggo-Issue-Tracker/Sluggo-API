@@ -32,14 +32,13 @@ class TicketTagManager(models.Manager):
         if not tag or not ticket:
             raise ValueError("missing name or team")
 
-        ticket_tagUUID = uuid.uuid4()
         team_id = "{}".format(tag.id)
         ticket_id = "{}".format(ticket.id)
         obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(ticket_id.encode()).hexdigest()
         return super().create(**obj_data)
 
 
-class TicketTag(models.Model):
+class TicketTag(HasUuid):
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
@@ -47,7 +46,6 @@ class TicketTag(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    ticket_tagUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
     objects = TicketTagManager()
 
     class Meta:
