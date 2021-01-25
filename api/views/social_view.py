@@ -99,7 +99,7 @@ class MemberViewSet(
         permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
     )
     def approve(self, request, pk=None):
-        """ approve the join request """
+        # approve the user.
         self.check_object_permissions(request, self.get_object())
 
         try:
@@ -114,8 +114,6 @@ class MemberViewSet(
 
         except Member.DoesNotExist:
             return Response({"msg": "failure"}, status.HTTP_404_NOT_FOUND)
-
-    # TODO: make the target user an admin
 
     # make the user an admin if not done already
     # this call is essentially idempotent and only modifies the user record when user was not previously activated

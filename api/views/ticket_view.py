@@ -87,6 +87,7 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
+    # overloading this function in order to attach a list of children
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -104,6 +105,10 @@ class TicketViewSet(
         permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def update_status(self, request, pk=None):
+        """
+        update the ticket's status
+        if a ticket status is present in the data, update the ticket's status
+        """
         self.check_object_permissions(request, self.get_object())
 
         status_id = request.data('status_id')
@@ -131,6 +136,7 @@ class TicketViewSet(
         except Ticket.DoesNotExist:
             return Response({"msg": "no such ticket"}, status=status.HTTP_404_NOT_FOUND)
 
+    # TODO: probably move this to a model
     def _add_subticket(self, parent, child):
         try:
             # fetch the associated node
@@ -163,6 +169,9 @@ class TicketViewSet(
         permission_classes=permission_classes
     )
     def add_as_subticket(self, request, pk=None):
+        """
+        add a ticket as a subticket of the ticket associated with pk
+        """
         try:
             # validate
             ticket = self.get_object()
@@ -183,6 +192,9 @@ class TicketViewSet(
         permission_classes=permission_classes
     )
     def add_subticket(self, request, pk=None):
+        """
+        add a subticket to the ticket associated with pk
+        """
         try:
             # validate
             parent = self.get_object()
@@ -198,7 +210,7 @@ class TicketViewSet(
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
     """
-    Basic crud should be pre-generated, so we only need to do the more complicated calls
+    all of these endpoints are deprecated for the time being
     """
 
     permission_classes = [
@@ -213,6 +225,11 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
     def recent_comments(self, request, team_id=None):
         """ This call returns the first page of comments associated with the given team_id """
         pass
+
+
+"""
+all views inherit from TeamRelatedViewSet following
+"""
 
 
 class TicketStatusViewSet(

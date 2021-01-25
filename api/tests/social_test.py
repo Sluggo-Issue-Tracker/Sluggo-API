@@ -47,7 +47,6 @@ class TeamBaseBehavior(TestCase):
             },
         )
 
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + response.data.get("key"))
 
         # if team creation fails, then all other tests will fail
 
@@ -104,13 +103,6 @@ class TeamBaseBehavior(TestCase):
 
         self.assertGreater(old_count, new_count)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def testTeamSearch(self):
-        response = self.client.get(
-            reverse("team-search", kwargs={"q": "bugslotics a very cool team"})
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class MemberTeamIntegration(TestCase):
@@ -175,7 +167,7 @@ class MemberTeamIntegration(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = client.get(
-            reverse("member-list"), format="json"
+            reverse("member-list-team", kwargs={"pk": self.team_id}), format="json"
         )
 
         print(response.data)
