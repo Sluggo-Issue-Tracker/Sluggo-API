@@ -65,6 +65,12 @@ class MemberViewSet(
     #
     # affects both the member record and the associated user record
     def update(self, request, *args, **kwargs):
+        """
+        Update the member record for a particular user, the one associated with the pk.
+        A user is limited by the fields they have access to. While the entire member record
+        is expected, calls through update only modify the bio field and the first / last name
+        field of the associated user object.
+        """
         kwargs["partial"] = True
         pk = kwargs.pop("pk")
 
@@ -72,21 +78,11 @@ class MemberViewSet(
         try:
             member_serializer = MemberSerializer(data=request.data)
             member_serializer.is_valid(raise_exception=True)
-            member_data = member_serializer.validated_data
 
             user_serializer = UserSerializer(data=request.data.get("user"))
             user_serializer.is_valid(raise_exception=True)
-            user_data = user_serializer.validated_data
 
-            # only update the fields that the user has access to
-            # in their edit profile dialog
-            member = get_object_or_404(Member, pk=pk)
-            Member.objects.filter(pk=pk).update(bio=member_data.get("bio"))
-
-            get_user_model().objects.filter(pk=member.owner.id).update(
-                first_name=user_data.get("first_name"),
-                last_name=user_data.get("last_name"),
-            )
+            Member.objects.filter(pk=pk).update(**member_serializer.validated_data)
 
         except exceptions.ValidationError as e:
             return Response({"msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -99,6 +95,10 @@ class MemberViewSet(
         permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
     )
     def approve(self, request, pk=None):
+        """
+        Approve the member record associated with the pk.
+        This can only be done by authenticated admins.
+        """
         # approve the user.
         self.check_object_permissions(request, self.get_object())
 
@@ -120,7 +120,10 @@ class MemberViewSet(
     # the user does not need to be approved for them to become an admin
     @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
     def make_admin(self, request, pk=None):
-        """ make the user an admin """
+        """
+        Make the user, whose member record is associated with a primary key, an admin.
+        This can only be done by an authenticated admin.
+        """
         self.check_object_permissions(request, self.get_object())
 
         try:
@@ -138,7 +141,7 @@ class MemberViewSet(
 
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
-        """ leave this team this is deletion but only to deactivate the record """
+        """ With the primary key, deactivate the associated record """
         self.check_object_permissions(request, self.get_object())
 
         try:
@@ -172,6 +175,10 @@ class TeamViewSet(mixins.RetrieveModelMixin,
 
     @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
     def create_record(self, request, *args, **kwargs):
+        """
+        Create a team record. The user which calls this endpoint is given the admin role for this organization.
+        """
+
         # serialize the request data.
         team_serializer = TeamSerializer(data=request.data)
         team_serializer.is_valid(raise_exception=True)
@@ -189,8 +196,3 @@ class TeamViewSet(mixins.RetrieveModelMixin,
         headers = self.get_success_headers(team_serializer.data)
 
         return Response(team_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    # requiring that all updates are partial instead of full
-    def update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return super().update(request, *args, **kwargs)
