@@ -33,6 +33,25 @@ and Linux) run:
 unique value (only important for production):
 `export SLUGGO_DJANGO_KEY="not important for non producton"`
 
+## Initialization
+
+This assumes that a slack app is already created. Do the following:
+
+1. Create a superuser with the command:
+`python3 manage.py createsuperuser`
+
+2. In a browser navigate to `$HOST/admin`, replacing `$HOST` with whatever the domain the local server is run with.
+
+3. Add a Social Application.
+    
+    a. Set provider to Slack
+    b. Set name to something appropriate like slack or slack-bot, etc
+    c. Enter the Client id from the slack bot's dashboard
+    d. Enter the secret key from the slack bot's dashboard
+    e. Leave Key empty
+    f. Choose the first site in the list (likely to be `example.com`)
+    g. Save.
+
 ## Running
 
 1. Activate the virtual environment shown in the Installation steps.
