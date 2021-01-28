@@ -184,7 +184,7 @@ class TicketViewTestCase(TestCase):
         )
 
         url = reverse('ticket-list-team', kwargs={"pk": self.team.id})
-        url += '?ordering=-created'
+        url += '?search=-created'
 
         print(url)
 

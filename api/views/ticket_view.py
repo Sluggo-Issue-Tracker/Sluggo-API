@@ -50,6 +50,10 @@ class TicketViewSet(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
+        """
+        Creates a record from the json included in the data field\n
+        See below for details on what the json\n
+        """
         try:
             serializer = TicketSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -89,6 +93,9 @@ class TicketViewSet(
 
     # overloading this function in order to attach a list of children
     def retrieve(self, request, *args, **kwargs):
+        """
+        Queries the database using the {id} selecting the primary key field
+        """
         instance = self.get_object()
         serializer = self.get_serializer(instance)
 
@@ -106,16 +113,17 @@ class TicketViewSet(
     )
     def update_status(self, request, pk=None):
         """
-        update the ticket's status
-        if a ticket status is present in the data, update the ticket's status
+        update the ticket's status\b
+        if a ticket status is present in the data, update the ticket's status\n
+        this assumes that the status is already created\n
         """
         self.check_object_permissions(request, self.get_object())
 
         status_id = request.data('status_id')
-        ticket = get_object_or_404(Ticket, pk=pk)
-        ticket_status = get_object_or_404(TicketStatus, pk=status_id)
-        ticket.status = ticket_status
-        ticket.save(update_fields=['status'])
+        if status_id:
+            ticket = get_object_or_404(Ticket, pk=pk)
+            ticket.status = get_object_or_404(TicketStatus, pk=status_id)
+            ticket.save(update_fields=['status'])
 
         return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
@@ -125,7 +133,9 @@ class TicketViewSet(
         permission_classes=permission_classes,
     )
     def delete(self, request, pk=None):
-        """ deactivate this ticket this is deletion but only to deactivate the record """
+        """
+        Deactivates, but do not delete the ticket associated with {id}\n
+        """
         try:
             instance = get_object_or_404(Ticket, pk=pk)
             self.check_object_permissions(request, instance)

@@ -37,21 +37,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for Team model
+    Serializer Class for Team model\n
 
-    The fields that are serialized on reads:
-        1. id: pk for this model
-        2. ticket_head: current count of tickets
-        3. object_uuid: unique identifier for this team
-        4. name: name of the team
-        5. description: description for the team
-        6. created: creation datetime
-        7. activated: activation datetime
-        8. deactivated: deactivation datetime
+    The fields that are serialized on reads:\n
+        1. id: pk for this model\n
+        2. ticket_head: current count of tickets\n
+        3. object_uuid: unique identifier for this team\n
+        4. name: name of the team\n
+        5. description: description for the team\n
+        6. created: creation datetime\n
+        7. activated: activation datetime\n
+        8. deactivated: deactivation datetime\n
 
-    The fields that are serialized on writes:
-        1. name: name of team
-        2. description: description of the team
+    The fields that are serialized on writes:\n
+        1. name: name of team\n
+        2. description: description of the team\n
 
     """
     # make the following fields read only
@@ -78,20 +78,20 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for Tag model
+    Serializer Class for Tag model\n
 
-    The fields that are serialized on reads:
-        1. id: pk for this model
-        2. team_id: pk for the team associated with this tag
-        3. object_uuid: unique identifier for this object
-        4. title: the title for this tag
-        5. created: datetime for creation
-        6. activated: datetime for activation
-        7. deactivated: datetime for deactivation
+    The fields that are serialized on reads:\n
+        1. id: pk for this model\n
+        2. team_id: pk for the team associated with this tag\n
+        3. object_uuid: unique identifier for this object\n
+        4. title: the title for this tag\n
+        5. created: datetime for creation\n
+        6. activated: datetime for activation\n
+        7. deactivated: datetime for deactivation\n
 
-    The fields that are serialized on writes:
-        1. team_id: the
-        2. title: the title for this tag
+    The fields that are serialized on writes:\n
+        1. team_id: the team this tag is related to\n
+        2. title: the title for this tag\n
 
     """
     id = serializers.ReadOnlyField()
@@ -119,30 +119,30 @@ class TagSerializer(serializers.ModelSerializer):
 
 class MemberSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for TicketTag model
+    Serializer Class for TicketTag model\n
 
-    The fields that are serialized on reads:
-        1. id: pk for this record
-        2. owner: serialized user model for the owner of this record
-        3. object_uuid: unique identifier for this object
-        4. team_id: pk for the team associated with this member
-        5. bio: bio / description for this member
-        6. pronouns: pronouns for this member
-        7. role: string field for the role of this member
-        8. created: when this record was created
-        9. activated: when this record was activated
-        10. deactivated: when this record was deactivated
+    The fields that are serialized on reads:\n
+        1. id: pk for this record\n
+        2. owner: serialized user model for the owner of this record\n
+        3. object_uuid: unique identifier for this object\n
+        4. team_id: pk for the team associated with this member\n
+        5. bio: bio / description for this member\n
+        6. pronouns: pronouns for this member\n
+        7. role: string field for the role of this member\n
+        8. created: when this record was created\n
+        9. activated: when this record was activated\n
+        10. deactivated: when this record was deactivated\n
 
-    The fields that are serialized on creates:
-        1. bio: bio / description for this member
-        2. pronouns: pronouns for this member
+    The fields that are serialized on creates:\n
+        1. bio: bio / description for this member\n
+        2. pronouns: pronouns for this member\n
 
-    The fields that are serializeds on updates:
-        1. bio: bio / description for this member
-        2. pronouns: pronouns for this member
-        3. owner:
-            a. first_name: the first name for the user model
-            b. last_name: the last name for the user model
+    The fields that are serializeds on updates:\n
+        1. bio: bio / description for this member\n
+        2. pronouns: pronouns for this member\n
+        3. owner:\n
+            a. first_name: the first name for the user model\n
+            b. last_name: the last name for the user model\n
 
     """
     id = serializers.ReadOnlyField()
@@ -366,6 +366,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "deactivated",
         ]
 
+    # this creates a record from the json, modifying the keys
     def create(self, validated_data):
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
@@ -382,6 +383,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
         return ticket
 
+    # update the instance with validated_data
     def update(self, instance, validated_data):
         validated_data['status'] = validated_data.pop('status_id', None)
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)

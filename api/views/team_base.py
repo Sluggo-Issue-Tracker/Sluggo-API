@@ -33,6 +33,9 @@ class TeamRelatedViewSet(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
     def create_record(self, request, *args, **kwargs):
+        """
+        Inserts a record into the db, expects the json as seen below\n
+        """
         try:
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -52,6 +55,10 @@ class TeamRelatedViewSet(
     # whose team relation correlates with the primary key
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
+        """
+        Lists all the records which belong to the team associated with {id}.
+        Options: ordering, search, page
+        """
 
         queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
         serializer = self.serializer_class(queryset, many=True)
@@ -64,6 +71,9 @@ class TeamRelatedViewSet(
     # perform the update, but reserialize once complete to ensure
     # that the output is json friendly
     def update(self, request, *args, **kwargs):
+        """
+        Replaces the existing record associated with {id} with the request data
+        """
         super().update(request, *args, **kwargs)
         instance = self.get_object()
         serializer = self.serializer_class(instance)
