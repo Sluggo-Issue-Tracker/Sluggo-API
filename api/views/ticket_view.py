@@ -217,6 +217,26 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({'msg': e.detail}, e.status_code)
 
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=permission_classes
+    )
+    def retrieve_user_tickets(self, request, pk=None):
+        """
+        {id} refers to a team
+        retrieve all tickets which are owned / assigned to requesting user
+        """
+        team = get_object_or_404(Team, pk=pk)
+        tickets = Ticket.retrieve_by_user(request.user, team)
+
+        for ticket in tickets:
+            self.check_object_permissions(request, ticket)
+
+        serializer = self.serializer_class(tickets, many=True)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
     """

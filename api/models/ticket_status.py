@@ -2,18 +2,15 @@ from django.db import models
 from .team import Team
 import uuid
 
-from .has_uuid import HasUuid
+from api.models.interfaces import HasUuid, TeamRelated
 
 
-class TicketStatus(HasUuid):
+class TicketStatus(HasUuid, TeamRelated):
     """
     This model represents custom statuses that teams can set.
     By default, they will be created, started, and completed
     """
 
-    team = models.ForeignKey(
-        Team, on_delete=models.CASCADE
-    )
     title = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)

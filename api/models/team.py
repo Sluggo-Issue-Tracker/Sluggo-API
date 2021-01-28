@@ -1,7 +1,5 @@
 from django.db import models
-from hashlib import md5
-import uuid
-from .has_uuid import HasUuid
+from api.models.interfaces import HasUuid
 
 
 class Team(HasUuid):

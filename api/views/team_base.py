@@ -60,7 +60,11 @@ class TeamRelatedViewSet(
         Options: ordering, search, page
         """
 
-        queryset = self.filter_queryset(self.get_queryset().filter(team__id=pk))
+        queryset = self.filter_queryset(self.get_queryset().filter(
+            team__id=pk
+        ).filter(
+            deactivated=None
+        ))
         serializer = self.serializer_class(queryset, many=True)
 
         team = get_object_or_404(Team, pk=pk)

@@ -16,15 +16,15 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for User model
+    Serializer Class for User model\n
 
-    The fields that are serialized on reads:
-        1. id: pk for this user
-        2. email: email for this user
+    The fields that are serialized on reads:\n
+        1. id: pk for this user\n
+        2. email: email for this user\n
 
-    The fields that are serialized on writes:
-        1. first_name: first name for this user
-        2. last_name: last name for this user
+    The fields that are serialized on writes:\n
+        1. first_name: first name for this user\n
+        2. last_name: last name for this user\n
 
     """
     id = serializers.ReadOnlyField()
@@ -183,9 +183,9 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class TicketCommentSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for Ticket Comment model
+    Serializer Class for Ticket Comment model\n
 
-    This is deprecated for now, and will not get any documentation
+    This is deprecated for now, and will not get any documentation\n
 
     """
 
@@ -211,17 +211,17 @@ class TicketCommentSerializer(serializers.ModelSerializer):
 
 class TicketStatusSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for TicketStatus model
+    Serializer Class for TicketStatus model\n
 
-    The fields that are serialized on reads:
-        1. id: pk for this record
-        2. object_uuid: unique identifier for this record
-        3. created: datetime when this record was created
-        4. activated: datetime for when this record was activated
-        5. deactivated: datetime for when this record was deactivated
+    The fields that are serialized on reads:\n
+        1. id: pk for this record\n
+        2. object_uuid: unique identifier for this record\n
+        3. created: datetime when this record was created\n
+        4. activated: datetime for when this record was activated\n
+        5. deactivated: datetime for when this record was deactivated\n
 
-    The fields that are serialized on writes:
-        1. team_id: the team in which this status should relate to
+    The fields that are serialized on writes:\n
+        1. team_id: the team in which this status should relate to\n
 
     """
     id = serializers.ReadOnlyField()
@@ -247,14 +247,14 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
 class TicketTagSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for TicketTag model
+    Serializer Class for TicketTag model\n
 
-    The fields that are serialized on reads:
-        1. tag: serialized tag associated with this ticket tag
-        2. object_uuid: unique id for this object
-        3. created: when this ticket tag was created
-        4. activated: when this ticket tag was activated
-        5. deactivated: when this ticket tag was deacivated
+    The fields that are serialized on reads:\n
+        1. tag: serialized tag associated with this ticket tag\n
+        2. object_uuid: unique id for this object\n
+        3. created: when this ticket tag was created\n
+        4. activated: when this ticket tag was activated\n
+        5. deactivated: when this ticket tag was deactivated\n
 
     """
     tag = TagSerializer(many=False, read_only=True)
@@ -272,10 +272,10 @@ class TicketTagSerializer(serializers.ModelSerializer):
 
 class TicketNodeSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for TicketNode model
+    Serializer Class for TicketNode model\n
 
-    The fields that are serialized on reads:
-        1. ticket_id: the pk for the associated ticket
+    The fields that are serialized on reads:\n
+        1. ticket_id: the pk for the associated ticket\n
     
     """
     ticket_id = serializers.ReadOnlyField()
@@ -287,27 +287,27 @@ class TicketNodeSerializer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     """
-    Serializer Class for the Ticket model.
+    Serializer Class for the Ticket model.\n
 
-    The fields that are serialized on reads:
-        1. id: pk of the ticket record
-        2. team_id: pk of the associated team
-        3. tag_list: serialized list of all tags
-        4. owner: serialized user object which owns this ticket
-        5. object_uuid: unique id for this object
-        6. ticket_number: number for this ticket for the associated team
-        7. comments: serialized list of comments (deprecated)
-        8. assigned_user: serialized user object which is assigned to this ticket
-        9. status: serialized status object associated with this ticket
-        10. create: timestamp of creation date
-        11. activated: timestamp of activation date
-        12. deactivated: timestamp of deactivation date
+    The fields that are serialized on reads:\n
+        1. id: pk of the ticket record\n
+        2. team_id: pk of the associated team\n
+        3. tag_list: serialized list of all tags\n
+        4. owner: serialized user object which owns this ticket\n
+        5. object_uuid: unique id for this object\n
+        6. ticket_number: number for this ticket for the associated team\n
+        7. comments: serialized list of comments (deprecated)\n
+        8. assigned_user: serialized user object which is assigned to this ticket\n
+        9. status: serialized status object associated with this ticket\n
+        10. create: timestamp of creation date\n
+        11. activated: timestamp of activation date\n
+        12. deactivated: timestamp of deactivation date\n
 
-    The fields that are serialized on writes:
-        1. team_id: pk for the team with which to associate this ticket with (no affect on update)
-        2. tag_id_list: list of pk which which to associate this ticket with
-        3. parent_id: indicate the pk for a parent ticket
-        4. assigned_user_id: indicate the user pk with which to assign this ticket to
+    The fields that are serialized on writes:\n
+        1. team_id: pk for the team with which to associate this ticket with (no affect on update)\n
+        2. tag_id_list: list of pk which which to associate this ticket with\n
+        3. parent_id: indicate the pk for a parent ticket\n
+        4. assigned_user_id: indicate the user pk with which to assign this ticket to\n
     """
 
     id = serializers.ReadOnlyField()
