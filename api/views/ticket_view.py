@@ -218,8 +218,8 @@ class TicketViewSet(
             return Response({'msg': e.detail}, e.status_code)
 
     @action(
-        detail=False,
-        methods=['get'],
+        detail=True,
+        methods=['GET'],
         permission_classes=permission_classes
     )
     def retrieve_user_tickets(self, request, pk=None):
@@ -228,14 +228,17 @@ class TicketViewSet(
         retrieve all tickets which are owned / assigned to requesting user
         """
         team = get_object_or_404(Team, pk=pk)
-        tickets = Ticket.retrieve_by_user(request.user, team)
+        try:
+            tickets = Ticket.retrieve_by_user(request.user, team)
 
-        for ticket in tickets:
-            self.check_object_permissions(request, ticket)
+            for ticket in tickets:
+                self.check_object_permissions(request, ticket)
 
-        serializer = self.serializer_class(tickets, many=True)
+            serializer = self.serializer_class(tickets, many=True)
 
-        return Response(serializer.data, status.HTTP_200_OK)
+            return Response(serializer.data, status.HTTP_200_OK)
+        except Ticket.DoesNotExist:
+            return Response({"msg": "no such tickets"}, status.HTTP_404_NOT_FOUND)
 
 
 class TicketCommentViewSet(viewsets.ModelViewSet):
