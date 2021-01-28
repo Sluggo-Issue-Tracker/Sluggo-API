@@ -53,7 +53,6 @@ class EventViewSet(TeamRelatedViewSet):
         permission_classes=[permissions.IsAuthenticated, IsMemberUser, IsAdminMemberOrReadOnly]
     )
     def destroy(self, request, *args, **kwargs):
-        """ deactivate this ticket this is deletion but only to deactivate the record """
         try:
             instance = self.get_object()
             self.check_object_permissions(request, instance)
