@@ -1,15 +1,13 @@
 # this here defines the ticket_tags
 from django.db import models
-from django.conf import settings
 import uuid
 from .team import Team
 from .ticket import Ticket
-from .has_uuid import HasUuid
+from api.models.interfaces import HasUuid, TeamRelated
 from hashlib import md5
 
 
-class Tag(HasUuid):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+class Tag(HasUuid, TeamRelated):
     title = models.CharField(max_length=100, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
@@ -38,9 +36,8 @@ class TicketTagManager(models.Manager):
         return super().create(**obj_data)
 
 
-class TicketTag(HasUuid):
+class TicketTag(HasUuid, TeamRelated):
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='tag_list')
     created = models.DateTimeField(auto_now_add=True)

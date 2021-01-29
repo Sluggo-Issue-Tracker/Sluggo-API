@@ -1,14 +1,10 @@
 from django.db import models
 from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from hashlib import md5
 import uuid
 
-from .has_uuid import HasUuid
-
-from .team import Team
+from api.models.interfaces import HasUuid, TeamRelated
 
 
 class MemberManager(models.Manager):
@@ -31,7 +27,7 @@ class MemberManager(models.Manager):
         return super().create(**obj_data)
 
 
-class Member(HasUuid):
+class Member(HasUuid, TeamRelated):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
 
@@ -65,10 +61,6 @@ class Member(HasUuid):
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
-    )
-
-    team = models.ForeignKey(
-        Team, on_delete=models.CASCADE, editable=False
     )
 
     role = models.CharField(

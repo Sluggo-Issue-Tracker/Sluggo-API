@@ -146,7 +146,7 @@ class TicketViewTestCase(TestCase):
         }
 
         self.response = None
-        for i in range(1):
+        for i in range(3):
             self.response = self.ticket_client.post(
                 reverse("ticket-create-record"), self.ticket_data, format="json"
             )
@@ -184,7 +184,7 @@ class TicketViewTestCase(TestCase):
         )
 
         url = reverse('ticket-list-team', kwargs={"pk": self.team.id})
-        url += '?ordering=-created'
+        url += '?search=-created'
 
         print(url)
 
@@ -436,6 +436,13 @@ class TicketViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(children, None)
+
+    def testGetOwned(self):
+        response = self.ticket_client.get(
+            reverse("ticket-retrieve-user-tickets", kwargs={"pk": self.team.id}), format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 
 class TagViewTestCase(TestCase):
