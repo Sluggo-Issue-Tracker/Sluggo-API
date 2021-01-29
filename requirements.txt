@@ -7,3 +7,4 @@ django-treebeard
 coreapi
 pyyaml
 pipenv
+drf-spectacular

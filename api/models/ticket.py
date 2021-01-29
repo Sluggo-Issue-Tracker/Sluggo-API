@@ -43,7 +43,7 @@ class Ticket(HasUuid):
         due_date: The due date for the ticket, a date field that will keep track of when things are due.
     """
 
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, editable=False)
 
     ticket_number = models.IntegerField()
 
@@ -72,6 +72,8 @@ class Ticket(HasUuid):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+
+    # TODO: delete this
     ticketUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
 
     objects = TicketManager()

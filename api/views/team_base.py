@@ -8,6 +8,8 @@ from ..models import Team
 from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
 
 
+# This base class provides the basic interface that most user accessible models in our
+# system should fit
 class TeamRelatedViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -26,6 +28,7 @@ class TeamRelatedViewSet(
         except (TypeError, KeyError):
             return {}
 
+    # this will create a record of the inherited class
     @action(
         methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
     )
@@ -45,6 +48,8 @@ class TeamRelatedViewSet(
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
+    # this will list all entries of a given type (through inheritance)
+    # whose team relation correlates with the primary key
     @action(detail=True, methods=["GET"], permission_classes=permission_classes)
     def list_team(self, request, pk=None):
 
@@ -56,6 +61,8 @@ class TeamRelatedViewSet(
         return Response(serializer.data, status.HTTP_200_OK)
 
     # note: this is pretty hacky
+    # perform the update, but reserialize once complete to ensure
+    # that the output is json friendly
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
         instance = self.get_object()

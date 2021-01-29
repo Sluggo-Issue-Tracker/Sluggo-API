@@ -11,17 +11,53 @@ from rest_framework.utils import model_meta
 from django.conf import settings
 from . import models as api_models
 
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for User model
+
+    The fields that are serialized on reads:
+        1. id: pk for this user
+        2. email: email for this user
+
+    The fields that are serialized on writes:
+        1. first_name: first name for this user
+        2. last_name: last name for this user
+
+    """
+    id = serializers.ReadOnlyField()
+    email = serializers.ReadOnlyField()
+
     class Meta:
         model = get_user_model()
         fields = ["id", "email", "first_name", "last_name"]
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for Team model
+
+    The fields that are serialized on reads:
+        1. id: pk for this model
+        2. ticket_head: current count of tickets
+        3. object_uuid: unique identifier for this team
+        4. name: name of the team
+        5. description: description for the team
+        6. created: creation datetime
+        7. activated: activation datetime
+        8. deactivated: deactivation datetime
+
+    The fields that are serialized on writes:
+        1. name: name of team
+        2. description: description of the team
+
+    """
     # make the following fields read only
     id = serializers.ReadOnlyField()
     ticket_head = serializers.ReadOnlyField()
+    object_uuid = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -41,6 +77,23 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for Tag model
+
+    The fields that are serialized on reads:
+        1. id: pk for this model
+        2. team_id: pk for the team associated with this tag
+        3. object_uuid: unique identifier for this object
+        4. title: the title for this tag
+        5. created: datetime for creation
+        6. activated: datetime for activation
+        7. deactivated: datetime for deactivation
+
+    The fields that are serialized on writes:
+        1. team_id: the
+        2. title: the title for this tag
+
+    """
     id = serializers.ReadOnlyField()
     team_id = serializers.PrimaryKeyRelatedField(
         many=False, read_only=False, queryset=api_models.Team.objects.all()
@@ -65,8 +118,36 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for TicketTag model
+
+    The fields that are serialized on reads:
+        1. id: pk for this record
+        2. owner: serialized user model for the owner of this record
+        3. object_uuid: unique identifier for this object
+        4. team_id: pk for the team associated with this member
+        5. bio: bio / description for this member
+        6. pronouns: pronouns for this member
+        7. role: string field for the role of this member
+        8. created: when this record was created
+        9. activated: when this record was activated
+        10. deactivated: when this record was deactivated
+
+    The fields that are serialized on creates:
+        1. bio: bio / description for this member
+        2. pronouns: pronouns for this member
+
+    The fields that are serializeds on updates:
+        1. bio: bio / description for this member
+        2. pronouns: pronouns for this member
+        3. owner:
+            a. first_name: the first name for the user model
+            b. last_name: the last name for the user model
+
+    """
     id = serializers.ReadOnlyField()
-    owner = UserSerializer(many=False, read_only=True)
+    owner = UserSerializer(many=False, required=False)
+    object_uuid = serializers.ReadOnlyField()
     team_id = serializers.ReadOnlyField(source="team.id")
     role = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
@@ -82,16 +163,32 @@ class MemberSerializer(serializers.ModelSerializer):
             "object_uuid",
             "role",
             "bio",
+            "pronouns",
             "created",
             "activated",
             "deactivated",
         ]
 
+    def update(self, instance, validated_data):
+        owner_data = validated_data.pop('owner', None)
+
+        if owner_data:
+            owner = instance.owner
+            owner.first_name = owner_data.get('first_name', owner.first_name)
+            owner.last_name = owner.get('last_name', owner.last_name)
+            owner.save()
+
+        return super().update(instance, validated_data)
+
 
 class TicketCommentSerializer(serializers.ModelSerializer):
     """
-    Serializer for comments. to be used with tickets
+    Serializer Class for Ticket Comment model
+
+    This is deprecated for now, and will not get any documentation
+
     """
+
 
     class Meta:
         model = api_models.TicketComment
@@ -113,9 +210,28 @@ class TicketCommentSerializer(serializers.ModelSerializer):
 
 
 class TicketStatusSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for TicketStatus model
+
+    The fields that are serialized on reads:
+        1. id: pk for this record
+        2. object_uuid: unique identifier for this record
+        3. created: datetime when this record was created
+        4. activated: datetime for when this record was activated
+        5. deactivated: datetime for when this record was deactivated
+
+    The fields that are serialized on writes:
+        1. team_id: the team in which this status should relate to
+
+    """
+    id = serializers.ReadOnlyField()
+    object_uuid = serializers.ReadOnlyField()
     team_id = serializers.PrimaryKeyRelatedField(
         many=False, read_only=False, queryset=api_models.Team.objects.all()
     )
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.TicketStatus
@@ -130,7 +246,19 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
 
 class TicketTagSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for TicketTag model
+
+    The fields that are serialized on reads:
+        1. tag: serialized tag associated with this ticket tag
+        2. object_uuid: unique id for this object
+        3. created: when this ticket tag was created
+        4. activated: when this ticket tag was activated
+        5. deactivated: when this ticket tag was deacivated
+
+    """
     tag = TagSerializer(many=False, read_only=True)
+    object_uuid = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -143,6 +271,13 @@ class TicketTagSerializer(serializers.ModelSerializer):
 
 
 class TicketNodeSerializer(serializers.ModelSerializer):
+    """
+    Serializer Class for TicketNode model
+
+    The fields that are serialized on reads:
+        1. ticket_id: the pk for the associated ticket
+    
+    """
     ticket_id = serializers.ReadOnlyField()
 
     class Meta:
@@ -154,14 +289,25 @@ class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer Class for the Ticket model.
 
-    The fields that are serialized and visible currently are:
-        id: The id of the Ticket
-        team_id: id of owner team
-        owner: The user that created the ticket
-        assigned_user: The user assigned to the ticket
-        title: The title of the ticket
-        description: The description of the ticket
-        comments: The comments associated with this ticket
+    The fields that are serialized on reads:
+        1. id: pk of the ticket record
+        2. team_id: pk of the associated team
+        3. tag_list: serialized list of all tags
+        4. owner: serialized user object which owns this ticket
+        5. object_uuid: unique id for this object
+        6. ticket_number: number for this ticket for the associated team
+        7. comments: serialized list of comments (deprecated)
+        8. assigned_user: serialized user object which is assigned to this ticket
+        9. status: serialized status object associated with this ticket
+        10. create: timestamp of creation date
+        11. activated: timestamp of activation date
+        12. deactivated: timestamp of deactivation date
+
+    The fields that are serialized on writes:
+        1. team_id: pk for the team with which to associate this ticket with (no affect on update)
+        2. tag_id_list: list of pk which which to associate this ticket with
+        3. parent_id: indicate the pk for a parent ticket
+        4. assigned_user_id: indicate the user pk with which to assign this ticket to
     """
 
     id = serializers.ReadOnlyField()
@@ -177,6 +323,7 @@ class TicketSerializer(serializers.ModelSerializer):
     )
 
     parent_id = serializers.IntegerField(write_only=True, required=False)
+    object_uuid = serializers.ReadOnlyField()
 
     owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()

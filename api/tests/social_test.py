@@ -47,8 +47,6 @@ class TeamBaseBehavior(TestCase):
             },
         )
 
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + response.data.get("key"))
-
         # if team creation fails, then all other tests will fail
 
         response = self.client.post(
@@ -105,17 +103,9 @@ class TeamBaseBehavior(TestCase):
         self.assertGreater(old_count, new_count)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def testTeamSearch(self):
-        response = self.client.get(
-            reverse("team-search", kwargs={"q": "bugslotics a very cool team"})
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 class MemberTeamIntegration(TestCase):
     def setUp(self):
-
         test_dict = {
             "username": "org.sicmundus.adam",
             "email": "adam@sicmundus.org",
@@ -175,7 +165,7 @@ class MemberTeamIntegration(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = client.get(
-            reverse("member-list"), format="json"
+            reverse("member-list-team", kwargs={"pk": self.team_id}), format="json"
         )
 
         print(response.data)
@@ -186,33 +176,19 @@ class MemberTeamIntegration(TestCase):
 
 class MemberBaseBehavior(TestCase):
     def setUp(self):
-
         self.user = User.objects.create_user(**user_dict)
         self.user.save()
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
         self.team = Team.objects.create(**team_dict)
         self.team.save()
 
-        self.member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
-        self.created_member_data = {
-            "team_id": self.team.id,
-            "bio": "biography"
-        }
+        member_data = {"team": self.team, "role": "AD", "bio": "cool dude", "owner": self.user}
+        self.member = Member.objects.create(**member_data)
 
-        client = APIClient()
-        client.force_authenticate(user=self.user)
-        self.client = client
-
-        response = client.post(
-            reverse("member-create-record"), self.member_data, format="json"
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        for k, v in self.member_data.items():
-            self.assertEqual(v, response.data.get(k))
-
-        self.member_id = response.data["id"]
+        self.member_id = self.member.id
 
     def testMemberCreate(self):
         # create a new record. this call should return the newly created record
@@ -226,9 +202,6 @@ class MemberBaseBehavior(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        for k, v in self.member_data.items():
-            self.assertEqual(v, response.data.get(k))
 
     def testMemberUpdate(self):
         # change the record's values. this call should return the newly updated record
@@ -253,7 +226,6 @@ class MemberBaseBehavior(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testMemberMakeAdmin(self):
-
         # create a admin user
         user = User.objects.create_user(**admin_dict)
         user.save()
@@ -261,7 +233,7 @@ class MemberBaseBehavior(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
 
-        member_data = {"team_id": self.team.id, "role": "AD", "bio": "cool dude"}
+        member_data = {"team_id": self.team.id, "bio": "cool dude"}
 
         response = client.post(
             reverse("member-create-record"), member_data, format="json"
@@ -269,16 +241,16 @@ class MemberBaseBehavior(TestCase):
 
         id = response.data["id"]
 
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
         response = self.client.patch(
             reverse("member-make-admin", kwargs={"pk": id})
         )
 
-        print(response.data)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testMemberDelete(self):
-
         response = self.client.patch(
             reverse("member-leave", kwargs={"pk": self.member_id})
         )
