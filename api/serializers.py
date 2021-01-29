@@ -387,3 +387,32 @@ class TicketSerializer(serializers.ModelSerializer):
         validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
         validated_data.pop('tag_id_list', None)
         return super().update(instance, validated_data)
+
+class EventSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    team_id = serializers.PrimaryKeyRelatedField(
+        many=False, read_only=False, queryset=api_models.Team.objects.all()
+    )
+    created = serializers.ReadOnlyField()
+    event_type = serializers.ReadOnlyField()
+    user = UserSerializer(many=False, read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
+    )
+    description = serializers.ReadOnlyField()
+    object_id = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.Event
+        fields = ["id",
+            "team_id",
+            "created",
+            "event_type",
+            "user",
+            "user_id",
+            "description",
+            "object_id"
+            ]
+
+
+

@@ -16,6 +16,7 @@ router.register(r"ticket", api_views.TicketViewSet)
 router.register(r"ticket-comment", api_views.TicketCommentViewSet)
 router.register(r"status", api_views.TicketStatusViewSet)
 router.register(r"tag", api_views.TagViewSet)
+router.register(r"event", api_views.EventViewSet)
 
 urlpatterns = [
     # Optional UI:
