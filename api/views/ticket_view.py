@@ -2,6 +2,7 @@ from django.utils import timezone
 from treebeard import exceptions as t_except
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 
 from ..models import (
     Ticket,
@@ -34,7 +35,6 @@ class TicketViewSet(
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
                      '^assigned_user__first_name']
     permission_classes = [
@@ -43,6 +43,7 @@ class TicketViewSet(
         IsMemberUser,
     ]
     ordering_fields = ['created', 'activated']
+    filterset_fields = ['owner__username']
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
@@ -271,6 +272,7 @@ class TicketStatusViewSet(
 ):
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
+    filterset_fields = ['title']
 
 
 class TagViewSet(

@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.settings import api_settings
+from django_filters.rest_framework import DjangoFilterBackend
 
 from ..models import Team
 from ..permissions import IsAdminMemberOrReadOnly, IsOwnerOrReadOnly, IsMemberUser
@@ -20,6 +21,7 @@ class TeamRelatedViewSet(
         IsAdminMemberOrReadOnly,
         IsMemberUser,
     ]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
 
     @staticmethod
     def get_success_headers(data):
