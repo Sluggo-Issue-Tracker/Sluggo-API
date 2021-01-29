@@ -189,7 +189,6 @@ class TicketCommentSerializer(serializers.ModelSerializer):
 
     """
 
-
     class Meta:
         model = api_models.TicketComment
         ticket_id = serializers.ReadOnlyField(source="ticket.id")
@@ -390,6 +389,7 @@ class TicketSerializer(serializers.ModelSerializer):
         validated_data.pop('tag_id_list', None)
         return super().update(instance, validated_data)
 
+
 class EventSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     team_id = serializers.PrimaryKeyRelatedField(
@@ -406,7 +406,8 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = api_models.Event
-        fields = ["id",
+        fields = [
+            "id",
             "team_id",
             "created",
             "event_type",
@@ -414,7 +415,4 @@ class EventSerializer(serializers.ModelSerializer):
             "user_id",
             "description",
             "object_id"
-            ]
-
-
-
+        ]

@@ -70,15 +70,3 @@ class TeamRelatedViewSet(
         team = get_object_or_404(Team, pk=pk)
         self.check_object_permissions(request, team)
         return Response(serializer.data, status.HTTP_200_OK)
-
-    # note: this is pretty hacky
-    # perform the update, but reserialize once complete to ensure
-    # that the output is json friendly
-    def update(self, request, *args, **kwargs):
-        """
-        Replaces the existing record associated with {id} with the request data
-        """
-        super().update(request, *args, **kwargs)
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(serializer.data)

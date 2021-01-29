@@ -3,6 +3,7 @@ from .team import Team
 from django.conf import settings
 import uuid
 
+
 class Event(models.Model):
     CREATE = 1
     UPDATE = 2
@@ -23,12 +24,13 @@ class Event(models.Model):
 
     def is_create(self):
         return self.CREATE == self.event_type
+
     def is_update(self):
         return self.UPDATE == self.event_type
+
     def is_delete(self):
         return self.DELETE == self.event_type
 
     class Meta:
         ordering = ["-created"]
         app_label = "api"
-

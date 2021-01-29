@@ -157,7 +157,7 @@ class TicketViewTestCase(TestCase):
     def testTicketCreate(self):
         """Test if the api can create a ticket."""
         record = Ticket.objects.get(id=self.ticket_id)
-        self.assertEqual(Ticket.objects.count(), 1)
+        self.assertEqual(Ticket.objects.count(), 3)
 
     def testTicketRead(self):
         # read the record created in setUp. confirm the results are expected
