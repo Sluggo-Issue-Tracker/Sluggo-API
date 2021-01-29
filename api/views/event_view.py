@@ -14,7 +14,7 @@ from ..serializers import (
 
 from .team_base import *
 
-class EventViewSet(TeamRelatedViewSet):
+class EventViewSet(TeamRelatedViewSet, mixins.DeleteModelMixin):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [
@@ -27,25 +27,9 @@ class EventViewSet(TeamRelatedViewSet):
                      '^user']
     ordering_fields = ['created', 'team', 'event_type', 'user']
 
-    @action(methods=["GET"],
-            permission_classes=[permissions.IsAuthenticated, IsMemberUser]
-    )
-    def list(self, request, pk=None):
+    def list(self, request):
         serializer = self.serializer_class(self.queryset, many=True)
-        event = get_object_or_404(Event, pk=pk)
-        self.check_object_permissions(request, event)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=True,
-        methods=["GET"],
-        permission_classes=[permissions.IsAuthenticated, IsMemberUser]
-    )
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        response = serializer.data
-        return Response(response, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
