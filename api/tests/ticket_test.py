@@ -157,7 +157,7 @@ class TicketViewTestCase(TestCase):
     def testTicketCreate(self):
         """Test if the api can create a ticket."""
         record = Ticket.objects.get(id=self.ticket_id)
-        self.assertEqual(Ticket.objects.count(), 1)
+        self.assertEqual(Ticket.objects.count(), 3)
 
     def testTicketRead(self):
         # read the record created in setUp. confirm the results are expected
@@ -443,6 +443,17 @@ class TicketViewTestCase(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def testFilter(self):
+        url = reverse("ticket-list-team", kwargs={"pk": self.team.id})
+        url += f"?owner__username={self.ticket_user.username}"
+
+        response = self.ticket_client.get(
+            url,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 
 class TagViewTestCase(TestCase):
@@ -594,6 +605,18 @@ class StatusViewTestCase(TestCase):
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def testFilter(self):
+
+        url = reverse("ticketstatus-list-team", kwargs={"pk": self.team.id})
+        url += f"?title={self.status.title}"
+        print(url)
+        response = self.ticket_client.get(
+            url,
+            format="json"
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TicketNodeTestCase(TestCase):
