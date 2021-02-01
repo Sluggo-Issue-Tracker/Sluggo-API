@@ -42,6 +42,7 @@ class TeamRelatedCore(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.team = Team.objects.get(pk=1)
+        self.pk = 1
 
     def create(self, data):
         count = Team.objects.count()
@@ -183,8 +184,6 @@ class TicketTestCase(TeamRelatedCore):
         self.update(extra_data)
 
 
-
-
 class MemberTestCase(TeamRelatedCore):
     prefix = "team-members"
 
@@ -227,6 +226,74 @@ class MemberTestCase(TeamRelatedCore):
     def testUpdate(self):
         updated_dict = self.data_dict
         updated_dict["bio"] = "alsdfkj"
+        self.update(updated_dict)
+
+    def testDelete(self):
+        self.delete()
+
+
+class TagTestCase(TeamRelatedCore):
+    prefix = "team-tags"
+
+    data_dict = {
+        "title": "wine"
+    }
+
+    def setUp(self):
+        super().setUp()
+        response = self.client.post(
+            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
+            data=self.data_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.pk = response.data.get("id")
+
+    def testCreate(self):
+        self.create(self.data_dict)
+
+    def testList(self):
+        self.list()
+
+    def testDetail(self):
+        self.detail()
+
+    def testUpdate(self):
+        updated_dict = self.data_dict
+        updated_dict["title"] = "alsdkfj"
+        self.update(updated_dict)
+
+    def testDelete(self):
+        self.delete()
+
+
+class StatusTestCase(TeamRelatedCore):
+    prefix = "team-statuses"
+
+    data_dict = {
+        "title": "in progress"
+    }
+
+    def setUp(self):
+        super().setUp()
+        response = self.client.post(
+            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
+            data=self.data_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.pk = response.data.get("id")
+
+    def testCreate(self):
+        self.create(self.data_dict)
+
+    def testList(self):
+        self.list()
+
+    def testDetail(self):
+        self.detail()
+
+    def testUpdate(self):
+        updated_dict = self.data_dict
+        updated_dict["title"] = "alsdkfj"
         self.update(updated_dict)
 
     def testDelete(self):

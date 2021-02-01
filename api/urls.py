@@ -5,7 +5,6 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_nested import routers
 
-from . import old_views as api_views
 from . import views
 
 router = SimpleRouter()
@@ -30,33 +29,16 @@ team_router.register(
 )
 
 team_router.register(
-    r'status',
+    r'statuses',
     views.StatusViewSet,
-    basename='team-status'
+    basename='team-statuses'
 )
 
 team_router.register(
-    r'tag',
+    r'tags',
     views.TagViewSet,
-    basename='team-tag'
+    basename='team-tags'
 )
-
-#####################################################
-# Below are the old urls that are getting refactored
-#####################################################
-
-old_router = DefaultRouter()
-
-# social stuff
-old_router.register(r"member", api_views.MemberViewSet)
-old_router.register(r"team", api_views.TeamViewSet)
-
-# ticket stuff
-old_router.register(r"ticket", api_views.TicketViewSet)
-old_router.register(r"ticket-comment", api_views.TicketCommentViewSet)
-old_router.register(r"status", api_views.TicketStatusViewSet)
-old_router.register(r"tag", api_views.TagViewSet)
-old_router.register(r"event", api_views.EventViewSet)
 
 urlpatterns = [
     # Optional UI:
@@ -69,7 +51,7 @@ urlpatterns = [
 
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('auth/slack/', api_views.SlackLogin.as_view(), name="slack_login"),
+    path('auth/slack/', views.SlackLogin.as_view(), name="slack_login"),
 
     path('auth/accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls)

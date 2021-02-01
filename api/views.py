@@ -2,6 +2,8 @@ from rest_framework import status, viewsets, mixins
 from rest_framework.exceptions import NotFound, NotAcceptable
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from allauth.socialaccount.providers.slack.views import SlackOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
 
 from .models import *
 from .models.interfaces import team_related
@@ -129,3 +131,11 @@ class TagViewSet(
         'team'
     )
     serializer_class = TagSerializer
+
+
+class SlackLogin(SocialLoginView):
+    """
+    Slack endpoints. Only access_token is the concern. Use /slack/ to authenticate the client with a slack token.
+    A token for this app will be returned.
+    """
+    adapter_class = SlackOAuth2Adapter
