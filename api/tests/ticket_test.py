@@ -90,10 +90,10 @@ class TicketTestCase(TestCase):
 
 
 class TicketViewTestCase(TestCase):
-    """ Test suite for ticket views."""
+    """ Test suite for ticket old_views."""
 
     def setUp(self):
-        """ Sets up whatever is necessary for views"""
+        """ Sets up whatever is necessary for old_views"""
         self.ticket_user = User.objects.create_user(**user_dict)
         self.ticket_user.save()
 

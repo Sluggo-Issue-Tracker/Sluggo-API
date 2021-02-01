@@ -265,7 +265,7 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 
 
 """
-all views inherit from TeamRelatedViewSet following
+all old_views inherit from TeamRelatedViewSet following
 """
 
 

@@ -5,39 +5,39 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_nested import routers
 
-from . import views as api_views
-from . import better_views
+from . import old_views as api_views
+from . import views
 
-new_router = SimpleRouter()
-new_router.register('teams', better_views.TeamViewSet)
+router = SimpleRouter()
+router.register('teams', views.TeamViewSet)
 
 team_router = routers.NestedSimpleRouter(
-    new_router,
+    router,
     r'teams',
     lookup='team'
 )
 
 team_router.register(
     r'tickets',
-    better_views.TicketViewSet,
+    views.TicketViewSet,
     basename='team-tickets'
 )
 
 team_router.register(
     r'members',
-    better_views.MemberViewSet,
+    views.MemberViewSet,
     basename='team-members'
 )
 
 team_router.register(
     r'status',
-    better_views.StatusViewSet,
+    views.StatusViewSet,
     basename='team-status'
 )
 
 team_router.register(
     r'tag',
-    better_views.TagViewSet,
+    views.TagViewSet,
     basename='team-tag'
 )
 
@@ -64,7 +64,7 @@ urlpatterns = [
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    path("api/", include(new_router.urls)),
+    path("api/", include(router.urls)),
     path("api/", include(team_router.urls)),
 
     path('auth/', include('dj_rest_auth.urls')),
@@ -74,6 +74,3 @@ urlpatterns = [
     path('auth/accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls)
 ]
-print(
-    'hello'
-)
