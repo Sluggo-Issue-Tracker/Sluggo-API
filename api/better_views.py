@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets, mixins
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, NotAcceptable
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -28,9 +28,12 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 class NewTeamRelatedBase(viewsets.ModelViewSet):
 
-    def get_queryset(self, *args, **kwargs):
+    def get_team(self, *args, **kwargs):
         team_id = self.kwargs.get("new_team_pk")
-        team_instance = get_object_or_404(Team, pk=team_id)
+        return get_object_or_404(Team, pk=team_id)
+
+    def get_queryset(self, *args, **kwargs):
+        team_instance = self.get_team(*args, **kwargs)
         return self.queryset.filter(team=team_instance)
 
 
@@ -63,8 +66,28 @@ class MemberViewSet(NewTeamRelatedBase):
         serializer.is_valid(raise_exception=True)
 
         # save the instance
-        team_instance = get_object_or_404(Team, pk=kwargs.get("new_team_pk"))
+        team_instance = self.get_team(*args, **kwargs)
         serializer.save(owner=request.user, team=team_instance)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        # prevent the user updating roles if not admin
+        user_member = self.get_queryset(*args, **kwargs).get(owner=request.user)
+        if not user_member.is_admin():
+            request.data.pop('role', None)
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)

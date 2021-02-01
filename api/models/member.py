@@ -77,6 +77,13 @@ class Member(HasUuid, TeamRelated):
 
     objects = MemberManager()
 
+    def is_admin(self):
+        return self.role == self.Roles.ADMIN
+
+    def is_approved(self):
+        return self.role == self.Roles.ADMIN or self.role == self.Roles.APPROVED
+
+
     class Meta:
         ordering = ["created"]
         app_label = "api"
