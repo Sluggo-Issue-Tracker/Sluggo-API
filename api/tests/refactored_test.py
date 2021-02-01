@@ -7,6 +7,8 @@ from django.urls import reverse
 from api.models import (Ticket, Team, Member, Tag, TicketStatus, TicketTag, TicketNode)
 from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSerializer
 
+TEAM_PK = "team_pk"
+
 User = get_user_model()
 
 
@@ -47,7 +49,7 @@ class TeamRelatedCore(TestCase):
 
     def list(self):
         response = self.client.get(
-            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -55,7 +57,7 @@ class TeamRelatedCore(TestCase):
     def detail(self):
         response = self.client.get(
             reverse(self.prefix + "-detail", kwargs={
-                "new_team_pk": self.team.id,
+                "team_pk": self.team.id,
                 "pk": self.pk
             }), format="json"
         )
@@ -64,7 +66,7 @@ class TeamRelatedCore(TestCase):
     def update(self, updated_dict):
         response = self.client.put(
             reverse(self.prefix + "-detail", kwargs={
-                "new_team_pk": self.team.id,
+                "team_pk": self.team.id,
                 "pk": self.pk
             }), data=updated_dict, format="json"
         )
@@ -73,7 +75,7 @@ class TeamRelatedCore(TestCase):
     def delete(self):
         response = self.client.delete(
             reverse(self.prefix + "-detail", kwargs={
-                "new_team_pk": self.team.id,
+                "team_pk": self.team.id,
                 "pk": self.pk
             }), format="json"
         )
@@ -125,7 +127,7 @@ class TicketTestCase(TeamRelatedCore):
     def setUp(self):
         super().setUp()
         response = self.client.post(
-            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
             data=self.data_dict, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -160,10 +162,26 @@ class TicketTestCase(TeamRelatedCore):
         ]
 
         response = self.client.post(
-            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
             data=extra_data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def testRemoveTagOnUpdate(self):
+        tags = [
+            Tag.objects.create(title="to be deleted", team=self.team),
+            Tag.objects.create(title="to be kept", team=self.team)
+        ]
+        ticket_instance = Ticket.objects.get(pk=self.pk)
+        for tag in tags:
+            TicketTag.objects.create(ticket=ticket_instance, team=self.team, tag=tag)
+
+        extra_data = dict(self.data_dict)
+        extra_data["tag_list"] = [
+            tags[0].pk
+        ]
+        self.update(extra_data)
+
 
 
 
@@ -188,7 +206,7 @@ class MemberTestCase(TeamRelatedCore):
         self.client.force_authenticate(user=self.normal_user)
 
         response = self.client.post(
-            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
             data=self.data_dict, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

@@ -8,6 +8,8 @@ from .models.interfaces import team_related
 from .serializers import TeamSerializer, TicketSerializer, MemberSerializer, TicketStatusSerializer, TagSerializer
 from .permissions import *
 
+TEAM_PK = "team_pk"
+
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
@@ -27,7 +29,6 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 
 class NewTeamRelatedBase(viewsets.ModelViewSet):
-
     permission_classes = [IsAuthenticated, IsMemberUser]
 
     def create(self, request, *args, **kwargs):
@@ -42,7 +43,7 @@ class NewTeamRelatedBase(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_team(self, *args, **kwargs):
-        team_id = self.kwargs.get("new_team_pk")
+        team_id = self.kwargs.get(TEAM_PK)
         return get_object_or_404(Team, pk=team_id)
 
     def get_queryset(self, *args, **kwargs):
@@ -128,5 +129,3 @@ class TagViewSet(
         'team'
     )
     serializer_class = TagSerializer
-
-
