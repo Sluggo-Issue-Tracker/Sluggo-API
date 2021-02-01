@@ -9,12 +9,12 @@ from . import views as api_views
 from . import better_views
 
 new_router = SimpleRouter()
-new_router.register('new-team', better_views.TeamViewSet)
+new_router.register('teams', better_views.TeamViewSet)
 
 team_router = routers.NestedSimpleRouter(
     new_router,
-    r'new-team',
-    lookup='new_team'
+    r'teams',
+    lookup='team'
 )
 
 team_router.register(
@@ -27,6 +27,18 @@ team_router.register(
     r'members',
     better_views.MemberViewSet,
     basename='team-members'
+)
+
+team_router.register(
+    r'status',
+    better_views.StatusViewSet,
+    basename='team-status'
+)
+
+team_router.register(
+    r'tag',
+    better_views.TagViewSet,
+    basename='team-tag'
 )
 
 #####################################################
@@ -52,16 +64,14 @@ urlpatterns = [
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    path("new/", include(new_router.urls)),
-    path("new/", include(team_router.urls)),
-    # path("", include(old_router.urls)),
+    path("api/", include(new_router.urls)),
+    path("api/", include(team_router.urls)),
 
-    path('dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('dj-rest-auth/slack/', api_views.SlackLogin.as_view(), name="slack_login"),
+    path('auth/', include('dj_rest_auth.urls')),
+    path('auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('auth/slack/', api_views.SlackLogin.as_view(), name="slack_login"),
 
-    path("api-auth/", include("rest_framework.urls")),
-    path('accounts/', include('allauth.urls')),
+    path('auth/accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls)
 ]
 print(

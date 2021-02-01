@@ -28,6 +28,19 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 class NewTeamRelatedBase(viewsets.ModelViewSet):
 
+    permission_classes = [IsAuthenticated, IsMemberUser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # save the instance
+        team_instance = self.get_team(*args, **kwargs)
+        serializer.save(team=team_instance)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def get_team(self, *args, **kwargs):
         team_id = self.kwargs.get("new_team_pk")
         return get_object_or_404(Team, pk=team_id)
@@ -45,9 +58,6 @@ class TicketViewSet(NewTeamRelatedBase):
         'owner', 'assigned_user', 'status'
     )
     serializer_class = TicketSerializer
-    permission_classes = [
-        IsMemberUser, IsAuthenticated
-    ]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -67,7 +77,7 @@ class MemberViewSet(NewTeamRelatedBase):
     )
     serializer_class = MemberSerializer
     permission_classes = [
-        IsMemberUser, IsOwnerOrReadOnly
+        IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
     ]
 
     def create(self, request, *args, **kwargs):
@@ -102,21 +112,21 @@ class MemberViewSet(NewTeamRelatedBase):
         return Response(serializer.data)
 
 
+class StatusViewSet(
+    NewTeamRelatedBase
+):
+    queryset = TicketStatus.objects.all().select_related(
+        'team'
+    )
+    serializer_class = TicketStatusSerializer
+
+
 class TagViewSet(
     NewTeamRelatedBase,
 ):
-    queryset = Ticket.objects.all().select_related(
+    queryset = Tag.objects.all().select_related(
         'team'
     )
     serializer_class = TagSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        # save the instance
-        team_instance = self.get_team(*args, **kwargs)
-        serializer.save(team=team_instance)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
