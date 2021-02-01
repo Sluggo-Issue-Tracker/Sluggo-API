@@ -150,11 +150,15 @@ class TicketTestCase(TeamRelatedCore):
 
     def testTagOnCreate(self):
         extra_data = dict(self.data_dict)
+
+        ticket_status = TicketStatus.objects.create(title="status", team=self.team)
+        extra_data["status"] = ticket_status.id
+
+        tag_instance = Tag.objects.create(title="wine", team=self.team)
         extra_data["tag_list"] = [
-            {"title": "wine"}
+            tag_instance.id
         ]
 
-        Tag.objects.create(title="wine", team=self.team).save()
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
             data=extra_data, format="json"

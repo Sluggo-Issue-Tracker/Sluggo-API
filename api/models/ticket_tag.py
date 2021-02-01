@@ -17,12 +17,12 @@ class TagManager(models.Manager):
 
         title_id = "{}".format(title)
         team_id = "{}".format(team.id)
-        obj_data["id"] = md5(title_id.encode()).hexdigest() + md5(team_id.encode()).hexdigest()
+        obj_data["team_title_hash"] = md5(title_id.encode()).hexdigest() + md5(team_id.encode()).hexdigest()
         return super().create(**obj_data)
 
 
 class Tag(HasUuid, TeamRelated):
-    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
+    team_title_hash = models.CharField(max_length=256, unique=True, editable=False)
     title = models.CharField(max_length=100, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)

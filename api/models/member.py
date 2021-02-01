@@ -67,7 +67,7 @@ class Member(HasUuid, TeamRelated):
         max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
     )
 
-    pronouns = models.TextField(null=True)
+    pronouns = models.CharField(max_length=256, null=True)
 
     bio = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
