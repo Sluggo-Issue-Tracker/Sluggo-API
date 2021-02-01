@@ -30,19 +30,8 @@ class TeamViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class NewTeamRelatedBase(viewsets.ModelViewSet):
+class NewTeamRelatedBase(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, IsMemberUser]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # save the instance
-        team_instance = self.get_team(*args, **kwargs)
-        serializer.save(team=team_instance)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_team(self, *args, **kwargs):
         team_id = self.kwargs.get(TEAM_PK)
@@ -53,7 +42,7 @@ class NewTeamRelatedBase(viewsets.ModelViewSet):
         return self.queryset.filter(team=team_instance)
 
 
-class TicketViewSet(NewTeamRelatedBase):
+class TicketViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
     """ Ticket Viewset """
     queryset = Ticket.objects.all().select_related(
         'team'
@@ -72,7 +61,7 @@ class TicketViewSet(NewTeamRelatedBase):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class MemberViewSet(NewTeamRelatedBase):
+class MemberViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
     queryset = Member.objects.all().select_related(
         'team'
     ).prefetch_related(
@@ -116,21 +105,44 @@ class MemberViewSet(NewTeamRelatedBase):
 
 
 class StatusViewSet(
-    NewTeamRelatedBase
+    NewTeamRelatedBase,
+    viewsets.ModelViewSet
 ):
     queryset = TicketStatus.objects.all().select_related(
         'team'
     )
     serializer_class = TicketStatusSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # save the instance
+        team_instance = self.get_team(*args, **kwargs)
+        serializer.save(team=team_instance)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TagViewSet(
     NewTeamRelatedBase,
+    viewsets.ModelViewSet
 ):
     queryset = Tag.objects.all().select_related(
         'team'
     )
     serializer_class = TagSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # save the instance
+        team_instance = self.get_team(*args, **kwargs)
+        serializer.save(team=team_instance)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class SlackLogin(SocialLoginView):
