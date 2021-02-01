@@ -190,12 +190,12 @@ class TicketCommentSerializer(serializers.ModelSerializer):
     This is deprecated for now, and will not get any documentation\n
 
     """
+    ticket_id = serializers.ReadOnlyField(source="ticket.id")
+    team_id = serializers.ReadOnlyField(source="team.id")
+    owner = UserSerializer(many=False, read_only=True)
 
     class Meta:
         model = api_models.TicketComment
-        ticket_id = serializers.ReadOnlyField(source="ticket.id")
-        team_id = serializers.ReadOnlyField(source="team.id")
-        owner = UserSerializer(many=False, read_only=True)
 
         fields = [
             "id",
@@ -347,15 +347,12 @@ class TicketSerializer(serializers.ModelSerializer):
     # this creates a record from the json, modifying the keys
     def create(self, validated_data):
         tag_list = validated_data.pop('tag_list', None)
-        team = validated_data.get('team')
 
         ticket = api_models.Ticket.objects.create(
             **validated_data
         )
 
-        if tag_list:
-            for tag in tag_list:
-                api_models.TicketTag.objects.create(tag=tag, ticket=ticket, team=team)
+        api_models.TicketTag.create_all(tag_list, ticket)
 
         return ticket
 

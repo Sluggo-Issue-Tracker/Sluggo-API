@@ -65,6 +65,14 @@ class TicketTag(HasUuid, TeamRelated):
         app_label = "api"
 
     @classmethod
+    def create_all(cls, tag_list: list, ticket: Ticket):
+        if not tag_list:
+            return
+
+        for tag in tag_list:
+            cls.objects.create(tag=tag, ticket=ticket, team=ticket.team)
+
+    @classmethod
     def delete_difference(cls, tag_list: list, ticket_instance: Ticket):
         if not tag_list or len(tag_list) <= 0:
             return
