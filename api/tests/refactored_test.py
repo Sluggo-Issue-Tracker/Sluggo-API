@@ -9,7 +9,10 @@ from ..serializers import UserSerializer, TicketStatusSerializer, TicketTagSeria
 
 User = get_user_model()
 
+
 class TeamRelatedCore(TestCase):
+    prefix = ""
+
     team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
 
     member_dict = dict(
@@ -23,6 +26,7 @@ class TeamRelatedCore(TestCase):
         first_name="Jonas",
         last_name="Kahnwald",
     )
+    data_dict = dict()
 
     def setUp(self):
         self.user = User.objects.create(**self.user_dict)
@@ -36,10 +40,48 @@ class TeamRelatedCore(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.team = Team.objects.get(pk=1)
-        Member.objects.create(team=self.team, owner=self.user, **self.member_dict)
+
+    def create(self, data):
+        count = Team.objects.count()
+        self.assertNotEqual(0, count)
+
+    def list(self):
+        response = self.client.get(
+            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def detail(self):
+        response = self.client.get(
+            reverse(self.prefix + "-detail", kwargs={
+                "new_team_pk": self.team.id,
+                "pk": self.pk
+            }), format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def update(self, updated_dict):
+        response = self.client.put(
+            reverse(self.prefix + "-detail", kwargs={
+                "new_team_pk": self.team.id,
+                "pk": self.pk
+            }), data=updated_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def delete(self):
+        response = self.client.delete(
+            reverse(self.prefix + "-detail", kwargs={
+                "new_team_pk": self.team.id,
+                "pk": self.pk
+            }), format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class TeamTestCase(TeamRelatedCore):
+    prefix = "team"
 
     def testCreate(self):
         count = Team.objects.count()
@@ -73,52 +115,82 @@ class TeamTestCase(TeamRelatedCore):
 
 
 class TicketTestCase(TeamRelatedCore):
-
-    ticket_dict = {
+    data_dict = {
         "name": "ticket",
         "description": "ticket test"
     }
 
-    def testCreate(self):
+    prefix = "team-tickets"
+
+    def setUp(self):
         response = self.client.post(
-            reverse("team-tickets-list", kwargs={"new_team_pk": self.team.id}),
-            data=self.ticket_dict, format="json"
+            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            data=self.data_dict, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.pk = response.data.get("id")
+
+    def testCreate(self):
+        self.create(self.data_dict)
 
     def testList(self):
-        response = self.client.get(
-            reverse("team-tickets-list", kwargs={"new_team_pk": self.team.id}),
-            format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.list()
 
     def testDetail(self):
-        response = self.client.get(
-            reverse("team-tickets-detail", kwargs={
-                "new_team_pk": self.team.id,
-                "pk": 1
-            }), format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.detail()
 
     def testUpdate(self):
-        updated_ticket_dict = self.ticket_dict
-        updated_ticket_dict["description"] = "alskdjf"
-        response = self.client.put(
-            reverse("team-tickets-detail", kwargs={
-                "new_team_pk": self.team.id,
-                "pk": 1
-            }), data=updated_ticket_dict, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_dict = self.data_dict
+        updated_dict["description"] = "alskdjf"
+        self.update(updated_dict)
 
     def testDelete(self):
-        response = self.client.delete(
-            reverse("team-tickets-detail", kwargs={
-                "new_team_pk": self.team.id,
-                "pk": 1
-            }), format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.delete()
 
+
+class MemberTestCase(TeamRelatedCore):
+    prefix = "team-members"
+
+    data_dict = {
+        "bio": "biography"
+    }
+
+    normal_user_dict = dict(
+        username="gov.wnpp.Claudia",
+        email="Claudia@wnpp.gov",
+        first_name="Claudia",
+        last_name="Tiedemann",
+    )
+
+    def setUp(self):
+        super().setUp()
+        self.normal_user = User.objects.create(**self.normal_user_dict)
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.normal_user)
+
+        response = self.client.post(
+            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            data=self.data_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.pk = response.data.get("id")
+
+        # force approve the member
+        Member.objects.filter(pk=self.pk).update(role=Member.Roles.ADMIN)
+
+    def testCreate(self):
+        self.create(self.data_dict)
+
+    def testList(self):
+        self.list()
+
+    def testDetail(self):
+        self.detail()
+
+    def testUpdate(self):
+        updated_dict = self.data_dict
+        updated_dict["bio"] = "alsdfkj"
+        self.update(updated_dict)
+
+    def testDelete(self):
+        self.delete()

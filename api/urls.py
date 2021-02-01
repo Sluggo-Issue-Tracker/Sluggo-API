@@ -23,6 +23,12 @@ team_router.register(
     basename='team-tickets'
 )
 
+team_router.register(
+    r'members',
+    better_views.MemberViewSet,
+    basename='team-members'
+)
+
 #####################################################
 # Below are the old urls that are getting refactored
 #####################################################
