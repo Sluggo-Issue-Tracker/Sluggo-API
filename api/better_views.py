@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 
 from .models import *
 from .models.interfaces import team_related
-from .serializers import TeamSerializer, TicketSerializer, MemberSerializer
+from .serializers import TeamSerializer, TicketSerializer, MemberSerializer, TicketStatusSerializer, TagSerializer
 from .permissions import *
 
 
@@ -100,3 +100,23 @@ class MemberViewSet(NewTeamRelatedBase):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class TagViewSet(
+    NewTeamRelatedBase,
+):
+    queryset = Ticket.objects.all().select_related(
+        'team'
+    )
+    serializer_class = TagSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # save the instance
+        team_instance = self.get_team(*args, **kwargs)
+        serializer.save(team=team_instance)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
