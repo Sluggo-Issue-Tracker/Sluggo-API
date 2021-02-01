@@ -82,7 +82,6 @@ class TagSerializer(serializers.ModelSerializer):
 
     The fields that are serialized on reads:\n
         1. id: pk for this model\n
-        2. team_id: pk for the team associated with this tag\n
         3. object_uuid: unique identifier for this object\n
         4. title: the title for this tag\n
         5. created: datetime for creation\n
@@ -90,14 +89,10 @@ class TagSerializer(serializers.ModelSerializer):
         7. deactivated: datetime for deactivation\n
 
     The fields that are serialized on writes:\n
-        1. team_id: the team this tag is related to\n
-        2. title: the title for this tag\n
+        1. title: the title for this tag\n
 
     """
     id = serializers.ReadOnlyField()
-    team_id = serializers.PrimaryKeyRelatedField(
-        many=False, read_only=False, queryset=api_models.Team.objects.all()
-    )
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
     deactivated = serializers.ReadOnlyField()
@@ -107,14 +102,6 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ["id", "team_id",
                   "object_uuid",
                   "title", "created", "activated", "deactivated"]
-
-    def create(self, validated_data):
-        validated_data['team'] = validated_data.pop('team_id')
-
-        tag = api_models.Tag.objects.create(
-            **validated_data
-        )
-        return tag
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -310,17 +297,12 @@ class TicketSerializer(serializers.ModelSerializer):
     """
 
     id = serializers.ReadOnlyField()
-    team_id = serializers.PrimaryKeyRelatedField(
-        many=False, read_only=False, queryset=api_models.Team.objects.all()
-    )
+    # team_id = serializers.PrimaryKeyRelatedField(
+    #     many=False, read_only=False, queryset=api_models.Team.objects.all()
+    # )
 
-    tag_list = TicketTagSerializer(many=True, read_only=True)
-    tag_id_list = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(many=False, write_only=True, queryset=api_models.Tag.objects.all()),
-        write_only=True,
-        required=False
-    )
-
+    # tag_list = TicketTagSerializer(required=False)
+    tag_list = TagSerializer(many=True, required=False)
     parent_id = serializers.IntegerField(write_only=True, required=False)
     object_uuid = serializers.ReadOnlyField()
 
@@ -329,14 +311,10 @@ class TicketSerializer(serializers.ModelSerializer):
     comments = TicketCommentSerializer(many=True, required=False)
 
     assigned_user = UserSerializer(many=False, read_only=True)
-    assigned_user_id = serializers.PrimaryKeyRelatedField(
-        many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
-    )
 
-    status = TicketStatusSerializer(many=False, read_only=True)
-    status_id = serializers.PrimaryKeyRelatedField(
-        many=False, write_only=True, required=False, queryset=api_models.TicketStatus.objects.all()
-    )
+    # status = serializers.PrimaryKeyRelatedField(
+    #     many=False, write_only=False, required=False, queryset=api_models.TicketStatus.objects.all()
+    # )
 
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
@@ -346,17 +324,14 @@ class TicketSerializer(serializers.ModelSerializer):
         model = api_models.Ticket
         fields = [
             "id",
-            "team_id",
+            # "team_id",
             "ticket_number",
             "tag_list",
-            "tag_id_list",
             "parent_id",
             "owner",
             "object_uuid",
             "assigned_user",
-            "assigned_user_id",
-            "status",
-            "status_id",
+            # "status",
             "title",
             "description",
             "comments",
@@ -367,18 +342,19 @@ class TicketSerializer(serializers.ModelSerializer):
 
     # this creates a record from the json, modifying the keys
     def create(self, validated_data):
-        validated_data['status'] = validated_data.pop('status_id', None)
-        validated_data['assigned_user'] = validated_data.pop('assigned_user_id', None)
-        validated_data['team'] = validated_data.pop('team_id')
-
-        # this will remove the entry even if the call requesting using the
-        # serializer does not use the tag_id_list
-        validated_data.pop('tag_id_list', None)
-        validated_data.pop('parent_id', None)
+        tag_list = validated_data.pop('tag_list', None)
+        team = validated_data.get('team')
 
         ticket = api_models.Ticket.objects.create(
             **validated_data
         )
+
+        team_tags = api_models.Tag.objects.filter(team=team)
+
+        if tag_list:
+            for tag in tag_list:
+                team_tag = team_tags.get(title=tag.get('title'))
+                api_models.TicketTag.objects.create(tag=team_tag, ticket=ticket, team=team)
 
         return ticket
 

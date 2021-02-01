@@ -19,7 +19,7 @@ team_router = routers.NestedSimpleRouter(
 
 team_router.register(
     r'tickets',
-    better_views.TeamViewSet,
+    better_views.TicketViewSet,
     basename='team-tickets'
 )
 

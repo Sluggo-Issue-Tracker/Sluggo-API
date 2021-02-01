@@ -46,8 +46,17 @@ class TicketViewSet(NewTeamRelatedBase):
     )
     serializer_class = TicketSerializer
     permission_classes = [
-        IsMemberUser, IsOwnerOrReadOnly
+        IsMemberUser, IsAuthenticated
     ]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save(owner=request.user, team=self.get_team(*args, **kwargs))
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class MemberViewSet(NewTeamRelatedBase):

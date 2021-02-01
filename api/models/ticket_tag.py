@@ -7,11 +7,27 @@ from api.models.interfaces import HasUuid, TeamRelated
 from hashlib import md5
 
 
+class TagManager(models.Manager):
+    def create(self, **obj_data):
+        title = obj_data.get("title")
+        team = obj_data.get("team")
+
+        if not title or not team:
+            raise ValueError("missing title or team")
+
+        title_id = "{}".format(title)
+        team_id = "{}".format(team.id)
+        obj_data["id"] = md5(title_id.encode()).hexdigest() + md5(team_id.encode()).hexdigest()
+        return super().create(**obj_data)
+
+
 class Tag(HasUuid, TeamRelated):
+    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     title = models.CharField(max_length=100, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    objects = TagManager()
 
     class Meta:
         ordering = ["id"]
@@ -27,7 +43,7 @@ class TicketTagManager(models.Manager):
         ticket = obj_data.get("ticket")
 
         if not tag or not ticket:
-            raise ValueError("missing name or team")
+            raise ValueError("missing tag or team")
 
         team_id = "{}".format(tag.id)
         ticket_id = "{}".format(ticket.id)
@@ -38,7 +54,7 @@ class TicketTagManager(models.Manager):
 class TicketTag(HasUuid, TeamRelated):
     id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='tag_list')
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)

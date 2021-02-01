@@ -116,13 +116,14 @@ class TeamTestCase(TeamRelatedCore):
 
 class TicketTestCase(TeamRelatedCore):
     data_dict = {
-        "name": "ticket",
+        "title": "ticket",
         "description": "ticket test"
     }
 
     prefix = "team-tickets"
 
     def setUp(self):
+        super().setUp()
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
             data=self.data_dict, format="json"
@@ -146,6 +147,20 @@ class TicketTestCase(TeamRelatedCore):
 
     def testDelete(self):
         self.delete()
+
+    def testTagOnCreate(self):
+        extra_data = dict(self.data_dict)
+        extra_data["tag_list"] = [
+            {"title": "wine"}
+        ]
+
+        Tag.objects.create(title="wine", team=self.team).save()
+        response = self.client.post(
+            reverse(self.prefix + "-list", kwargs={"new_team_pk": self.team.id}),
+            data=extra_data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 
 class MemberTestCase(TeamRelatedCore):
