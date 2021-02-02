@@ -11,27 +11,6 @@ from .team import Team
 User = get_user_model()
 
 
-class MemberManager(models.Manager):
-    # this is a convenience class which handles defining the id before a save
-    # ( i think it gets automatically invoked on member instantiation before save)
-    def create(self, **obj_data):
-        team = obj_data.get("team")
-        owner = obj_data.get("owner")
-
-        if not owner:
-            raise ValueError("missing owner")
-
-        if not team:
-            raise ValueError("missing team")
-
-        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
-
-        team_id = "{}".format(team.id)
-        obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(
-            owner.username.encode()).hexdigest()
-        return super().create(**obj_data)
-
-
 class Member(HasUuid, TeamRelated):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
@@ -74,9 +53,9 @@ class Member(HasUuid, TeamRelated):
                             choices=Roles.choices,
                             default=Roles.UNAPPROVED)
 
-    pronouns = models.CharField(max_length=256, null=True)
+    pronouns = models.CharField(max_length=256, null=True, blank=True)
 
-    bio = models.TextField()
+    bio = models.TextField(default="", blank=True)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
@@ -85,8 +64,6 @@ class Member(HasUuid, TeamRelated):
                                   default=uuid.uuid4,
                                   editable=False,
                                   unique=True)
-
-    objects = MemberManager()
 
     def is_admin(self):
         return self.role == self.Roles.ADMIN
@@ -109,3 +86,21 @@ class Member(HasUuid, TeamRelated):
 
     def __str__(self):
         return f"Member: {self.owner.get_full_name}"
+
+    def save(self, *args, **kwargs):
+        team = self.team
+        owner = self.owner
+
+        if not owner:
+            raise ValueError("missing owner")
+
+        if not team:
+            raise ValueError("missing team")
+
+        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
+
+        team_id = "{}".format(team.id)
+        self.id = md5(team_id.encode()).hexdigest() + md5(
+            owner.username.encode()).hexdigest()
+
+        super(Member, self).save(*args, **kwargs)

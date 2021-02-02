@@ -5,7 +5,7 @@ from .models import (Ticket, Member, Team, TicketComment, TicketStatus,
 
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
-    readonly_fields = ("created", )
+    readonly_fields = ("created", "ticket_number")
 
 
 @admin.register(Member)
