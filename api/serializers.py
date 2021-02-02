@@ -247,7 +247,7 @@ class EventSerializer(serializers.ModelSerializer):
     created = serializers.ReadOnlyField()
     event_type = serializers.ReadOnlyField()
     user = PrimaryKeySerializedField(
-        many=False, queryset=api_models.Member.objects.all(), serializer=UserSerializer
+        many=False, read_only=True, queryset=api_models.Member.objects.all(), serializer=UserSerializer
     )
     object_id = serializers.ReadOnlyField()
 
