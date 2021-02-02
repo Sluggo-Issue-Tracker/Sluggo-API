@@ -7,7 +7,8 @@ from dj_rest_auth.registration.views import SocialLoginView
 
 from .models import *
 from .models.interfaces import team_related
-from .serializers import TeamSerializer, TicketSerializer, MemberSerializer, TicketStatusSerializer, TagSerializer
+from .serializers import TeamSerializer, TicketSerializer, MemberSerializer, TicketStatusSerializer, TagSerializer, \
+    EventSerializer
 from .permissions import *
 
 TEAM_PK = "team_pk"
@@ -151,3 +152,15 @@ class SlackLogin(SocialLoginView):
     A token for this app will be returned.
     """
     adapter_class = SlackOAuth2Adapter
+
+
+class EventViewSet(
+    NewTeamRelatedBase,
+    viewsets.ModelViewSet
+):
+    queryset = Event.objects.all().select_related(
+        'team'
+    ).prefetch_related(
+        'user'
+    )
+    serializer_class = EventSerializer

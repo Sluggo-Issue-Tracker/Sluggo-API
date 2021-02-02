@@ -40,6 +40,12 @@ team_router.register(
     basename='team-tags'
 )
 
+team_router.register(
+    r'events',
+    views.MemberViewSet,
+    basename='team-events'
+)
+
 urlpatterns = [
     # Optional UI:
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

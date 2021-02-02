@@ -367,15 +367,9 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    team_id = serializers.PrimaryKeyRelatedField(
-        many=False, read_only=False, queryset=api_models.Team.objects.all()
-    )
     created = serializers.ReadOnlyField()
     event_type = serializers.ReadOnlyField()
-    user = UserSerializer(many=False, read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(
-        many=False, write_only=True, required=False, queryset=get_user_model().objects.all()
-    )
+    user = PrimaryKeySerializedField(many=False, read_only=True))
     description = serializers.ReadOnlyField()
     object_id = serializers.ReadOnlyField()
 
