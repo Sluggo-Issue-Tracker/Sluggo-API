@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 
 from ..models import *
 from ..docs import *
+from ..permissions import *
 
 """
 subclassing all the entire model viewset path in order to generate
@@ -13,7 +14,7 @@ documentation properly, and with minimal duplication
 
 
 class NewTeamRelatedBase(viewsets.GenericViewSet):
-    # permission_classes = [IsAuthenticated, IsMemberUser]
+    permission_classes = [IsAuthenticated, IsMemberUser]
 
     search_fields = ['^name', '^description']
     ordering_fields = ['created', 'activated']

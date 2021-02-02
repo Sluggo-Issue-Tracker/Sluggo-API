@@ -1,7 +1,6 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from hashlib import md5
 from .models import Member, Team
-from .views.team_related_base import NewTeamRelatedBase
 
 
 class BaseMemberPermissions(BasePermission):
