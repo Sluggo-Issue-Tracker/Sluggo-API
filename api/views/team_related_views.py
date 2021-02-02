@@ -1,17 +1,4 @@
-from rest_framework import status, viewsets, mixins
-from rest_framework.exceptions import NotFound, NotAcceptable
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from allauth.socialaccount.providers.slack.views import SlackOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
-
-from .models import *
-from .models.interfaces import team_related
-from .serializers import TeamSerializer, TicketSerializer, MemberSerializer, TicketStatusSerializer, TagSerializer, \
-    EventSerializer
-from .permissions import *
-
-TEAM_PK = "team_pk"
+from .team_related_base import *
 
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -31,27 +18,16 @@ class TeamViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class NewTeamRelatedBase(viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated, IsMemberUser]
-
-    def get_team(self, *args, **kwargs):
-        team_id = self.kwargs.get(TEAM_PK)
-        return get_object_or_404(Team, pk=team_id)
-
-    def get_queryset(self, *args, **kwargs):
-        team_instance = self.get_team(*args, **kwargs)
-        return self.queryset.filter(team=team_instance)
-
-
-class TicketViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
+class TicketViewSet(TeamRelatedModelViewSet):
     """ Ticket Viewset """
     queryset = Ticket.objects.all().select_related(
-        'team'
+        'team', 'owner', 'assigned_user', 'status'
     ).prefetch_related(
-        'owner', 'assigned_user', 'status'
+        'tag_list'
     )
     serializer_class = TicketSerializer
 
+    @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -62,17 +38,16 @@ class TicketViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class MemberViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
+class MemberViewSet(TeamRelatedModelViewSet):
     queryset = Member.objects.all().select_related(
-        'team'
-    ).prefetch_related(
-        'owner'
+        'team', 'owner'
     )
     serializer_class = MemberSerializer
     permission_classes = [
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
     ]
 
+    @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,6 +59,7 @@ class MemberViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @extend_schema(**TEAM_DETAIL_SCHEMA)
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -106,60 +82,27 @@ class MemberViewSet(NewTeamRelatedBase, viewsets.ModelViewSet):
 
 
 class StatusViewSet(
-    NewTeamRelatedBase,
-    viewsets.ModelViewSet
+    TeamRelatedModelViewSet
 ):
     queryset = TicketStatus.objects.all().select_related(
         'team'
     )
     serializer_class = TicketStatusSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # save the instance
-        team_instance = self.get_team(*args, **kwargs)
-        serializer.save(team=team_instance)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TagViewSet(
-    NewTeamRelatedBase,
-    viewsets.ModelViewSet
+    TeamRelatedModelViewSet
 ):
     queryset = Tag.objects.all().select_related(
         'team'
     )
     serializer_class = TagSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        # save the instance
-        team_instance = self.get_team(*args, **kwargs)
-        serializer.save(team=team_instance)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-
-class SlackLogin(SocialLoginView):
-    """
-    Slack endpoints. Only access_token is the concern. Use /slack/ to authenticate the client with a slack token.
-    A token for this app will be returned.
-    """
-    adapter_class = SlackOAuth2Adapter
-
-
-class EventViewSet(
-    NewTeamRelatedBase,
-    mixins.RetrieveModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin
-):
+class EventViewSet(TeamRelatedListMixin,
+                   TeamRelatedUpdateMixin,
+                   TeamRelatedRetrieveMixin,
+                   TeamRelatedDestroyMixin):
     permission_classes = [
         IsAuthenticated,
         IsAdminMemberOrReadOnly,
@@ -171,3 +114,4 @@ class EventViewSet(
         'user'
     )
     serializer_class = EventSerializer
+

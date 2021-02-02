@@ -42,7 +42,7 @@ team_router.register(
 
 team_router.register(
     r'events',
-    views.MemberViewSet,
+    views.EventViewSet,
     basename='team-events'
 )
 
