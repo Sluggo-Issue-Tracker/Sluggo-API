@@ -156,8 +156,15 @@ class SlackLogin(SocialLoginView):
 
 class EventViewSet(
     NewTeamRelatedBase,
-    viewsets.ModelViewSet
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin
 ):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdminMemberOrReadOnly,
+        IsMemberUser,
+    ]
     queryset = Event.objects.all().select_related(
         'team'
     ).prefetch_related(

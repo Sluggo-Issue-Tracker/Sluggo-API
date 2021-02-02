@@ -34,3 +34,6 @@ class Event(models.Model):
     class Meta:
         ordering = ["-created"]
         app_label = "api"
+
+    def __str__(self):
+        return f"Event: {self.event_type}, {self.description}"
