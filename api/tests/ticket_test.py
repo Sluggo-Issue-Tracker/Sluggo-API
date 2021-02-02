@@ -90,10 +90,10 @@ class TicketTestCase(TestCase):
 
 
 class TicketViewTestCase(TestCase):
-    """ Test suite for ticket views."""
+    """ Test suite for ticket old_views."""
 
     def setUp(self):
-        """ Sets up whatever is necessary for views"""
+        """ Sets up whatever is necessary for old_views"""
         self.ticket_user = User.objects.create_user(**user_dict)
         self.ticket_user.save()
 
@@ -438,8 +438,9 @@ class TicketViewTestCase(TestCase):
         self.assertNotEqual(children, None)
 
     def testGetOwned(self):
+
         response = self.ticket_client.get(
-            reverse("ticket-retrieve-user-tickets", kwargs={"pk": self.team.id}), format="json"
+            reverse("ticket-retrieve-user-tickets"), QUERY_STRING=f'team_id={self.team.id}', format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -453,7 +454,6 @@ class TicketViewTestCase(TestCase):
         )
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 
 class TagViewTestCase(TestCase):
@@ -607,7 +607,6 @@ class StatusViewTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def testFilter(self):
-
         url = reverse("ticketstatus-list-team", kwargs={"pk": self.team.id})
         url += f"?title={self.status.title}"
         print(url)

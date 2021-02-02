@@ -2,7 +2,8 @@ from django.utils import timezone
 from treebeard import exceptions as t_except
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.request import Request
 
 from ..models import (
     Ticket,
@@ -30,7 +31,7 @@ class TicketViewSet(
     TeamRelatedViewSet
 ):
     """
-    This viewset automatically provides `list` and `detail` actions.
+    Actions that provide CRUD coverage for tickets
     """
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
@@ -218,11 +219,13 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({'msg': e.detail}, e.status_code)
 
+    @extend_schema(**TeamRelatedViewSet.schema_dict)
     @action(
-        detail=True,
+        detail=False,
         methods=['GET'],
-        permission_classes=permission_classes
+        permission_classes=permission_classes,
     )
+    @team_queried_view
     def retrieve_user_tickets(self, request, pk=None):
         """
         {id} refers to a team
@@ -262,7 +265,7 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 
 
 """
-all views inherit from TeamRelatedViewSet following
+all old_views inherit from TeamRelatedViewSet following
 """
 
 
