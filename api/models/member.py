@@ -23,7 +23,8 @@ class MemberManager(models.Manager):
         # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
 
         team_id = "{}".format(team.id)
-        obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(owner.username.encode()).hexdigest()
+        obj_data["id"] = md5(team_id.encode()).hexdigest() + md5(
+            owner.username.encode()).hexdigest()
         return super().create(**obj_data)
 
 
@@ -41,7 +42,6 @@ class Member(HasUuid, TeamRelated):
         completed: A field to record when a ticket has been finished. (Datetime as well)
         due_date: The due date for the ticket, a date field that will keep track of when things are due.
     """
-
     class Roles(models.TextChoices):
         """
         A private class containing 3 options for Roles stored in multiple versions. A full name, "pretty" name, and 2-letter representation.
@@ -57,15 +57,18 @@ class Member(HasUuid, TeamRelated):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.username)
-    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
+    id = models.CharField(max_length=256,
+                          unique=True,
+                          editable=False,
+                          primary_key=True)
 
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
-    )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE,
+                              editable=True)
 
-    role = models.CharField(
-        max_length=2, choices=Roles.choices, default=Roles.UNAPPROVED
-    )
+    role = models.CharField(max_length=2,
+                            choices=Roles.choices,
+                            default=Roles.UNAPPROVED)
 
     pronouns = models.CharField(max_length=256, null=True)
 
@@ -73,7 +76,11 @@ class Member(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    memberUUID = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
+    memberUUID = models.UUIDField(null=True,
+                                  blank=False,
+                                  default=uuid.uuid4,
+                                  editable=False,
+                                  unique=True)
 
     objects = MemberManager()
 
@@ -82,7 +89,6 @@ class Member(HasUuid, TeamRelated):
 
     def is_approved(self):
         return self.role == self.Roles.ADMIN or self.role == self.Roles.APPROVED
-
 
     class Meta:
         ordering = ["created"]
