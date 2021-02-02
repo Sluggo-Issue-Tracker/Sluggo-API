@@ -1,10 +1,14 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
 from hashlib import md5
 import uuid
 
 from api.models.interfaces import HasUuid, TeamRelated
+from .team import Team
+
+User = get_user_model()
 
 
 class MemberManager(models.Manager):
@@ -89,6 +93,15 @@ class Member(HasUuid, TeamRelated):
 
     def is_approved(self):
         return self.role == self.Roles.ADMIN or self.role == self.Roles.APPROVED
+
+    @classmethod
+    def get_member(cls, user, team: Team):
+        team_id = team.id
+        team_id = "{}".format(team_id)
+        username = user.username
+        member_pk = (md5(team_id.encode()).hexdigest() +
+                     md5(username.encode()).hexdigest())
+        return Member.objects.get(pk=member_pk)
 
     class Meta:
         ordering = ["created"]
