@@ -33,7 +33,7 @@ class Tag(HasUuid, TeamRelated):
         if not team:
             raise ValueError("missing team")
 
-        title_id = "{}".format(title.id)
+        title_id = "{}".format(title)
         team_id = "{}".format(team.id)
         self.team_title_hash = md5(title_id.encode()).hexdigest() + md5(
             team_id.encode()).hexdigest()

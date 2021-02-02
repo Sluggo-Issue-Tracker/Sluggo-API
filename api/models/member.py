@@ -59,11 +59,6 @@ class Member(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    memberUUID = models.UUIDField(null=True,
-                                  blank=False,
-                                  default=uuid.uuid4,
-                                  editable=False,
-                                  unique=True)
 
     def is_admin(self):
         return self.role == self.Roles.ADMIN
