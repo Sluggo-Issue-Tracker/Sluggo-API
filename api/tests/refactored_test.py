@@ -365,3 +365,37 @@ class StatusTestCase(TeamRelatedCore):
 
     def testDelete(self):
         self.delete()
+
+class StatusColorTestCase(TeamRelatedCore):
+    prefix = "team-statuses"
+
+    data_dict = {
+        "title": "in progress",
+        "color": "#F5F225"
+    }
+
+    def setUp(self):
+        super().setUp()
+        response = self.client.post(
+            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
+            data=self.data_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.pk = response.data.get("id")
+
+    def testCreate(self):
+        self.create(self.data_dict)
+
+    def testList(self):
+        self.list()
+
+    def testDetail(self):
+        self.detail()
+
+    def testUpdate(self):
+        updated_dict = self.data_dict
+        updated_dict["color"] = "#F39617"
+        self.update(updated_dict)
+
+    def testDelete(self):
+        self.delete()

@@ -132,7 +132,7 @@ class TicketStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = api_models.TicketStatus
         fields = [
-            "id", "object_uuid", "title", "created", "activated", "deactivated"
+            "id", "object_uuid", "title", "color", "created", "activated", "deactivated"
         ]
 
 
