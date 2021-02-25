@@ -65,7 +65,7 @@ class TicketStatusAdmin(customAdmin):
     readonly_fields = ("created", "id")
     readonly_edit = ("team", )
 
-    fields = ("id", "team", "title", "created", "activated", "deactivated")
+    fields = ("id", "team", "title", "color", "created", "activated", "deactivated")
 
 
 @admin.register(TicketTag)
