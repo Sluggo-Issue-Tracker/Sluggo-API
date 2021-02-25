@@ -7,3 +7,4 @@ from .ticket_tag import Tag, TicketTag
 from .ticket_node import TicketNode
 from .interfaces.has_uuid import HasUuid
 from .event import Event
+from .pinned_ticket import PinnedTicket
