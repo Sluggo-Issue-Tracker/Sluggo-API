@@ -1,6 +1,7 @@
 from .team_related_base import *
 from ..serializers import *
 from ..permissions import *
+from ..docs import *
 
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -48,6 +49,20 @@ class TicketViewSet(TeamRelatedModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class PinnedTicketViewSet(TeamRelatedModelViewSet):
+    serializer_class = PinnedTicketSerializer
+    permission_classes = [
+        IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
+    ]
+
+    def get_member(self):
+        member_id = self.kwargs.get(MEMBER_PK)
+        return get_object_or_404(Member, pk=member_id)
+
+    def get_queryset(self, *args, **kwargs):
+        member_instance = self.get_member()
+        return super().get_queryset(self, *args, **kwargs).filter(member=member_instance)
 
 
 class MemberViewSet(TeamRelatedModelViewSet):

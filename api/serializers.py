@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from . import models as api_models
+from .docs import *
 
 User = get_user_model()
 
@@ -210,19 +211,26 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class PinnedTicketSerializer(serializers.ModelSerializer):
-    ticket = TicketSerializer(many=False, read_only=True)
+    ticket = TicketSerializer(many=False, read_only=False)
+    member = serializers.SerializerMethodField()
     created = serializers.ReadOnlyField()
     object_uuid = serializers.ReadOnlyField()
 
     class Meta:
         model = api_models.PinnedTicket
-        fields = ["ticket", "pinned", "object_uuid"]
+        fields = ["ticket", "member", "pinned", "object_uuid", "created", "id"]
+
+    def get_member(self, obj):
+        return MemberSerializer(obj.member).data
 
 
 class MemberSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     owner = UserSerializer(many=False, read_only=True)
-    pinned_tickets = PrimaryKeySerializedField(many=True, queryset=api_models.Ticket.objects.all(), serializer=PinnedTicketSerializer)
+    pinned_tickets = PrimaryKeySerializedField(many=True,
+                                               queryset=api_models.Ticket.objects.all(),
+                                               serializer=PinnedTicketSerializer,
+                                               required=False)
     object_uuid = serializers.ReadOnlyField()
     team_id = serializers.ReadOnlyField(source="team.id")
     role = serializers.ReadOnlyField()

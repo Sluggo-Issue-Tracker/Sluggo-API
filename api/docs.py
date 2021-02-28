@@ -6,6 +6,7 @@ assorted keys and
 """
 
 TEAM_PK = "team_pk"
+MEMBER_PK = "member_pk"
 
 TEAM_DETAIL_SCHEMA = dict(
     parameters=[
