@@ -50,11 +50,15 @@ class TicketViewSet(TeamRelatedModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-class PinnedTicketViewSet(TeamRelatedModelViewSet):
+class PinnedTicketViewSet(TeamRelatedListMixin,
+                        TeamRelatedRetrieveMixin,
+                        TeamRelatedDestroyMixin,
+                          TeamRelatedCreateMixin):
     serializer_class = PinnedTicketSerializer
     permission_classes = [
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
     ]
+    queryset = PinnedTicket.objects.all()
 
     def get_member(self):
         member_id = self.kwargs.get(MEMBER_PK)
@@ -62,7 +66,21 @@ class PinnedTicketViewSet(TeamRelatedModelViewSet):
 
     def get_queryset(self, *args, **kwargs):
         member_instance = self.get_member()
-        return super().get_queryset(self, *args, **kwargs).filter(member=member_instance)
+        team_instance = self.get_team()
+        return self.queryset.filter(team=team_instance, member=member_instance)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # save the instance
+        team_instance = self.get_team()
+        member_instance = self.get_member()
+
+        serializer.save(team=team_instance, member=member_instance)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class MemberViewSet(TeamRelatedModelViewSet):
