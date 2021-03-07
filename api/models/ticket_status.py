@@ -28,7 +28,7 @@ class TicketStatus(HasUuid, TeamRelated):
     def __str__(self):
         return f"TicketStatus: {self.title}"
 
-    def save(self, *args, **kwargs):
+    def _pre_create(self):
         team = self.team
         title = self.title
         color = self.color
@@ -51,6 +51,9 @@ class TicketStatus(HasUuid, TeamRelated):
         self.team_title_hash = md5(title_id.encode()).hexdigest() + md5(
             team_id.encode()).hexdigest()
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
         super(TicketStatus, self).save(*args, **kwargs)
 
     def check_color(self, color):

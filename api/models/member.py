@@ -82,9 +82,9 @@ class Member(HasUuid, TeamRelated):
     def __str__(self):
         return f"Member: {self.owner.get_full_name}"
 
-    def save(self, *args, **kwargs):
-        team = self.team
-        owner = self.owner
+    def _pre_create(self):
+        team: Team = self.team
+        owner: User = self.owner
 
         if not owner:
             raise ValueError("missing owner")
@@ -98,4 +98,9 @@ class Member(HasUuid, TeamRelated):
         self.id = md5(team_id.encode()).hexdigest() + md5(
             owner.username.encode()).hexdigest()
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
+
         super(Member, self).save(*args, **kwargs)
+
