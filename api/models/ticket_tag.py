@@ -23,7 +23,7 @@ class Tag(HasUuid, TeamRelated):
     def __str__(self):
         return f"Tag: {self.title}"
 
-    def save(self, *args, **kwargs):
+    def _pre_create(self):
         team = self.team
         title = self.title
 
@@ -37,6 +37,10 @@ class Tag(HasUuid, TeamRelated):
         team_id = "{}".format(team.id)
         self.team_title_hash = md5(title_id.encode()).hexdigest() + md5(
             team_id.encode()).hexdigest()
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
 
         super(Tag, self).save(*args, **kwargs)
 
@@ -88,7 +92,7 @@ class TicketTag(HasUuid, TeamRelated):
     def __str__(self):
         return f"TicketTag: {self.created}"
 
-    def save(self, *args, **kwargs):
+    def _pre_create(self):
         tag = self.tag
         ticket = self.ticket
 
@@ -103,4 +107,7 @@ class TicketTag(HasUuid, TeamRelated):
         self.id = md5(team_id.encode()).hexdigest() + md5(
             ticket_id.encode()).hexdigest()
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
         super(TicketTag, self).save(*args, **kwargs)
