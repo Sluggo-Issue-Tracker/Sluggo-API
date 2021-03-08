@@ -6,6 +6,7 @@ assorted keys and
 """
 
 TEAM_PK = "team_pk"
+MEMBER_PK = "member_pk"
 
 TEAM_DETAIL_SCHEMA = dict(
     parameters=[
@@ -22,3 +23,5 @@ TEAM_LIST_SCHEME = dict(
                          description="A search term used to filter the set"),
     ]
 )
+
+

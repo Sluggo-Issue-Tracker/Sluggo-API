@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from . import models as api_models
+from .docs import *
 
 User = get_user_model()
 
@@ -75,32 +76,6 @@ class TagSerializer(serializers.ModelSerializer):
         ]
 
 
-class MemberSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    owner = UserSerializer(many=False, read_only=True)
-    object_uuid = serializers.ReadOnlyField()
-    team_id = serializers.ReadOnlyField(source="team.id")
-    role = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
-
-    class Meta:
-        model = api_models.Member
-        fields = [
-            "id",
-            "owner",
-            "team_id",
-            "object_uuid",
-            "role",
-            "bio",
-            "pronouns",
-            "created",
-            "activated",
-            "deactivated",
-        ]
-
-
 class TicketCommentSerializer(serializers.ModelSerializer):
     ticket_id = serializers.ReadOnlyField(source="ticket.id")
     team_id = serializers.ReadOnlyField(source="team.id")
@@ -137,7 +112,7 @@ class TicketStatusSerializer(serializers.ModelSerializer):
 
 
 class TicketTagSerializer(serializers.ModelSerializer):
-    tag = TagSerializer(many=False, read_only=True)
+    tag = TagSerializer(many=False, read_only=True, required=False)
     object_uuid = serializers.ReadOnlyField()
     created = serializers.ReadOnlyField()
     activated = serializers.ReadOnlyField()
@@ -233,6 +208,45 @@ class TicketSerializer(serializers.ModelSerializer):
         api_models.TicketTag.delete_difference(tag_list, instance)
 
         return super().update(instance, validated_data)
+
+
+class PinnedTicketSerializer(serializers.ModelSerializer):
+    ticket = PrimaryKeySerializedField(many=False,
+                                         required=True,
+                                         queryset=api_models.Ticket.objects.all(),
+                                         serializer=TicketSerializer)
+    created = serializers.ReadOnlyField()
+    object_uuid = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.PinnedTicket
+        fields = ["ticket", "pinned", "object_uuid", "created", "id"]
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    owner = UserSerializer(many=False, read_only=True)
+    object_uuid = serializers.ReadOnlyField()
+    team_id = serializers.ReadOnlyField(source="team.id")
+    role = serializers.ReadOnlyField()
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.Member
+        fields = [
+            "id",
+            "owner",
+            "team_id",
+            "object_uuid",
+            "role",
+            "bio",
+            "pronouns",
+            "created",
+            "activated",
+            "deactivated",
+        ]
 
 
 class EventSerializer(serializers.ModelSerializer):
