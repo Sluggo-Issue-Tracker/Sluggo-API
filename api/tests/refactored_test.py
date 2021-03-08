@@ -471,7 +471,6 @@ class PinnedTicketTestCase(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.member_not_of_interest_pk = response.data.get('id')
-        print(self.member_not_of_interest_pk)
 
         # Approve second member
         Member.objects.filter(pk=self.member_not_of_interest_pk).update(role=Member.Roles.ADMIN)
