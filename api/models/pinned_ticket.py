@@ -10,15 +10,15 @@ class PinnedTicket(HasUuid, TeamRelated):
                           unique=True,
                           editable=False,
                           primary_key=True)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, editable=False)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, editable=False)
     pinned = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["pinned"]
         app_label = "api"
 
-    def save(self, *args, **kwargs):
+    def _pre_create(self):
         member = self.member
         ticket = self.ticket
 
@@ -31,7 +31,12 @@ class PinnedTicket(HasUuid, TeamRelated):
         # Create ID
         member_id = "{}".format(member.id)
         ticket_id = "{}".format(ticket.id)
+
         self.id = md5(member_id.encode()).hexdigest() + md5(ticket_id.encode()).hexdigest()
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
 
         super(PinnedTicket, self).save(*args, **kwargs)
 

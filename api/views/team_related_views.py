@@ -53,7 +53,7 @@ class TicketViewSet(TeamRelatedModelViewSet):
 class PinnedTicketViewSet(TeamRelatedListMixin,
                         TeamRelatedRetrieveMixin,
                         TeamRelatedDestroyMixin,
-                          TeamRelatedCreateMixin):
+                        TeamRelatedCreateMixin):
     serializer_class = PinnedTicketSerializer
     permission_classes = [
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
