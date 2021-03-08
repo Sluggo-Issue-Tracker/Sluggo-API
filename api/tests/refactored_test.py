@@ -6,7 +6,8 @@ from django.urls import reverse
 from django.conf import settings
 
 from api.models import (Ticket, Team, Member, Tag, TicketStatus, TicketTag, TicketNode)
-from ..serializers import UserSerializer, TicketStatusSerializer, TagSerializer, TicketSerializer
+from ..serializers import UserSerializer, TicketStatusSerializer, TagSerializer, TicketSerializer, MemberSerializer, \
+    TeamSerializer
 
 TEAM_PK = "team_pk"
 
@@ -18,6 +19,7 @@ PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 class TeamRelatedCore(TestCase):
     prefix = ""
     model = None
+    serializer = None
 
     team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
 
@@ -52,7 +54,11 @@ class TeamRelatedCore(TestCase):
         count = Team.objects.count()
         self.assertNotEqual(0, count)
 
-    def list(self, expected: list):
+    def list(self, expected=None):
+        if not expected:
+            qs = self.model.objects.get_queryset()[:PAGE_SIZE]
+            expected = self.serializer(qs, many=True).data
+
         response = self.client.get(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
             format="json"
@@ -60,7 +66,11 @@ class TeamRelatedCore(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)
 
-    def detail(self, expected: dict):
+    def detail(self, expected=None):
+        if not expected:
+            instance = self.model.objects.get(pk=self.pk)
+            expected = self.serializer(instance).data
+
         response = self.client.get(
             reverse(self.prefix + "-detail", kwargs={
                 "team_pk": self.team.id,
@@ -95,6 +105,7 @@ class TeamRelatedCore(TestCase):
 class TeamTestCase(TeamRelatedCore):
     prefix = "team"
     model = Team
+    serializer = TeamSerializer
 
     def testCreate(self):
         count = Team.objects.count()
@@ -135,6 +146,7 @@ class TicketTestCase(TeamRelatedCore):
 
     prefix = "team-tickets"
     model = Ticket
+    serializer = TicketSerializer
 
     def setUp(self):
         super().setUp()
@@ -149,14 +161,10 @@ class TicketTestCase(TeamRelatedCore):
         self.create(self.data_dict)
 
     def testList(self):
-        qs = self.model.objects.get_queryset()[:PAGE_SIZE]
-        expected = TicketSerializer(qs, many=True)
-        self.list(expected.data)
+        self.list()
 
     def testDetail(self):
-        instance = self.model.objects.get(pk=self.pk)
-        expected = TicketSerializer(instance)
-        self.detail(expected.data)
+        self.detail()
 
     def testUpdate(self):
         updated_dict = self.data_dict
@@ -223,14 +231,15 @@ class WrongTeamTestCase(TicketTestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=user_instance)
 
-    def list(self):
+    # TODO: regularized error messages
+    def list(self, expected=None):
         response = self.client.get(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def detail(self):
+    def detail(self, expected=None):
         response = self.client.get(
             reverse(self.prefix + "-detail", kwargs={
                 "team_pk": self.team.id,
@@ -239,7 +248,7 @@ class WrongTeamTestCase(TicketTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def update(self, updated_dict):
+    def update(self, updated_dict, expected=None):
         response = self.client.put(
             reverse(self.prefix + "-detail", kwargs={
                 "team_pk": self.team.id,
@@ -279,6 +288,7 @@ class MemberTestCase(TeamRelatedCore):
     prefix = "team-members"
 
     model = Member
+    serializer = MemberSerializer
 
     data_dict = {
         "bio": "biography"
@@ -319,7 +329,11 @@ class MemberTestCase(TeamRelatedCore):
     def testUpdate(self):
         updated_dict = self.data_dict
         updated_dict["bio"] = "alsdfkj"
-        self.update(updated_dict)
+
+        expected = self.serializer(self.model.objects.get(pk=self.pk)).data
+        expected["bio"] = updated_dict["bio"]
+
+        self.update(updated_dict, expected)
 
     def testDelete(self):
         self.delete()
@@ -327,6 +341,7 @@ class MemberTestCase(TeamRelatedCore):
 
 class TagTestCase(TeamRelatedCore):
     prefix = "team-tags"
+    serializer = TagSerializer
 
     data_dict = {
         "title": "wine"
@@ -355,7 +370,11 @@ class TagTestCase(TeamRelatedCore):
     def testUpdate(self):
         updated_dict = self.data_dict
         updated_dict["title"] = "alsdkfj"
-        self.update(updated_dict)
+
+        expected = self.serializer(self.model.objects.get(pk=self.pk)).data
+        expected["title"] = updated_dict["title"]
+
+        self.update(updated_dict, expected)
 
     def testDelete(self):
         self.delete()
@@ -363,40 +382,8 @@ class TagTestCase(TeamRelatedCore):
 
 class StatusTestCase(TeamRelatedCore):
     prefix = "team-statuses"
-
-    data_dict = {
-        "title": "in progress"
-    }
-
-    def setUp(self):
-        super().setUp()
-        response = self.client.post(
-            reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
-            data=self.data_dict, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.pk = response.data.get("id")
-
-    def testCreate(self):
-        self.create(self.data_dict)
-
-    def testList(self):
-        self.list()
-
-    def testDetail(self):
-        self.detail()
-
-    def testUpdate(self):
-        updated_dict = self.data_dict
-        updated_dict["title"] = "alsdkfj"
-        self.update(updated_dict)
-
-    def testDelete(self):
-        self.delete()
-
-
-class StatusColorTestCase(TeamRelatedCore):
-    prefix = "team-statuses"
+    model = TicketStatus
+    serializer = TicketStatusSerializer
 
     data_dict = {
         "title": "in progress",
@@ -423,8 +410,14 @@ class StatusColorTestCase(TeamRelatedCore):
 
     def testUpdate(self):
         updated_dict = self.data_dict
+        updated_dict["title"] = "alsdkfj"
         updated_dict["color"] = "#F39617"
-        self.update(updated_dict)
+
+        expected = self.serializer(self.model.objects.get(pk=self.pk)).data
+        expected["title"] = updated_dict["title"]
+        expected["color"] = updated_dict["color"]
+
+        self.update(updated_dict, expected)
 
     def testDelete(self):
         self.delete()
