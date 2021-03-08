@@ -399,3 +399,159 @@ class StatusColorTestCase(TeamRelatedCore):
 
     def testDelete(self):
         self.delete()
+
+class PinnedTicketTestCase(TestCase):
+    prefix = "pinned-tickets"
+    team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
+
+    user_of_interest_dict = dict(
+        username="org.mungus.a",
+        email="a@mungus.org",
+        first_name="Adam",
+        last_name="Mungus",
+    )
+
+    member_of_interest_dict = dict(
+        role="AD",
+        bio="Is not sus"
+    )
+
+    user_not_of_interest_dict = dict(
+        username = "org.mungus.impostor",
+        email = "impostor@mungus.org",
+        first_name = "Sus",
+        last_name = "Mungus"
+    )
+
+    member_not_of_interest_dict = dict(
+        role="AD",
+        bio="Sus!"
+    )
+
+    ticket_of_interest_dict = dict(
+        title="Ticket Of Interest",
+        description="This is a ticket of interest to us."
+    )
+
+    ticket_not_of_interest_dict = dict(
+        title="Ticket not of Interest",
+        description="Please ignore this!"
+    )
+
+    def setUp(self):
+        # setup users
+        self.user_of_interest = User.objects.create(**self.user_of_interest_dict)
+        self.user_of_interest.save()
+
+        self.user_not_of_interest = User.objects.create(**self.user_not_of_interest_dict)
+        self.user_not_of_interest.save()
+
+        # Setup clients
+        self.client_of_interest = APIClient()
+        self.client_of_interest.force_authenticate(user=self.user_of_interest)
+
+        self.client_not_of_interest = APIClient()
+        self.client_not_of_interest.force_authenticate(user=self.user_not_of_interest)
+
+        # Create team
+        response = self.client_of_interest.post(
+            reverse('team-list'), self.team_dict, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.team = Team.objects.get(pk=1)
+        self.pk = 1
+        # Get first member pk
+        self.member_of_interest_pk = Member.objects.all()[:1].get().pk
+
+        # Second user joins team
+        response = self.client_not_of_interest.post(
+            reverse('team-members-list', kwargs={TEAM_PK: self.team.id}),
+            data=self.member_not_of_interest_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.member_not_of_interest_pk = response.data.get('id')
+        print(self.member_not_of_interest_pk)
+
+        # Approve second member
+        Member.objects.filter(pk=self.member_not_of_interest_pk).update(role=Member.Roles.ADMIN)
+
+        # Create tickets
+        response = self.client_of_interest.post(
+            reverse('team-tickets-list', kwargs={TEAM_PK: self.team.id}),
+            data=self.ticket_of_interest_dict, format="json");
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.ticket_of_interest_pk = response.data.get('id')
+
+        response = self.client_of_interest.post(
+            reverse('team-tickets-list', kwargs={TEAM_PK: self.team.id}),
+            data=self.ticket_of_interest_dict, format="json");
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.ticket_not_of_interest_pk = response.data.get('id')
+
+    def test_ticket_pin(self):
+        response = self.client_of_interest.post(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            data=dict(
+                ticket=self.ticket_of_interest_pk
+            ),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check if accessible from a GET request
+        response = self.client_of_interest.get(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+
+        # Check if holds correct ticket
+        self.assertEqual(response.data.get('results')[0].get('ticket').get('id'), self.ticket_of_interest_pk)
+    #
+    def test_ticket_unpin_removes_access(self):
+        response = self.client_of_interest.post(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            data=dict(
+                ticket=self.ticket_of_interest_pk
+            ),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        pinned_pk = response.data.get('id')
+
+        # Now unpin
+        response = self.client_of_interest.delete(
+            reverse('pinned-tickets-detail', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk,
+                                                     'pk': pinned_pk}),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Check if accessible from a GET request
+        response = self.client_of_interest.get(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 0)
+
+    def test_ticket_pin_does_not_cross_users(self):
+        response = self.client_of_interest.post(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            data=dict(
+                ticket=self.ticket_of_interest_pk
+            ),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        pinned_pk = response.data.get('id')
+
+        response = self.client_not_of_interest.get(
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_not_of_interest_pk}),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 0)

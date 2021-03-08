@@ -47,7 +47,7 @@ team_router.register(
 )
 
 members_router = routers.NestedSimpleRouter(team_router, r'members', lookup='member')
-members_router.register(r'pinned_tickets', views.PinnedTicketViewSet, basename='pinned_tickets')
+members_router.register(r'pinned_tickets', views.PinnedTicketViewSet, basename='pinned-tickets')
 
 urlpatterns = [
     # Optional UI:
