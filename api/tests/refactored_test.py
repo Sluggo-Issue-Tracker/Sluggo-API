@@ -409,7 +409,7 @@ class StatusTestCase(TeamRelatedCore):
         self.detail()
 
     def testUpdate(self):
-        updated_dict = self.data_dict
+        updated_dict = dict(self.data_dict)
         updated_dict["title"] = "alsdkfj"
         updated_dict["color"] = "#F39617"
 
@@ -418,6 +418,21 @@ class StatusTestCase(TeamRelatedCore):
         expected["color"] = updated_dict["color"]
 
         self.update(updated_dict, expected)
+
+    def testBadColor(self):
+        updated_dict = dict(self.data_dict)
+        updated_dict["color"] = "bad"
+
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response = client.put(
+            reverse(self.prefix + "-detail", kwargs={
+                "team_pk": self.team.id,
+                "pk": self.pk
+            }), data=updated_dict, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        print(response.data)
 
     def testDelete(self):
         self.delete()

@@ -31,20 +31,12 @@ class TicketStatus(HasUuid, TeamRelated):
     def _pre_create(self):
         team = self.team
         title = self.title
-        color = self.color
 
         if not title:
             raise ValueError("missing title")
 
         if not team:
             raise ValueError("missing team")
-
-        if not color:
-            color = "#B9B9BD"
-        else:
-            valid = self.check_color(color)
-            if not valid:
-                raise ValueError("invalid color hex code")
 
         title_id = "{}".format(title)
         team_id = "{}".format(team.id)
@@ -54,11 +46,17 @@ class TicketStatus(HasUuid, TeamRelated):
     def save(self, *args, **kwargs):
         if self._state.adding:
             self._pre_create()
+
+        color = self.color
+        valid = self.check_color(color)
+        if not valid:
+            raise ValueError("invalid color hex code")
+
         super(TicketStatus, self).save(*args, **kwargs)
 
     def check_color(self, color):
-        match = re.search(r'^#(?:[0-9a-fA-F]{1,2}){3}$', color)
+        match = re.match(r'^#(?:[0-9a-fA-F]{1,2}){3}$', color)
         if match:
-            return True 
+            return True
         else:
             return False
