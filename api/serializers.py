@@ -136,18 +136,6 @@ class TicketStatusSerializer(serializers.ModelSerializer):
         ]
 
 
-class TicketTagSerializer(serializers.ModelSerializer):
-    tag = TagSerializer(many=False, read_only=True)
-    object_uuid = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
-
-    class Meta:
-        model = api_models.TicketTag
-        fields = ["tag", "created", "object_uuid", "activated", "deactivated"]
-
-
 class TicketNodeSerializer(serializers.ModelSerializer):
     ticket_id = serializers.ReadOnlyField()
 
