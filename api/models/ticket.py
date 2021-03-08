@@ -63,11 +63,11 @@ class Ticket(HasUuid, TeamRelated):
     def __str__(self):
         return f"Ticket: {self.title}"
 
-    def save(self, *args, **kwargs):
+    def _pre_create(self):
         team = self.team
         owner = self.owner
 
-        if not owner:
+        if not owner: # these are assertions that will crash the app if not specified
             raise ValueError("missing owner")
 
         if not team:
@@ -77,5 +77,9 @@ class Ticket(HasUuid, TeamRelated):
         team.ticket_head += 1
         team.save()
         self.ticket_number = team.ticket_head
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._pre_create()
 
         super(Ticket, self).save(*args, **kwargs)
