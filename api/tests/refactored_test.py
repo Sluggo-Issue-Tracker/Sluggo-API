@@ -366,6 +366,7 @@ class StatusTestCase(TeamRelatedCore):
     def testDelete(self):
         self.delete()
 
+
 class StatusColorTestCase(TeamRelatedCore):
     prefix = "team-statuses"
 
@@ -400,6 +401,7 @@ class StatusColorTestCase(TeamRelatedCore):
     def testDelete(self):
         self.delete()
 
+
 class PinnedTicketTestCase(TestCase):
     prefix = "pinned-tickets"
     team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
@@ -417,10 +419,10 @@ class PinnedTicketTestCase(TestCase):
     )
 
     user_not_of_interest_dict = dict(
-        username = "org.mungus.impostor",
-        email = "impostor@mungus.org",
-        first_name = "Sus",
-        last_name = "Mungus"
+        username="org.mungus.impostor",
+        email="impostor@mungus.org",
+        first_name="Sus",
+        last_name="Mungus"
     )
 
     member_not_of_interest_dict = dict(
@@ -439,60 +441,35 @@ class PinnedTicketTestCase(TestCase):
     )
 
     def setUp(self):
+        # create team
+        self.team = Team.objects.create(**self.team_dict)
+
         # setup users
         self.user_of_interest = User.objects.create(**self.user_of_interest_dict)
-        self.user_of_interest.save()
-
         self.user_not_of_interest = User.objects.create(**self.user_not_of_interest_dict)
-        self.user_not_of_interest.save()
 
-        # Setup clients
+        # setup members
+        self.member_of_interest = Member.objects.create(**self.member_of_interest_dict,
+                                                        owner=self.user_of_interest, team=self.team)
+        self.member_not_of_interest = Member.objects.create(**self.member_not_of_interest_dict,
+                                                            owner=self.user_not_of_interest, team=self.team)
+        # setup clients
         self.client_of_interest = APIClient()
         self.client_of_interest.force_authenticate(user=self.user_of_interest)
 
         self.client_not_of_interest = APIClient()
         self.client_not_of_interest.force_authenticate(user=self.user_not_of_interest)
 
-        # Create team
-        response = self.client_of_interest.post(
-            reverse('team-list'), self.team_dict, format="json"
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.team = Team.objects.get(pk=1)
-        self.pk = 1
-        # Get first member pk
-        self.member_of_interest_pk = Member.objects.all()[:1].get().pk
-
-        # Second user joins team
-        response = self.client_not_of_interest.post(
-            reverse('team-members-list', kwargs={TEAM_PK: self.team.id}),
-            data=self.member_not_of_interest_dict, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.member_not_of_interest_pk = response.data.get('id')
-
-        # Approve second member
-        Member.objects.filter(pk=self.member_not_of_interest_pk).update(role=Member.Roles.ADMIN)
-
-        # Create tickets
-        response = self.client_of_interest.post(
-            reverse('team-tickets-list', kwargs={TEAM_PK: self.team.id}),
-            data=self.ticket_of_interest_dict, format="json");
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.ticket_of_interest_pk = response.data.get('id')
-
-        response = self.client_of_interest.post(
-            reverse('team-tickets-list', kwargs={TEAM_PK: self.team.id}),
-            data=self.ticket_of_interest_dict, format="json");
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.ticket_not_of_interest_pk = response.data.get('id')
+        self.ticket_of_interest = Ticket.objects.create(**self.ticket_of_interest_dict, team=self.team,
+                                                        owner=self.user_of_interest)
+        self.ticket_not_of_interest = Ticket.objects.create(**self.ticket_not_of_interest_dict, team=self.team,
+                                                            owner=self.user_not_of_interest)
 
     def test_ticket_pin(self):
         response = self.client_of_interest.post(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk}),
             data=dict(
-                ticket=self.ticket_of_interest_pk
+                ticket=self.ticket_of_interest.pk
             ),
             format="json"
         )
@@ -500,20 +477,20 @@ class PinnedTicketTestCase(TestCase):
 
         # Check if accessible from a GET request
         response = self.client_of_interest.get(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk}),
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('count'), 1)
 
         # Check if holds correct ticket
-        self.assertEqual(response.data.get('results')[0].get('ticket').get('id'), self.ticket_of_interest_pk)
-    #
+        self.assertEqual(response.data.get('results')[0].get('ticket').get('id'), self.ticket_of_interest.pk)
+
     def test_ticket_unpin_removes_access(self):
         response = self.client_of_interest.post(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk}),
             data=dict(
-                ticket=self.ticket_of_interest_pk
+                ticket=self.ticket_of_interest.pk
             ),
             format="json"
         )
@@ -522,7 +499,7 @@ class PinnedTicketTestCase(TestCase):
 
         # Now unpin
         response = self.client_of_interest.delete(
-            reverse('pinned-tickets-detail', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk,
+            reverse('pinned-tickets-detail', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk,
                                                      'pk': pinned_pk}),
             format="json"
         )
@@ -530,7 +507,7 @@ class PinnedTicketTestCase(TestCase):
 
         # Check if accessible from a GET request
         response = self.client_of_interest.get(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk}),
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -538,9 +515,9 @@ class PinnedTicketTestCase(TestCase):
 
     def test_ticket_pin_does_not_cross_users(self):
         response = self.client_of_interest.post(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest_pk}),
+            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_of_interest.pk}),
             data=dict(
-                ticket=self.ticket_of_interest_pk
+                ticket=self.ticket_of_interest.pk
             ),
             format="json"
         )
@@ -548,7 +525,8 @@ class PinnedTicketTestCase(TestCase):
         pinned_pk = response.data.get('id')
 
         response = self.client_not_of_interest.get(
-            reverse('pinned-tickets-list', kwargs={'team_pk': self.team.id, 'member_pk': self.member_not_of_interest_pk}),
+            reverse('pinned-tickets-list',
+                    kwargs={'team_pk': self.team.id, 'member_pk': self.member_not_of_interest.pk}),
             format="json"
         )
 
