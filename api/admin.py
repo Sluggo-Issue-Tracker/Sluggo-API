@@ -88,7 +88,6 @@ class TicketAdmin(customAdmin):
 
 @admin.register(PinnedTicket)
 class PinnedTicketAdmin(customAdmin):
-    readonly_fields = ("id", "member", "ticket", "pinned")
-    readonly_edit = ("team", )
+    readonly_fields = ("id", "member", "ticket", "pinned", "team")
 
     fields = ("id", "member", "ticket", "pinned", "team")
