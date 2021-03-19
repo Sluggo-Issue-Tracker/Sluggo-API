@@ -59,6 +59,7 @@ class PinnedTicketViewSet(TeamRelatedListMixin,
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
     ]
     queryset = PinnedTicket.objects.all()
+    pagination_class = None
 
     def get_member(self):
         member_id = self.kwargs.get(MEMBER_PK)
