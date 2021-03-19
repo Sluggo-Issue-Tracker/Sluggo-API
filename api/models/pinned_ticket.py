@@ -40,4 +40,8 @@ class PinnedTicket(HasUuid, TeamRelated):
 
         super(PinnedTicket, self).save(*args, **kwargs)
 
+    def __str__(self):
+        return("Ticket pin " + str(self.ticket.id) + " on team " +
+               self.ticket.team.name + " for member " + self.member.owner.username)
+
 
