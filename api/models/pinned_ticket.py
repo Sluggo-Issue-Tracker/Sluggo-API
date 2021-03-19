@@ -8,10 +8,9 @@ from hashlib import md5
 class PinnedTicket(HasUuid, TeamRelated):
     id = models.CharField(max_length=256,
                           unique=True,
-                          editable=False,
                           primary_key=True)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, editable=False)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, editable=False)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, editable=True)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, editable=True)
     pinned = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -39,5 +38,9 @@ class PinnedTicket(HasUuid, TeamRelated):
             self._pre_create()
 
         super(PinnedTicket, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return("Ticket pin " + str(self.ticket.id) + " on team " +
+               self.ticket.team.name + " for member " + self.member.owner.username)
 
 

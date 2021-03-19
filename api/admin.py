@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Ticket, Member, Team, TicketComment, TicketStatus,
-                     TicketNode, TicketTag, Event, Tag)
+                     TicketNode, TicketTag, Event, Tag, PinnedTicket)
 
 
 # Custom Admin class that will allow you to mark fields to be readonly on edits.
@@ -16,7 +16,7 @@ class customAdmin(admin.ModelAdmin):
 @admin.register(Event)
 class EventAdmin(customAdmin):
     readonly_fields = ("object", "id")
-    readonly_edit = ("team", )
+    readonly_edit = ("team",)
 
     fields = ("id", "team", "event_type", "description", "user")
 
@@ -57,13 +57,13 @@ class TicketCommentAdmin(customAdmin):
 
 @admin.register(TicketNode)
 class TicketNodeAdmin(customAdmin):
-    readonly_fields = ("id", )
+    readonly_fields = ("id",)
 
 
 @admin.register(TicketStatus)
 class TicketStatusAdmin(customAdmin):
     readonly_fields = ("created", "id")
-    readonly_edit = ("team", )
+    readonly_edit = ("team",)
 
     fields = ("id", "team", "title", "color", "created", "activated", "deactivated")
 
@@ -71,7 +71,7 @@ class TicketStatusAdmin(customAdmin):
 @admin.register(TicketTag)
 class TicketTagAdmin(customAdmin):
     readonly_fields = ("created", "id")
-    readonly_edit = ("team", )
+    readonly_edit = ("team",)
 
     fields = ("id", "team", "tag", "ticket", "created", "activated",
               "deactivated")
@@ -80,8 +80,16 @@ class TicketTagAdmin(customAdmin):
 @admin.register(Ticket)
 class TicketAdmin(customAdmin):
     readonly_fields = ("created", "ticket_number", "id", "activated")
-    readonly_edit = ("team", )
+    readonly_edit = ("team",)
 
     fields = ("id", "ticket_number", "team", "owner", "assigned_user",
               "status", "title", "description", "created", "activated",
               "deactivated")
+
+
+@admin.register(PinnedTicket)
+class PinnedTicketAdmin(customAdmin):
+    readonly_fields = ("id", "pinned")
+    readonly_edit = ("member", "ticket", "team")
+
+    fields = ("id", "member", "ticket", "pinned", "team")
