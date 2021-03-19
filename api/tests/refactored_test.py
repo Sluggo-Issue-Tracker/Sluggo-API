@@ -517,10 +517,10 @@ class PinnedTicketTestCase(TestCase):
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 1)
+        self.assertEqual(len(response.data), 1)
 
         # Check if holds correct ticket
-        self.assertEqual(response.data.get('results')[0].get('ticket').get('id'), self.ticket_of_interest.pk)
+        self.assertEqual(response.data[0].get('ticket').get('id'), self.ticket_of_interest.pk)
 
     def test_ticket_unpin_removes_access(self):
         response = self.client_of_interest.post(
@@ -547,7 +547,7 @@ class PinnedTicketTestCase(TestCase):
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 0)
+        self.assertEqual(len(response.data), 0)
 
     def test_ticket_pin_does_not_cross_users(self):
         response = self.client_of_interest.post(
@@ -567,4 +567,4 @@ class PinnedTicketTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 0)
+        self.assertEqual(len(response.data), 0)
