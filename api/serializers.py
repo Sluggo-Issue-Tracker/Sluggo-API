@@ -13,6 +13,7 @@ class PrimaryKeySerializedField(serializers.PrimaryKeyRelatedField):
     On reads, this will serialize the associated resource, nesting it
     within the outer json
     """
+
     def __init__(self, **kwargs):
         self.serializer = kwargs.pop('serializer')
         self.many = kwargs.get('many')
@@ -110,6 +111,7 @@ class TicketStatusSerializer(serializers.ModelSerializer):
             "id", "object_uuid", "title", "color", "created", "activated", "deactivated"
         ]
 
+
 class TicketNodeSerializer(serializers.ModelSerializer):
     ticket_id = serializers.ReadOnlyField()
 
@@ -173,6 +175,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "comments",
+            "due_date",
             "created",
             "activated",
             "deactivated",
@@ -198,10 +201,11 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class PinnedTicketSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
     ticket = PrimaryKeySerializedField(many=False,
-                                         required=True,
-                                         queryset=api_models.Ticket.objects.all(),
-                                         serializer=TicketSerializer)
+                                       required=True,
+                                       queryset=api_models.Ticket.objects.all(),
+                                       serializer=TicketSerializer)
     created = serializers.ReadOnlyField()
     object_uuid = serializers.ReadOnlyField()
 

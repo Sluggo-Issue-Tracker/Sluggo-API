@@ -43,6 +43,7 @@ class Ticket(HasUuid, TeamRelated):
                                null=True)
 
     tag_list = models.ManyToManyField('Tag', through='TicketTag')
+    due_date = models.DateTimeField(null=True, blank=True)
 
     title = models.CharField(max_length=100, blank=False)
     description = models.TextField(blank=True)
