@@ -198,6 +198,26 @@ class TicketTestCase(TeamRelatedCore):
 
     def testRemoveTagOnUpdate(self):
         tags = [
+            Tag.objects.create(title="to be removed", team=self.team),
+            Tag.objects.create(title="to be deleted", team=self.team),
+        ]
+        ticket_instance = Ticket.objects.get(pk=self.pk)
+        for tag in tags:
+            TicketTag.objects.create(ticket=ticket_instance, team=self.team, tag=tag)
+
+        to_be_kept = Tag.objects.create(title="keep this", team=self.team)
+        extra_data = dict(self.data_dict)
+        extra_data["tag_list"] = [
+            to_be_kept.pk
+        ]
+        expected = TicketSerializer(ticket_instance).data
+        expected["tag_list"] = [
+            TagSerializer(to_be_kept).data
+        ]
+        self.update(extra_data, expected)
+
+    def testRemoveAllTags(self):
+        tags = [
             Tag.objects.create(title="to be kept", team=self.team),
             Tag.objects.create(title="to be deleted", team=self.team),
         ]
@@ -206,13 +226,10 @@ class TicketTestCase(TeamRelatedCore):
             TicketTag.objects.create(ticket=ticket_instance, team=self.team, tag=tag)
 
         extra_data = dict(self.data_dict)
-        extra_data["tag_list"] = [
-            tags[0].pk
-        ]
+        extra_data["tag_list"] = []
+
         expected = TicketSerializer(ticket_instance).data
-        expected["tag_list"] = [
-            TagSerializer(Tag.objects.get(pk=tags[0].pk)).data
-        ]
+        expected["tag_list"] = []
         self.update(extra_data, expected)
 
 
@@ -417,7 +434,6 @@ class StatusTestCase(TeamRelatedCore):
         expected["title"] = updated_dict["title"]
         expected["color"] = updated_dict["color"]
         self.update(updated_dict, expected)
-
 
     def testBadColor(self):
         updated_dict = dict(self.data_dict)

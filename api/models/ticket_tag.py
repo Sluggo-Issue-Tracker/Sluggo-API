@@ -70,24 +70,24 @@ class TicketTag(HasUuid, TeamRelated):
 
     @classmethod
     def delete_difference(cls, tag_list: list, ticket_instance: Ticket):
-        if not tag_list or len(tag_list) <= 0:
-            return
+        if tag_list:
+            filters = models.Q(tag=tag_list[0])
+            for tag in tag_list[1:]:
+                filters |= models.Q(tag=tag)
 
-        filters = models.Q(tag=tag_list.pop(0))
-        for tag in tag_list:
-            filters |= models.Q(tag=tag)
+            # select all that are not in the tag list
+            to_be_deleted = cls.objects.filter(
+                ticket=ticket_instance).exclude(filters)
 
-        # select all that are not in the tag list
-        to_be_deleted = cls.objects.filter(
-            ticket=ticket_instance).exclude(filters)
-        if to_be_deleted:
-            for ticket_tag in to_be_deleted:
-                ticket_tag.delete()
+            for tag in tag_list:
+                cls.objects.get_or_create(ticket=ticket_instance,
+                                          tag=tag,
+                                          team=ticket_instance.team)
+        else:
+            to_be_deleted = cls.objects.filter(ticket=ticket_instance)
 
-        for tag in tag_list:
-            cls.objects.get_or_create(ticket=ticket_instance,
-                                      tag=tag,
-                                      team=ticket_instance.team)
+        for ticket_tag in to_be_deleted:
+            ticket_tag.delete()
 
     def __str__(self):
         return f"TicketTag: {self.created}"
