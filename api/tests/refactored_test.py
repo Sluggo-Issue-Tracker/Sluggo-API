@@ -202,6 +202,8 @@ class TicketTestCase(TeamRelatedCore):
             Tag.objects.create(title="to be deleted", team=self.team),
         ]
         ticket_instance = Ticket.objects.get(pk=self.pk)
+        for tag in tags:
+            TicketTag.objects.create(ticket=ticket_instance, team=self.team, tag=tag)
 
         to_be_kept = Tag.objects.create(title="keep this", team=self.team)
         extra_data = dict(self.data_dict)
