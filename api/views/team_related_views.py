@@ -38,7 +38,7 @@ class TicketViewSet(TeamRelatedModelViewSet):
                      '^assigned_user__first_name']
 
     ordering_fields = ['created', 'activated']
-    filterset_fields = ['owner__username']
+    filterset_fields = ['owner__username', 'assigned_user__username']
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
