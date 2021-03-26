@@ -120,6 +120,32 @@ class TicketNodeSerializer(serializers.ModelSerializer):
         fields = ["ticket_id"]
 
 
+class MemberSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    owner = UserSerializer(many=False, read_only=True)
+    object_uuid = serializers.ReadOnlyField()
+    team_id = serializers.ReadOnlyField(source="team.id")
+    role = serializers.ReadOnlyField()
+    created = serializers.ReadOnlyField()
+    activated = serializers.ReadOnlyField()
+    deactivated = serializers.ReadOnlyField()
+
+    class Meta:
+        model = api_models.Member
+        fields = [
+            "id",
+            "owner",
+            "team_id",
+            "object_uuid",
+            "role",
+            "bio",
+            "pronouns",
+            "created",
+            "activated",
+            "deactivated",
+        ]
+
+
 class TicketSerializer(serializers.ModelSerializer):
     """
     On writes,\n
@@ -142,14 +168,13 @@ class TicketSerializer(serializers.ModelSerializer):
     parent_id = serializers.IntegerField(write_only=True, required=False)
     object_uuid = serializers.ReadOnlyField()
 
-    owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
     comments = TicketCommentSerializer(many=True, required=False)
 
     assigned_user = PrimaryKeySerializedField(many=False,
                                               required=False,
-                                              queryset=User.objects.all(),
-                                              serializer=UserSerializer)
+                                              queryset=api_models.Member.objects.all(),
+                                              serializer=MemberSerializer)
 
     status = PrimaryKeySerializedField(
         many=False,
@@ -168,7 +193,6 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "tag_list",
             "parent_id",
-            "owner",
             "object_uuid",
             "assigned_user",
             "status",
@@ -212,32 +236,6 @@ class PinnedTicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = api_models.PinnedTicket
         fields = ["ticket", "pinned", "object_uuid", "created", "id"]
-
-
-class MemberSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    owner = UserSerializer(many=False, read_only=True)
-    object_uuid = serializers.ReadOnlyField()
-    team_id = serializers.ReadOnlyField(source="team.id")
-    role = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
-
-    class Meta:
-        model = api_models.Member
-        fields = [
-            "id",
-            "owner",
-            "team_id",
-            "object_uuid",
-            "role",
-            "bio",
-            "pronouns",
-            "created",
-            "activated",
-            "deactivated",
-        ]
 
 
 class EventSerializer(serializers.ModelSerializer):

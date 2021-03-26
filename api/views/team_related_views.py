@@ -38,22 +38,23 @@ class TicketViewSet(TeamRelatedModelViewSet):
                      '^assigned_user__first_name']
 
     ordering_fields = ['created', 'activated']
-    filterset_fields = ['owner__username']
+    filterset_fields = ['assigned_user__username']
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        serializer.save(owner=request.user, team=self.get_team())
+        serializer.save(team=self.get_team())
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
 class PinnedTicketViewSet(TeamRelatedListMixin,
-                        TeamRelatedRetrieveMixin,
-                        TeamRelatedDestroyMixin,
-                        TeamRelatedCreateMixin):
+                          TeamRelatedRetrieveMixin,
+                          TeamRelatedDestroyMixin,
+                          TeamRelatedCreateMixin):
     serializer_class = PinnedTicketSerializer
     permission_classes = [
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated

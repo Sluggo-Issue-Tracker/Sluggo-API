@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+from .member import Member
 from .team import Team
 from .ticket_status import TicketStatus
 from api.models.interfaces import HasUuid, TeamRelated
@@ -25,19 +26,14 @@ class Ticket(HasUuid, TeamRelated):
 
     ticket_number = models.IntegerField()
 
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                              on_delete=models.CASCADE,
-                              related_name="owned_ticket",
-                              null=False)
-
-    assigned_user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                      on_delete=models.CASCADE,
+    assigned_user = models.ForeignKey(Member,
+                                      on_delete=models.SET_NULL,
                                       related_name="assigned_ticket",
                                       null=True,
                                       blank=True)
 
     status = models.ForeignKey(TicketStatus,
-                               on_delete=models.CASCADE,
+                               on_delete=models.SET_NULL,
                                related_name="status_ticket",
                                blank=True,
                                null=True)
@@ -66,15 +62,7 @@ class Ticket(HasUuid, TeamRelated):
 
     def _pre_create(self):
         team = self.team
-        owner = self.owner
 
-        if not owner: # these are assertions that will crash the app if not specified
-            raise ValueError("missing owner")
-
-        if not team:
-            raise ValueError("missing team")
-
-        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
         team.ticket_head += 1
         team.save()
         self.ticket_number = team.ticket_head
