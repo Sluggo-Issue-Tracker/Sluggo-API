@@ -50,10 +50,11 @@ class TicketViewSet(TeamRelatedModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
 class PinnedTicketViewSet(TeamRelatedListMixin,
-                        TeamRelatedRetrieveMixin,
-                        TeamRelatedDestroyMixin,
-                        TeamRelatedCreateMixin):
+                          TeamRelatedRetrieveMixin,
+                          TeamRelatedDestroyMixin,
+                          TeamRelatedCreateMixin):
     serializer_class = PinnedTicketSerializer
     permission_classes = [
         IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
@@ -90,11 +91,12 @@ class MemberViewSet(TeamRelatedModelViewSet):
     )
     serializer_class = MemberSerializer
     permission_classes = [
-        IsMemberUserOrCreate, IsOwnerOrReadOnly, IsAuthenticated
+        IsMemberUserOrCreate, IsOwnerOrReadOnly | IsAdminMemberOrReadOnly, IsAuthenticated
     ]
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
+        request.data.pop('role', None)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
