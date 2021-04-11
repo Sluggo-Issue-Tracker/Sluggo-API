@@ -27,7 +27,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 class TicketViewSet(TeamRelatedModelViewSet):
     """ Ticket Viewset """
     queryset = Ticket.objects.all().select_related(
-        'team', 'owner', 'assigned_user', 'status'
+        'team', 'assigned_user', 'status'
     ).prefetch_related(
         'tag_list'
     )
@@ -38,7 +38,8 @@ class TicketViewSet(TeamRelatedModelViewSet):
                      '^assigned_user__first_name']
 
     ordering_fields = ['created', 'activated']
-    filterset_fields = ['assigned_user__username']
+    filterset_fields = ['assigned_user__owner__username']
+
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
@@ -91,11 +92,12 @@ class MemberViewSet(TeamRelatedModelViewSet):
     )
     serializer_class = MemberSerializer
     permission_classes = [
-        IsMemberUserOrCreate, IsOwnerOrReadOnly, IsAuthenticated
+        IsMemberUserOrCreate, IsOwnerOrReadOnly | IsAdminMemberOrReadOnly, IsAuthenticated
     ]
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
+        request.data.pop('role', None)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
