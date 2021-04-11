@@ -363,7 +363,6 @@ class MemberTestCase(TeamRelatedCore):
         self.delete()
 
     def testApprove(self):
-        # broken. but why?
         admin_user = User.objects.create(**self.admin_user_dict)
         Member.objects.create(**self.admin_member_dict, owner=admin_user, team=self.team)
         admin_client = APIClient()

@@ -40,7 +40,6 @@ class TicketViewSet(TeamRelatedModelViewSet):
     ordering_fields = ['created', 'activated']
     filterset_fields = ['assigned_user__owner__username']
 
-
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
