@@ -7,7 +7,6 @@ import uuid
 
 from api.models.interfaces import HasUuid, TeamRelated
 from .team import Team
-from .ticket import Ticket
 
 User = get_user_model()
 
@@ -60,7 +59,6 @@ class Member(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    pinned_tickets = models.ManyToManyField(Ticket, through='PinnedTicket', blank=True)
 
     def is_admin(self):
         return self.role == self.Roles.ADMIN

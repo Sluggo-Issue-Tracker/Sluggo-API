@@ -119,7 +119,7 @@ class TicketNodeSerializer(serializers.ModelSerializer):
         model = api_models.TicketNode
         fields = ["ticket_id"]
 
-
+        
 class TicketSerializer(serializers.ModelSerializer):
     """
     On writes,\n
@@ -142,14 +142,13 @@ class TicketSerializer(serializers.ModelSerializer):
     parent_id = serializers.IntegerField(write_only=True, required=False)
     object_uuid = serializers.ReadOnlyField()
 
-    owner = UserSerializer(many=False, read_only=True)
     ticket_number = serializers.ReadOnlyField()
     comments = TicketCommentSerializer(many=True, required=False)
 
     assigned_user = PrimaryKeySerializedField(many=False,
                                               required=False,
-                                              queryset=User.objects.all(),
-                                              serializer=UserSerializer)
+                                              queryset=api_models.Member.objects.all(),
+                                              serializer=MemberSerializer)
 
     status = PrimaryKeySerializedField(
         many=False,
@@ -168,7 +167,6 @@ class TicketSerializer(serializers.ModelSerializer):
             "ticket_number",
             "tag_list",
             "parent_id",
-            "owner",
             "object_uuid",
             "assigned_user",
             "status",

@@ -554,10 +554,9 @@ class PinnedTicketTestCase(TestCase):
         self.client_not_of_interest = APIClient()
         self.client_not_of_interest.force_authenticate(user=self.user_not_of_interest)
 
-        self.ticket_of_interest = Ticket.objects.create(**self.ticket_of_interest_dict, team=self.team,
-                                                        owner=self.user_of_interest)
-        self.ticket_not_of_interest = Ticket.objects.create(**self.ticket_not_of_interest_dict, team=self.team,
-                                                            owner=self.user_not_of_interest)
+        self.ticket_of_interest = Ticket.objects.create(**self.ticket_of_interest_dict, team=self.team)
+
+        self.ticket_not_of_interest = Ticket.objects.create(**self.ticket_not_of_interest_dict, team=self.team)
 
     def test_ticket_pin(self):
         response = self.client_of_interest.post(
