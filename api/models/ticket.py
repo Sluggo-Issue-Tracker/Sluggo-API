@@ -55,7 +55,7 @@ class Ticket(HasUuid, TeamRelated):
     def retrieve_by_user(cls, user: settings.AUTH_USER_MODEL, team: Team):
         return cls.objects.filter(
             models.Q(team=team), models.Q(deactivated=None),
-            models.Q(owner=user) | models.Q(assigned_user=user))
+            models.Q(assigned_user=user))
 
     def __str__(self):
         return f"Ticket: {self.title}"

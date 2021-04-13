@@ -11,7 +11,7 @@ from .team import Team
 User = get_user_model()
 
 
-class Member(HasUuid, TeamRelated):
+class Member(HasUuid):
     """
     The Ticket class for Sluggo. This will store all information associated with a specific ticket.
 
@@ -59,6 +59,12 @@ class Member(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="member")
 
     def is_admin(self):
         return self.role == self.Roles.ADMIN
