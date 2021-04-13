@@ -21,7 +21,7 @@ class TeamRelatedCore(TestCase):
     model = None
     serializer = None
 
-    team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
+    team_dict = {"name": "bugslotics"}
 
     member_dict = dict(
         role="AD",
@@ -136,6 +136,20 @@ class TeamTestCase(TeamRelatedCore):
             reverse("team-detail", kwargs={"pk": self.team.id}), format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def testMultipleListed(self):
+        other_team = {"name": "!alksdjf"}
+        response = self.client.post(
+            reverse("team-list"), other_team, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(
+            reverse("team-list"), format="json"
+        )
+        expected = TeamSerializer(Team.objects.filter(member__owner=self.user), many=True).data
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], expected)
 
 
 class TicketTestCase(TeamRelatedCore):
@@ -498,7 +512,7 @@ class StatusTestCase(TeamRelatedCore):
 
 class PinnedTicketTestCase(TestCase):
     prefix = "pinned-tickets"
-    team_dict = {"name": "bugslotics", "description": "a pretty cool team"}
+    team_dict = {"name": "bugslotics"}
 
     user_of_interest_dict = dict(
         username="org.mungus.a",
