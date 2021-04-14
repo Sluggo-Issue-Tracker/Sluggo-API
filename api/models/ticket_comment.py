@@ -3,14 +3,11 @@ from django.conf import settings
 
 from .ticket import Ticket
 from .team import Team
-from api.models.interfaces import HasUuid, TeamRelated
+from api.models.interfaces import HasUuid
 import uuid
 
 
-class TicketComment(HasUuid, TeamRelated):
-    """
-    Comment object for tickets
-    """
+class TicketComment(HasUuid, models.Model):
 
     ticket = models.ForeignKey(
         Ticket,
@@ -25,6 +22,11 @@ class TicketComment(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="ticket_comment")
 
     class Meta:
         app_label = "api"

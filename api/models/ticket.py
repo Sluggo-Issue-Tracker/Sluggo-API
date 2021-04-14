@@ -4,26 +4,11 @@ from django.conf import settings
 from .member import Member
 from .team import Team
 from .ticket_status import TicketStatus
-from api.models.interfaces import HasUuid, TeamRelated
+from api.models.interfaces import HasUuid
 import uuid
 
 
-class Ticket(HasUuid, TeamRelated):
-    """
-    The Ticket class for Sluggo. This will store all information associated with a specific ticket.
-
-    The class contains:
-        owner: Foreign key to the creating user.
-        assigned_user: Foreign key to an assigned user.
-        title: Text field which is the title.
-        team: inherited from TeamRelated, references a team
-        status: foreign key to status object
-        description: text field for a description
-        created: creation datetime
-        activated: activation date for the ticket
-        deactivated: deactivation date for the ticket
-    """
-
+class Ticket(HasUuid):
     ticket_number = models.IntegerField()
 
     assigned_user = models.ForeignKey(Member,
@@ -46,6 +31,11 @@ class Ticket(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="ticket")
 
     class Meta:
         ordering = ["id"]

@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 
 from .ticket import Ticket
 from treebeard import mp_tree

@@ -1,17 +1,23 @@
 from django.db import models
 from .member import Member
 from .ticket import Ticket
-from api.models.interfaces import HasUuid, TeamRelated
+from .team import Team
+from api.models.interfaces import HasUuid
 from hashlib import md5
 
 
-class PinnedTicket(HasUuid, TeamRelated):
+class PinnedTicket(HasUuid, models.Model):
     id = models.CharField(max_length=256,
                           unique=True,
                           primary_key=True)
     member = models.ForeignKey(Member, on_delete=models.CASCADE, editable=True)
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, editable=True)
     pinned = models.DateTimeField(auto_now_add=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="pinned_ticket")
 
     class Meta:
         ordering = ["pinned"]

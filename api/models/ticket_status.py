@@ -3,15 +3,10 @@ from .team import Team
 from hashlib import md5
 import re
 
-from api.models.interfaces import HasUuid, TeamRelated
+from api.models.interfaces import HasUuid
 
 
-class TicketStatus(HasUuid, TeamRelated):
-    """
-    This model represents custom statuses that teams can set.
-    By default, they will be created, started, and completed
-    """
-
+class TicketStatus(HasUuid, models.Model):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)
@@ -20,6 +15,11 @@ class TicketStatus(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="ticket_status")
 
     class Meta:
         ordering = ["id"]

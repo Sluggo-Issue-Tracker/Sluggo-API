@@ -4,7 +4,7 @@ from .models import (Ticket, Member, Team, TicketComment, TicketStatus,
 
 
 # Custom Admin class that will allow you to mark fields to be readonly on edits.
-class customAdmin(admin.ModelAdmin):
+class CustomAdmin(admin.ModelAdmin):
     readonly_edit = tuple()
 
     def get_readonly_fields(self, request, obj=None):
@@ -14,7 +14,7 @@ class customAdmin(admin.ModelAdmin):
 
 
 @admin.register(Event)
-class EventAdmin(customAdmin):
+class EventAdmin(CustomAdmin):
     readonly_fields = ("object", "id")
     readonly_edit = ("team",)
 
@@ -22,7 +22,7 @@ class EventAdmin(customAdmin):
 
 
 @admin.register(Member)
-class MemberAdmin(customAdmin):
+class MemberAdmin(CustomAdmin):
     readonly_fields = ("created", "id")
     readonly_edit = ("team", "owner")
 
@@ -31,7 +31,7 @@ class MemberAdmin(customAdmin):
 
 
 @admin.register(Tag)
-class TagAdmin(customAdmin):
+class TagAdmin(CustomAdmin):
     readonly_fields = ("team_title_hash", "id", "created")
 
     fields = ("id", "team", "title", "created", "activated", "deactivated",
@@ -39,7 +39,7 @@ class TagAdmin(customAdmin):
 
 
 @admin.register(Team)
-class TeamAdmin(customAdmin):
+class TeamAdmin(CustomAdmin):
     readonly_fields = ("created", "ticket_head", "id")
 
     fields = (("id", "ticket_head"), "name", "description", "created",
@@ -47,7 +47,7 @@ class TeamAdmin(customAdmin):
 
 
 @admin.register(TicketComment)
-class TicketCommentAdmin(customAdmin):
+class TicketCommentAdmin(CustomAdmin):
     readonly_fields = ("created", "id")
     readonly_edit = ("ticket", "team")
 
@@ -56,12 +56,12 @@ class TicketCommentAdmin(customAdmin):
 
 
 @admin.register(TicketNode)
-class TicketNodeAdmin(customAdmin):
+class TicketNodeAdmin(CustomAdmin):
     readonly_fields = ("id",)
 
 
 @admin.register(TicketStatus)
-class TicketStatusAdmin(customAdmin):
+class TicketStatusAdmin(CustomAdmin):
     readonly_fields = ("created", "id")
     readonly_edit = ("team",)
 
@@ -69,7 +69,7 @@ class TicketStatusAdmin(customAdmin):
 
 
 @admin.register(TicketTag)
-class TicketTagAdmin(customAdmin):
+class TicketTagAdmin(CustomAdmin):
     readonly_fields = ("created", "id")
     readonly_edit = ("team",)
 
@@ -78,7 +78,7 @@ class TicketTagAdmin(customAdmin):
 
 
 @admin.register(Ticket)
-class TicketAdmin(customAdmin):
+class TicketAdmin(CustomAdmin):
     readonly_fields = ("created", "ticket_number", "id", "activated")
     readonly_edit = ("team",)
 
@@ -88,7 +88,7 @@ class TicketAdmin(customAdmin):
 
 
 @admin.register(PinnedTicket)
-class PinnedTicketAdmin(customAdmin):
+class PinnedTicketAdmin(CustomAdmin):
     readonly_fields = ("id", "pinned")
     readonly_edit = ("member", "ticket", "team")
 
