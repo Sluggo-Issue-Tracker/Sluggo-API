@@ -3,11 +3,11 @@ from django.db import models
 import uuid
 from .team import Team
 from .ticket import Ticket
-from api.models.interfaces import HasUuid, TeamRelated
+from api.models.interfaces import HasUuid
 from hashlib import md5
 
 
-class Tag(HasUuid, TeamRelated):
+class Tag(HasUuid, models.Model):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)
@@ -15,6 +15,11 @@ class Tag(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="tag")
 
     class Meta:
         ordering = ["id"]
@@ -45,7 +50,7 @@ class Tag(HasUuid, TeamRelated):
         super(Tag, self).save(*args, **kwargs)
 
 
-class TicketTag(HasUuid, TeamRelated):
+class TicketTag(HasUuid):
     id = models.CharField(max_length=256,
                           unique=True,
                           editable=False,
@@ -55,6 +60,11 @@ class TicketTag(HasUuid, TeamRelated):
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             editable=True,
+                             null=False,
+                             related_name="ticket_tag")
 
     class Meta:
         ordering = ["created"]
