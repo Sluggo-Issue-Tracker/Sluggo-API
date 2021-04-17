@@ -42,7 +42,7 @@ class TagAdmin(CustomAdmin):
 class TeamAdmin(CustomAdmin):
     readonly_fields = ("created", "ticket_head", "id")
 
-    fields = (("id", "ticket_head"), "name", "description", "created",
+    fields = (("id", "ticket_head"), "name", "created",
               "activated", "deactivated")
 
 
@@ -82,7 +82,7 @@ class TicketAdmin(CustomAdmin):
     readonly_fields = ("created", "ticket_number", "id", "activated")
     readonly_edit = ("team",)
 
-    fields = ("id", "ticket_number", "team", "owner", "assigned_user",
+    fields = ("id", "ticket_number", "team", "assigned_user", "due_date",
               "status", "title", "description", "created", "activated",
               "deactivated")
 

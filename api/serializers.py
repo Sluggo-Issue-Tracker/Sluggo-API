@@ -45,9 +45,9 @@ class TeamSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     ticket_head = serializers.ReadOnlyField()
     object_uuid = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
+    activated = serializers.DateTimeField(read_only=True)
+    deactivated = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = api_models.Team
@@ -64,9 +64,9 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
+    activated = serializers.DateTimeField(read_only=True)
+    deactivated = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = api_models.Tag
@@ -100,9 +100,9 @@ class TicketCommentSerializer(serializers.ModelSerializer):
 class TicketStatusSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     object_uuid = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
+    activated = serializers.DateTimeField(read_only=True)
+    deactivated = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = api_models.TicketStatus
@@ -124,9 +124,9 @@ class MemberSerializer(serializers.ModelSerializer):
     owner = UserSerializer(many=False, read_only=True)
     object_uuid = serializers.ReadOnlyField()
     team_id = serializers.ReadOnlyField(source="team.id")
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
+    activated = serializers.DateTimeField(read_only=True)
+    deactivated = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = api_models.Member
@@ -180,9 +180,9 @@ class TicketSerializer(serializers.ModelSerializer):
         queryset=api_models.TicketStatus.objects.all(),
         serializer=TicketStatusSerializer)
 
-    created = serializers.ReadOnlyField()
-    activated = serializers.ReadOnlyField()
-    deactivated = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
+    activated = serializers.DateTimeField(read_only=True)
+    deactivated = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = api_models.Ticket
@@ -228,7 +228,7 @@ class PinnedTicketSerializer(serializers.ModelSerializer):
                                        required=True,
                                        queryset=api_models.Ticket.objects.all(),
                                        serializer=TicketSerializer)
-    created = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
     object_uuid = serializers.ReadOnlyField()
 
     class Meta:
@@ -248,7 +248,7 @@ class EventSerializer(serializers.ModelSerializer):
     """
 
     id = serializers.ReadOnlyField()
-    created = serializers.ReadOnlyField()
+    created = serializers.DateTimeField(read_only=True)
     event_type = serializers.ReadOnlyField()
     user = UserSerializer(many=False)
     object_id = serializers.ReadOnlyField()
