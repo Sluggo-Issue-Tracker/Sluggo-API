@@ -15,7 +15,7 @@ class ColorField(models.CharField):
     default_validators = []
 
     def __init__(self, *args, **kwargs):
-        colorRE = re.compile('#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$')
+        colorRE = re.compile('#([A-Fa-f0-9]{8})$')
         self.default_validators.append(RegexValidator(
             colorRE, _('Enter a valid hexA color, eg. #00000000'), 'invalid'))
 
