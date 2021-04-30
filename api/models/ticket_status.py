@@ -6,12 +6,30 @@ import re
 from api.models.interfaces import HasUuid
 
 
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
+
+
+class ColorField(models.CharField):
+
+    default_validators = []
+
+    def __init__(self, *args, **kwargs):
+        colorRE = re.compile('#([A-Fa-f0-9]{8})$')
+        self.default_validators.append(RegexValidator(
+            colorRE, _('Enter a valid hexA color, eg. #00000000'), 'invalid'))
+
+        kwargs.setdefault('max_length', 9)
+        super().__init__(*args, **kwargs)
+
+
 class TicketStatus(HasUuid, models.Model):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)
     title = models.CharField(max_length=100, unique=False)
-    color = models.CharField(max_length=7, unique=False, blank=True, default="#B9B9BD")
+    color = ColorField(unique=False,
+                       blank=True, default="#B9B9BDFF")
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
@@ -47,16 +65,4 @@ class TicketStatus(HasUuid, models.Model):
         if self._state.adding:
             self._pre_create()
 
-        color = self.color
-        valid = self.check_color(color)
-        if not valid:
-            raise ValueError("invalid color hex code")
-
         super(TicketStatus, self).save(*args, **kwargs)
-
-    def check_color(self, color):
-        match = re.match(r'^#(?:[0-9a-fA-F]{1,2}){3}$', color)
-        if match:
-            return True
-        else:
-            return False
