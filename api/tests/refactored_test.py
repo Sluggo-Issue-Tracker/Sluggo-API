@@ -460,7 +460,7 @@ class StatusTestCase(TeamRelatedCore):
 
     data_dict = {
         "title": "in progress",
-        "color": "#F5F225"
+        "color": "#F5F225FF"
     }
 
     def setUp(self):
@@ -484,7 +484,7 @@ class StatusTestCase(TeamRelatedCore):
     def testUpdate(self):
         updated_dict = dict(self.data_dict)
         updated_dict["title"] = "alsdkfj"
-        updated_dict["color"] = "#F39617"
+        updated_dict["color"] = "#F39617FF"
 
         expected = self.serializer(self.model.objects.get(pk=self.pk)).data
         expected["title"] = updated_dict["title"]
