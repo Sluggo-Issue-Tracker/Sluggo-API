@@ -9,7 +9,7 @@ from ..docs import *
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all().prefetch_related('member')
     serializer_class = TeamSerializer
-    permission_classes = [IsAdminMemberOrReadOnly, IsAuthenticated]
+    permission_classes = [IsAdminMemberOrReadOnly, IsMemberUser, IsAuthenticated]
 
     search_fields = ['^name']
     ordering_fields = ['created', 'activated']
