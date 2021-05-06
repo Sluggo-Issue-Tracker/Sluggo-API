@@ -163,7 +163,7 @@ class TicketSerializer(serializers.ModelSerializer):
                                          queryset=api_models.Tag.objects.all(),
                                          serializer=TagSerializer)
 
-    parent_id = serializers.IntegerField(write_only=True, required=False)
+    parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     object_uuid = serializers.ReadOnlyField()
 
     ticket_number = serializers.ReadOnlyField()
@@ -171,12 +171,14 @@ class TicketSerializer(serializers.ModelSerializer):
 
     assigned_user = PrimaryKeySerializedField(many=False,
                                               required=False,
+                                              allow_null=True,
                                               queryset=api_models.Member.objects.all(),
                                               serializer=MemberSerializer)
 
     status = PrimaryKeySerializedField(
         many=False,
         required=False,
+        allow_null=True,
         queryset=api_models.TicketStatus.objects.all(),
         serializer=TicketStatusSerializer)
 
@@ -214,7 +216,7 @@ class TicketSerializer(serializers.ModelSerializer):
         return ticket
 
     # update the instance with validated_data
-    def update(self, instance, validated_data):
+    def update(self, instance: api_models.Ticket, validated_data):
         tag_list = validated_data.pop('tag_list', None)
 
         api_models.TicketTag.delete_difference(tag_list, instance)

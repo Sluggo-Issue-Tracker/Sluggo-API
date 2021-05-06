@@ -9,13 +9,15 @@ from ..docs import *
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all().prefetch_related('member')
     serializer_class = TeamSerializer
-    permission_classes = [IsAdminMemberOrReadOnly, IsMemberUser, IsAuthenticated]
+    permission_classes = [IsAdminMemberOrReadOnly,
+                          IsMemberUser, IsAuthenticated]
 
     search_fields = ['^name']
     ordering_fields = ['created', 'activated']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset().filter(member__owner=request.user))
+        queryset = self.filter_queryset(
+            self.get_queryset().filter(member__owner=request.user))
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -31,7 +33,8 @@ class TeamViewSet(viewsets.ModelViewSet):
         instance = serializer.save()
 
         # create a member record for the requesting user
-        Member.objects.create(team=instance, owner=request.user, role=Member.Roles.ADMIN).save()
+        Member.objects.create(
+            team=instance, owner=request.user, role=Member.Roles.ADMIN).save()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -48,10 +51,11 @@ class TicketViewSet(TeamRelatedModelViewSet):
     permission_classes = [IsAuthenticated, IsMemberUser]
 
     search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
-                     '^assigned_user__first_name']
+                     '^assigned_user__owner__username', '^tag_list__title']
 
     ordering_fields = ['created', 'activated']
-    filterset_fields = ['assigned_user__owner__username']
+    filterset_fields = ['assigned_user__owner__username',
+                        'status__title', 'tag_list__title']
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
@@ -126,11 +130,13 @@ class MemberViewSet(TeamRelatedModelViewSet):
         instance = self.get_object()
 
         # prevent the user updating roles if not admin
-        user_member = self.get_queryset(*args, **kwargs).get(owner=request.user)
+        user_member = self.get_queryset(
+            *args, **kwargs).get(owner=request.user)
         if not user_member.is_admin():
             request.data.pop('role', None)
 
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
