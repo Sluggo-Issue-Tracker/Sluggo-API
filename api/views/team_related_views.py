@@ -51,7 +51,7 @@ class TicketViewSet(TeamRelatedModelViewSet):
     permission_classes = [IsAuthenticated, IsMemberUser]
 
     search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
-                     '^assigned_user__owner__username', 'tag_list__title']
+                     '^assigned_user__owner__username', '^tag_list__title']
 
     ordering_fields = ['created', 'activated']
     filterset_fields = ['assigned_user__owner__username',
