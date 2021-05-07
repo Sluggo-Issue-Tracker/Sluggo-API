@@ -1,17 +1,17 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from .team import Team
 from hashlib import md5
 import re
 
 from api.models.interfaces import HasUuid
 
-
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 
 class ColorField(models.CharField):
-
     default_validators = []
 
     def __init__(self, *args, **kwargs):
@@ -46,15 +46,10 @@ class TicketStatus(HasUuid, models.Model):
     def __str__(self):
         return f"TicketStatus: {self.title}"
 
+
     def _pre_create(self):
         team = self.team
         title = self.title
-
-        if not title:
-            raise ValueError("missing title")
-
-        if not team:
-            raise ValueError("missing team")
 
         title_id = "{}".format(title)
         team_id = "{}".format(team.id)
@@ -66,3 +61,11 @@ class TicketStatus(HasUuid, models.Model):
             self._pre_create()
 
         super(TicketStatus, self).save(*args, **kwargs)
+
+
+@receiver(post_save, sender=Team)
+def create_team_defaults(sender, instance: Team, created: bool, **kwargs):
+    if created:
+        TicketStatus.objects.create(title="To do", color="#3273DCFF", team=instance)
+        TicketStatus.objects.create(title="In Progress", color="#FFDD57", team=instance)
+        TicketStatus.objects.create(title="Done", color="#48C774FF", team=instance)
