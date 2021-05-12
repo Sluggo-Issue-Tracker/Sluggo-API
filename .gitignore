@@ -8,3 +8,4 @@ private
 *.pyc
 .DS_Store
 sluggoAPI/**
+env/**

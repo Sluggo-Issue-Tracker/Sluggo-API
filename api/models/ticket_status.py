@@ -9,25 +9,21 @@ from api.models.interfaces import HasUuid
 
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
-
-
-class ColorField(models.CharField):
-    default_validators = []
-
-    def __init__(self, *args, **kwargs):
-        colorRE = re.compile('#([A-Fa-f0-9]{8})$')
-        self.default_validators.append(RegexValidator(
-            colorRE, _('Enter a valid hexA color, eg. #00000000'), 'invalid'))
-
-        kwargs.setdefault('max_length', 9)
-        super().__init__(*args, **kwargs)
+from .fields.color_field import ColorField
 
 
 class TicketStatus(HasUuid, models.Model):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)
-    title = models.CharField(max_length=100, unique=False)
+
+    title = models.CharField(max_length=100,
+                             unique=False,
+                             validators=[
+                                 RegexValidator(re.compile(r'^[\w-]+$'),
+                                                _('Status names must be word characters and dashes'),
+                                                'invalid'), ])
+
     color = ColorField(unique=False,
                        blank=True, default="#B9B9BDFF")
     created = models.DateTimeField(auto_now_add=True)
@@ -45,7 +41,6 @@ class TicketStatus(HasUuid, models.Model):
 
     def __str__(self):
         return f"TicketStatus: {self.title}"
-
 
     def _pre_create(self):
         team = self.team
