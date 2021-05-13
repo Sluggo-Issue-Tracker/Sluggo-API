@@ -5,13 +5,22 @@ from .team import Team
 from .ticket import Ticket
 from api.models.interfaces import HasUuid
 from hashlib import md5
+import re
+
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 
 
 class Tag(HasUuid, models.Model):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)
-    title = models.CharField(max_length=100, blank=False)
+    title = models.CharField(max_length=100,
+                             unique=False,
+                             validators=[
+                                 RegexValidator(re.compile(r'^[\w-]+$'),
+                                                _('Tag names must be word characters and dashes'),
+                                                'invalid'), ])
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
