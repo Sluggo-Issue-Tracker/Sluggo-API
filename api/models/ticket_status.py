@@ -18,11 +18,7 @@ class TicketStatus(HasUuid, models.Model):
                                        editable=False)
 
     title = models.CharField(max_length=100,
-                             unique=False,
-                             validators=[
-                                 RegexValidator(re.compile(r'^[\w-]+$'),
-                                                _('Status names must be word characters and dashes'),
-                                                'invalid'), ])
+                             unique=False)
 
     color = ColorField(unique=False,
                        blank=True, default="#B9B9BDFF")
