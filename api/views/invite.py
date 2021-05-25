@@ -2,26 +2,24 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from ..permissions import IsAuthenticated
+
+from ..models import TeamInvite
+from ..permissions import IsAuthenticated, IsAdminMember
 from ..serializers import TeamSerializer, TeamInviteSerializer
+from .team_related_base import TeamRelatedListMixin, TeamRelatedCreateMixin, TeamRelatedDestroyMixin
 
 
-class TeamInviteViewSet(GenericViewSet,
-                        ListModelMixin,
-                        CreateModelMixin,
-                        DestroyModelMixin):
+class TeamInviteViewSet(TeamRelatedListMixin,
+                        TeamRelatedCreateMixin,
+                        TeamRelatedDestroyMixin):
 
-    permission_classes = [IsAuthenticated]
+    """
+    This class is simple enough that the defautls for listing, creating, and destroying are sufficient
+    """
+
+    queryset = TeamInvite.objects.all().select_related('team')
+    permission_classes = [IsAuthenticated, IsAdminMember]
     serializer_class = TeamInviteSerializer
-
-    def list(self, request, *args, **kwargs):
-        return Response({"msg": "hello world!"})
-
-    def create(self, request, *args, **kwargs):
-        return Response({"msg": "hello world!"})
-
-    def destroy(self, request, *args, **kwargs):
-        return Response({"msg": "hello world!"})
 
 
 class UserInviteViewSet(GenericViewSet,
@@ -33,6 +31,6 @@ class UserInviteViewSet(GenericViewSet,
     def get_queryset(self):
         pass
 
-    @action()
+    @action(detail=True)
     def accept_invite(self):
         pass

@@ -23,7 +23,7 @@ class TeamInvite(HasUuid):
                              on_delete=models.CASCADE,
                              editable=True,
                              null=False,
-                             related_name="member")
+                             related_name="invite")
 
     def _pre_create(self):
         team: Team = self.team

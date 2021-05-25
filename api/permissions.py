@@ -53,14 +53,21 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
                 member_record = self.retrieveMemberRecord(
                     request.user.username, obj
                 )
-                permit = member_record.is_admin()
+                return member_record.is_admin()
 
             except Member.DoesNotExist:
-                permit = False
-
+                return False
         else:
-            permit = True
-        return permit
+            return True
+
+
+class IsAdminMember(BaseMemberPermissions):
+    def has_object_permission(self, request, view, object):
+        try:
+            member_record = self.retrieveMemberRecord(request.user.username, object)
+            return member_record.is_admin()
+        except Member.DoesNotExist:
+            return False
 
 
 class IsOwnerOrReadOnly(BaseMemberPermissions):
@@ -80,4 +87,3 @@ class IsOwnerOrReadOnly(BaseMemberPermissions):
             return obj.owner == request.user
         else:
             return True
-

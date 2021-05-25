@@ -262,5 +262,14 @@ class EventSerializer(serializers.ModelSerializer):
             "description", "object_id"
         ]
 
+
 class TeamInviteSerializer(serializers.ModelSerializer):
-    pass
+    id = serializers.ReadOnlyField()
+    user_email = serializers.EmailField(source="user.email")
+    team = TeamSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = api_models.TeamInvite
+        fields = [
+            "id", "user_email", "team"
+        ]
