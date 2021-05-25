@@ -46,6 +46,12 @@ team_router.register(
     basename='team-events'
 )
 
+team_router.register(
+    r'invites',
+    views.TeamInviteViewSet,
+    basename='team-invites'
+)
+
 members_router = routers.NestedSimpleRouter(team_router, r'members', lookup='member')
 members_router.register(r'pinned_tickets', views.PinnedTicketViewSet, basename='pinned-tickets')
 

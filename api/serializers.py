@@ -261,3 +261,6 @@ class EventSerializer(serializers.ModelSerializer):
             "id", "team_id", "created", "event_type", "user", "user_id",
             "description", "object_id"
         ]
+
+class TeamInviteSerializer(serializers.ModelSerializer):
+    pass

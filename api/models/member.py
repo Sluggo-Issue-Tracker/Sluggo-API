@@ -3,15 +3,18 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from hashlib import md5
-import uuid
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+from ..methods import hash_team_id
 
 from api.models.interfaces import HasUuid
 from .team import Team
+from .team_invite import TeamInvite
 
 User = get_user_model()
 
 
-class Member(HasUuid, models.Model):
+class Member(HasUuid):
     class Roles(models.TextChoices):
         UNAPPROVED = "UA", _("Unapproved")
         APPROVED = "AP", _("Approved")
@@ -70,17 +73,7 @@ class Member(HasUuid, models.Model):
         team: Team = self.team
         owner: User = self.owner
 
-        if not owner:
-            raise ValueError("missing owner")
-
-        if not team:
-            raise ValueError("missing team")
-
-        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
-
-        team_id = "{}".format(team.id)
-        self.id = md5(team_id.encode()).hexdigest() + md5(
-            owner.username.encode()).hexdigest()
+        self.id = hash_team_id(team, owner.username)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
@@ -88,3 +81,7 @@ class Member(HasUuid, models.Model):
 
         super(Member, self).save(*args, **kwargs)
 
+
+@receiver(pre_delete, sender=TeamInvite)
+def create_team_defaults(sender, instance: TeamInvite, **kwargs):
+    Member.objects.create(owner=instance.user, team=instance.team)
