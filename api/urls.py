@@ -67,7 +67,7 @@ urlpatterns = [
     path("api/", include(team_router.urls)),
     path("api/", include(members_router.urls)),
 
-    path("users/", views.UserInviteView.as_view(), name="invites"),
+    path("api/users/invites/", views.UserInviteView.as_view(), name="invites"),
 
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),

@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import (Ticket, Member, Team, TicketComment, TicketStatus,
-                     TicketNode, TicketTag, Event, Tag, PinnedTicket)
+from .models import *
 
 
 # Custom Admin class that will allow you to mark fields to be readonly on edits.
@@ -93,3 +92,11 @@ class PinnedTicketAdmin(CustomAdmin):
     readonly_edit = ("member", "ticket", "team")
 
     fields = ("id", "member", "ticket", "pinned", "team")
+
+
+@admin.register(TeamInvite)
+class TeamInviteAdmin(CustomAdmin):
+    readonly_fields = ("id",)
+    readonly_edit = ("team", "user")
+
+    fields = ("id", "team", "user")

@@ -80,8 +80,3 @@ class Member(HasUuid):
             self._pre_create()
 
         super(Member, self).save(*args, **kwargs)
-
-
-@receiver(pre_delete, sender=TeamInvite)
-def create_team_defaults(sender, instance: TeamInvite, **kwargs):
-    Member.objects.create(owner=instance.user, team=instance.team)
