@@ -54,6 +54,9 @@ team_router.register(
 members_router = routers.NestedSimpleRouter(team_router, r'members', lookup='member')
 members_router.register(r'pinned_tickets', views.PinnedTicketViewSet, basename='pinned-tickets')
 
+user_router = SimpleRouter()
+user_router.register('invites', views.UserInviteView)
+
 urlpatterns = [
     # Optional UI:
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -63,6 +66,8 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/", include(team_router.urls)),
     path("api/", include(members_router.urls)),
+
+    path("users/", views.UserInviteView.as_view(), name="invites"),
 
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
