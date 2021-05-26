@@ -275,3 +275,6 @@ class TeamInviteSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user_email", "team"
         ]
+
+    def create(self, validated_data):
+        return api_models.TeamInvite.objects.create(**validated_data)
