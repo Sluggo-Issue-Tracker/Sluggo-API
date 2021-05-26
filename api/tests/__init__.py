@@ -1,3 +1,6 @@
-# from .social_test import TeamBaseBehavior, MemberBaseBehavior
-# from .ticket_test import TicketTestCase, TicketViewTestCase
-from .refactored_test import *
+from .test_member import *
+from .test_pinned_ticket import *
+from .test_status import *
+from .test_tag import *
+from .test_team import *
+from .test_ticket import *
