@@ -17,8 +17,9 @@ class MemberViewSet(TeamRelatedModelViewSet):
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
-        request.data.pop('role', None)
-        serializer = self.get_serializer(data=request.data)
+        request_data = dict(request.data) # request.data is immutable, this may have changed
+        request_data.pop('role', None)
+        serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
 
         # save the instance
@@ -30,6 +31,7 @@ class MemberViewSet(TeamRelatedModelViewSet):
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def update(self, request, *args, **kwargs):
+        request_data = dict(request.data)
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
@@ -37,10 +39,10 @@ class MemberViewSet(TeamRelatedModelViewSet):
         user_member = self.get_queryset(
             *args, **kwargs).get(owner=request.user)
         if not user_member.is_admin():
-            request.data.pop('role', None)
+            request_data.pop('role', None)
 
         serializer = self.get_serializer(
-            instance, data=request.data, partial=partial)
+            instance, data=request_data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
