@@ -21,6 +21,7 @@ class Member(HasUuid):
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.username)
+    # TODO: this should probably migrate just to a normal id
     id = models.CharField(max_length=256,
                           unique=True,
                           editable=False,
@@ -65,6 +66,7 @@ class Member(HasUuid):
     class Meta:
         ordering = ["created"]
         app_label = "api"
+        unique_together = [["owner", "team"]]
 
     def __str__(self):
         return f"Member: {self.owner.get_full_name}"

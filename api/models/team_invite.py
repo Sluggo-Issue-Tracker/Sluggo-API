@@ -11,9 +11,6 @@ User = get_user_model()
 
 
 class TeamInvite(HasUuid):
-    team_user_hash = models.CharField(max_length=256,
-                                      unique=True,
-                                      editable=False)
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
@@ -25,13 +22,7 @@ class TeamInvite(HasUuid):
                              null=False,
                              related_name="invite")
 
-    def _pre_create(self):
-        team: Team = self.team
-        user: User = self.user
-
-        self.team_user_hash = hash_team_id(team, user.username)
-
-    def save(self, *args, **kwargs):
-        if self._state.adding:
-            self._pre_create()
-        super().save(*args, **kwargs)
+    class Meta:
+        ordering = ["id"]
+        app_label = "api"
+        unique_together = [["user", "team"]]

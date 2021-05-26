@@ -5,7 +5,6 @@ from .member import Member
 from .team import Team
 from .ticket_status import TicketStatus
 from api.models.interfaces import HasUuid
-import uuid
 
 
 class Ticket(HasUuid):

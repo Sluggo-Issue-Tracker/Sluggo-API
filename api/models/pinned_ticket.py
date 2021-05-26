@@ -22,6 +22,7 @@ class PinnedTicket(HasUuid, models.Model):
     class Meta:
         ordering = ["pinned"]
         app_label = "api"
+        unique_together = [["ticket", "member"]]
 
     def _pre_create(self):
         member = self.member
