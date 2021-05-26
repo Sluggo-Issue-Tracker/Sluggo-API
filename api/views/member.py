@@ -24,6 +24,10 @@ class MemberViewSet(TeamRelatedModelViewSet):
 
         # save the instance
         team_instance = self.get_team()
+
+        if Member.objects.filter(team=team_instance, owner=request.user):
+            raise serializers.ValidationError({"member": "a member already exists in this team for this user!"})
+
         serializer.save(owner=request.user, team=team_instance)
 
         headers = self.get_success_headers(serializer.data)
