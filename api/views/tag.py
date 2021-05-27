@@ -1,9 +1,7 @@
-from django.db.models import Q
-from rest_framework.decorators import action
+from rest_framework import serializers
+
 from .team_related_base import *
 from ..serializers import *
-from ..permissions import *
-from ..docs import *
 
 
 class TagViewSet(

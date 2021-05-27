@@ -9,3 +9,4 @@ from .event_serializer import EventSerializer
 from .pinned_ticket_serializer import PinnedTicketSerializer
 from .team_invite_serializer import TeamInviteSerializer
 from .ticket_node_serializer import TicketNodeSerializer
+from .user_invite_serializer import UserInviteSerializer

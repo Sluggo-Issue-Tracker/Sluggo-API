@@ -1,8 +1,6 @@
-from django.db.models import Q
-from rest_framework.decorators import action
 from .team_related_base import *
+from rest_framework import serializers
 from ..serializers import *
-from ..permissions import *
 from ..docs import *
 
 

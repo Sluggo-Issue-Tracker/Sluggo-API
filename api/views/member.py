@@ -30,8 +30,10 @@ class MemberViewSet(TeamRelatedListMixin,
         if not user_member.is_admin():
             request_data.pop('role', None)
 
-        serializer = self.get_serializer(
-            instance, data=request_data, partial=partial)
+        serializer = self.get_serializer(instance,
+                                         data=request_data,
+                                         partial=partial)
+
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 

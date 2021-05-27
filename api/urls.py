@@ -10,46 +10,37 @@ from . import views
 router = SimpleRouter()
 router.register('teams', views.TeamViewSet)
 
-team_router = routers.NestedSimpleRouter(
-    router,
-    r'teams',
-    lookup='team'
-)
+router.register('users/invites',
+                views.UserInviteViewSet,
+                basename='user-invites')
 
-team_router.register(
-    r'tickets',
-    views.TicketViewSet,
-    basename='team-tickets'
-)
+team_router = routers.NestedSimpleRouter(router,
+                                         r'teams',
+                                         lookup='team')
 
-team_router.register(
-    r'members',
-    views.MemberViewSet,
-    basename='team-members'
-)
+team_router.register(r'tickets',
+                     views.TicketViewSet,
+                     basename='team-tickets')
 
-team_router.register(
-    r'statuses',
-    views.StatusViewSet,
-    basename='team-statuses'
-)
+team_router.register(r'members',
+                     views.MemberViewSet,
+                     basename='team-members')
 
-team_router.register(
-    r'tags',
-    views.TagViewSet,
-    basename='team-tags'
-)
+team_router.register(r'statuses',
+                     views.StatusViewSet,
+                     basename='team-statuses')
 
-team_router.register(
-    r'events',
-    views.EventViewSet,
-    basename='team-events'
-)
+team_router.register(r'tags',
+                     views.TagViewSet,
+                     basename='team-tags')
 
-team_router.register(
-    r'invites',
-    views.TeamInviteViewSet,
-    basename='team-invites')
+team_router.register(r'events',
+                     views.EventViewSet,
+                     basename='team-events')
+
+team_router.register(r'invites',
+                     views.TeamInviteViewSet,
+                     basename='team-invites')
 
 members_router = routers.NestedSimpleRouter(team_router, r'members', lookup='member')
 members_router.register(r'pinned_tickets', views.PinnedTicketViewSet, basename='pinned-tickets')
@@ -63,8 +54,6 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/", include(team_router.urls)),
     path("api/", include(members_router.urls)),
-
-    path("api/users/invites/", views.UserInviteView.as_view(), name="user-invites"),
 
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
