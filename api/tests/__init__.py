@@ -5,3 +5,4 @@ from .test_tag import *
 from .test_team import *
 from .test_ticket import *
 from .test_team_invite import *
+from .test_user_invite import *

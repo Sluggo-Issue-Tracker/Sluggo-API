@@ -6,42 +6,6 @@ from ..models import *
 from ..serializers import *
 
 
-# make random count random users, while ensuring we don't have any duplicates
-def generateArbitraryUsers(count: int) -> list:
-    emails = set()
-    usernames = set()
-    users = []
-
-    for _ in range(count):
-        while True:
-            user = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-            hostname = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-            tld = ''.join(random.choice(string.ascii_letters) for _ in range(3))
-            email = f"{user}@{hostname}.{tld}"
-            if email not in emails:
-                emails.add(email)
-                break
-
-        while True:
-            username = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-            if username not in usernames:
-                usernames.add(username)
-                break
-
-        first_name = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-        last_name = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-
-        users.append(User.objects.create(username=username,
-                                         email=email,
-                                         first_name=first_name,
-                                         last_name=last_name))
-
-        for user in users:
-            user.save()
-
-    return users
-
-
 class TestTeamInvite(TeamRelatedCore):
     prefix = "team-invites"
 
@@ -88,7 +52,7 @@ class TestTeamInvite(TeamRelatedCore):
             serialized_user_list = TeamInviteSerializer(invites, many=True).data
 
             idx = itr * PAGE_SIZE
-            self.assertEqual(response.data.get("results"), serialized_user_list[idx:idx+ PAGE_SIZE])
+            self.assertEqual(response.data.get("results"), serialized_user_list[idx:idx + PAGE_SIZE])
 
     def testDelete(self):
         user = generateArbitraryUsers(1)[0]
