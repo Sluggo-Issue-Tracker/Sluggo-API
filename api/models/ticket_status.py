@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from .fields.color_field import ColorField
 
 
-class TicketStatus(HasUuid, models.Model):
+class TicketStatus(HasUuid):
     title = models.CharField(max_length=100,
                              unique=False)
 

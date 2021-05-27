@@ -2,7 +2,7 @@ from django.db import models
 from api.models.interfaces import HasUuid
 
 
-class Team(HasUuid, models.Model):
+class Team(HasUuid):
     # id is implicitly defined by django
     name = models.CharField(max_length=100, unique=True, blank=False)
     ticket_head = models.IntegerField(blank=False, default=0, editable=False)

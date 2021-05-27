@@ -7,7 +7,7 @@ from api.models.interfaces import HasUuid
 import uuid
 
 
-class TicketComment(HasUuid, models.Model):
+class TicketComment(HasUuid):
 
     ticket = models.ForeignKey(
         Ticket,

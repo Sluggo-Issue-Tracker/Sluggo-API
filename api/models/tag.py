@@ -9,7 +9,7 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 
-class Tag(HasUuid, models.Model):
+class Tag(HasUuid):
     team_title_hash = models.CharField(max_length=256,
                                        unique=True,
                                        editable=False)

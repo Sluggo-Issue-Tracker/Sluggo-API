@@ -6,7 +6,7 @@ from api.models.interfaces import HasUuid
 from hashlib import md5
 
 
-class PinnedTicket(HasUuid, models.Model):
+class PinnedTicket(HasUuid):
     id = models.CharField(max_length=256,
                           unique=True,
                           primary_key=True)
