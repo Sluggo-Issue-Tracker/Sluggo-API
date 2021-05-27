@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from hashlib import md5
 from .models import Member, Team
+from .methods import hash_team_id
 
 
 class BaseMemberPermissions(BasePermission):
@@ -8,11 +9,8 @@ class BaseMemberPermissions(BasePermission):
 
     @staticmethod
     def retrieveMemberRecord(username, obj):
-        team_id = obj.id if isinstance(obj, Team) else obj.team.id
-        team_id = "{}".format(team_id)
-        member_pk = (
-                md5(team_id.encode()).hexdigest() + md5(username.encode()).hexdigest()
-        )
+        team = obj if isinstance(obj, Team) else obj.team
+        member_pk = hash_team_id(team, username)
         return Member.objects.get(pk=member_pk)
 
 
@@ -22,12 +20,10 @@ class IsMemberUser(BaseMemberPermissions):
     def has_object_permission(self, request, view, obj):
 
         try:
-            member_record = self.retrieveMemberRecord(request.user.username, obj)
-            permit = member_record.role != Member.Roles.UNAPPROVED
+            self.retrieveMemberRecord(request.user.username, obj)
+            return True
         except Member.DoesNotExist:
-            permit = False
-
-        return permit
+            return False
 
 
 class IsMemberUserOrCreate(IsMemberUser):

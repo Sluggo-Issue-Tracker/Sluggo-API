@@ -16,7 +16,6 @@ User = get_user_model()
 
 class Member(HasUuid):
     class Roles(models.TextChoices):
-        UNAPPROVED = "UA", _("Unapproved")
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
@@ -33,7 +32,7 @@ class Member(HasUuid):
 
     role = models.CharField(max_length=2,
                             choices=Roles.choices,
-                            default=Roles.UNAPPROVED)
+                            default=Roles.APPROVED)
 
     pronouns = models.CharField(max_length=256, null=True, blank=True)
 

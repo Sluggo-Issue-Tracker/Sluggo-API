@@ -94,5 +94,5 @@ class MemberTestCase(TeamRelatedCore):
             data=weird_data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("role"), Member.Roles.UNAPPROVED)
+        self.assertEqual(response.data.get("role"), Member.Roles.APPROVED)
 
