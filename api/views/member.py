@@ -6,7 +6,10 @@ from ..permissions import *
 from ..docs import *
 
 
-class MemberViewSet(TeamRelatedModelViewSet):
+class MemberViewSet(TeamRelatedListMixin,
+                    TeamRelatedUpdateMixin,
+                    TeamRelatedDestroyMixin,
+                    TeamRelatedRetrieveMixin):
     queryset = Member.objects.all().select_related(
         'team', 'owner'
     )
@@ -14,24 +17,6 @@ class MemberViewSet(TeamRelatedModelViewSet):
     permission_classes = [
         IsMemberUserOrCreate, IsOwnerOrReadOnly | IsAdminMemberOrReadOnly, IsAuthenticated
     ]
-
-    @extend_schema(**TEAM_DETAIL_SCHEMA)
-    def create(self, request, *args, **kwargs):
-        request_data = dict(request.data) # request.data is immutable, this may have changed
-        request_data.pop('role', None)
-        serializer = self.get_serializer(data=request_data)
-        serializer.is_valid(raise_exception=True)
-
-        # save the instance
-        team_instance = self.get_team()
-
-        if Member.objects.filter(team=team_instance, owner=request.user):
-            raise serializers.ValidationError({"member": "a member already exists in this team for this user!"})
-
-        serializer.save(owner=request.user, team=team_instance)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def update(self, request, *args, **kwargs):

@@ -1,5 +1,6 @@
 from .test_base import *
 
+
 class MemberTestCase(TeamRelatedCore):
     prefix = "team-members"
 
@@ -30,18 +31,12 @@ class MemberTestCase(TeamRelatedCore):
         self.client = APIClient()
         self.client.force_authenticate(user=self.normal_user)
 
-        response = self.client.post(
-            reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
-            data=self.data_dict, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.pk = response.data.get("id")
+        self.member = Member.objects.create(owner=self.normal_user, team=self.team)
+        self.member.save()
+        self.pk = self.member.id
 
         # force approve the member
         Member.objects.filter(pk=self.pk).update(role=Member.Roles.APPROVED)
-
-    def testCreate(self):
-        self.create(self.data_dict)
 
     def testList(self):
         self.list()
@@ -78,21 +73,3 @@ class MemberTestCase(TeamRelatedCore):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(updated_dict.get("role"), response.data.get("role"))
         self.assertEqual(response.data, MemberSerializer(Member.objects.get(pk=self.pk)).data)
-
-    def testCreateRoleUntouched(self): # confirm that a new user can only be unapproved
-        user = User.objects.create(**self.admin_user_dict)
-        client = APIClient()
-        client.force_authenticate(user=user)
-
-        weird_data = {
-            "bio": "biography",
-            "role": "AD"
-        }
-
-        response = client.post(
-            reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
-            data=weird_data, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("role"), Member.Roles.APPROVED)
-
