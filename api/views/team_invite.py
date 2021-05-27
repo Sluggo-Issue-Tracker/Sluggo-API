@@ -1,8 +1,7 @@
-from rest_framework.views import APIView
-from django.db import transaction
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
-from ..serializers import TeamSerializer, TeamInviteSerializer, serializers
+from ..serializers import TeamInviteSerializer
 from .team_related_base import *
 
 
