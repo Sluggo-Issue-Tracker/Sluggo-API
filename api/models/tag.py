@@ -7,6 +7,7 @@ from hashlib import md5
 import re
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
+from ..methods import hash_team_id
 
 
 class Tag(HasUuid):
@@ -40,16 +41,7 @@ class Tag(HasUuid):
         team = self.team
         title = self.title
 
-        if not title:
-            raise ValueError("missing title")
-
-        if not team:
-            raise ValueError("missing team")
-
-        title_id = "{}".format(title)
-        team_id = "{}".format(team.id)
-        self.team_title_hash = md5(title_id.encode()).hexdigest() + md5(
-            team_id.encode()).hexdigest()
+        self.team_title_hash = hash_team_id(team, title)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
