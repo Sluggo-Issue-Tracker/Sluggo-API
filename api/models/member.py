@@ -3,8 +3,6 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from hashlib import md5
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from ..methods import hash_team_id
 
 from api.models.interfaces import HasUuid
