@@ -12,11 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from .fields.color_field import ColorField
 
 
-class TicketStatus(HasUuid, models.Model):
-    team_title_hash = models.CharField(max_length=256,
-                                       unique=True,
-                                       editable=False)
-
+class TicketStatus(HasUuid):
     title = models.CharField(max_length=100,
                              unique=False)
 
@@ -34,6 +30,7 @@ class TicketStatus(HasUuid, models.Model):
     class Meta:
         ordering = ["id"]
         app_label = "api"
+        unique_together = [["title", "team"]]
 
     def __str__(self):
         return f"TicketStatus: {self.title}"
@@ -48,8 +45,8 @@ class TicketStatus(HasUuid, models.Model):
             team_id.encode()).hexdigest()
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
-            self._pre_create()
+        # if self._state.adding:
+        #     self._pre_create()
 
         super(TicketStatus, self).save(*args, **kwargs)
 

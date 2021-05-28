@@ -3,21 +3,22 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from hashlib import md5
-import uuid
+from ..methods import hash_team_id
 
 from api.models.interfaces import HasUuid
 from .team import Team
+from .team_invite import TeamInvite
 
 User = get_user_model()
 
 
-class Member(HasUuid, models.Model):
+class Member(HasUuid):
     class Roles(models.TextChoices):
-        UNAPPROVED = "UA", _("Unapproved")
         APPROVED = "AP", _("Approved")
         ADMIN = "AD", _("Admin")
 
     # team.team_id + md5 (user.username)
+    # TODO: this should probably migrate just to a normal id
     id = models.CharField(max_length=256,
                           unique=True,
                           editable=False,
@@ -29,7 +30,7 @@ class Member(HasUuid, models.Model):
 
     role = models.CharField(max_length=2,
                             choices=Roles.choices,
-                            default=Roles.UNAPPROVED)
+                            default=Roles.APPROVED)
 
     pronouns = models.CharField(max_length=256, null=True, blank=True)
 
@@ -62,6 +63,7 @@ class Member(HasUuid, models.Model):
     class Meta:
         ordering = ["created"]
         app_label = "api"
+        unique_together = [["owner", "team"]]
 
     def __str__(self):
         return f"Member: {self.owner.get_full_name}"
@@ -70,21 +72,10 @@ class Member(HasUuid, models.Model):
         team: Team = self.team
         owner: User = self.owner
 
-        if not owner:
-            raise ValueError("missing owner")
-
-        if not team:
-            raise ValueError("missing team")
-
-        # id will be an md5 of the team.id formatted as a string, followed by the md5 of the username
-
-        team_id = "{}".format(team.id)
-        self.id = md5(team_id.encode()).hexdigest() + md5(
-            owner.username.encode()).hexdigest()
+        self.id = hash_team_id(team, owner.username)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
             self._pre_create()
 
         super(Member, self).save(*args, **kwargs)
-
