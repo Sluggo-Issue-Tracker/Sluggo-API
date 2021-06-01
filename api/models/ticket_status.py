@@ -33,7 +33,7 @@ class TicketStatus(HasUuid):
         unique_together = [["title", "team"]]
 
     def __str__(self):
-        return f"TicketStatus: {self.title}"
+        return f"TicketStatus: {self.title} for Team: {self.team.name}"
 
     def _pre_create(self):
         team = self.team
@@ -54,6 +54,9 @@ class TicketStatus(HasUuid):
 @receiver(post_save, sender=Team)
 def create_team_defaults(sender, instance: Team, created: bool, **kwargs):
     if created:
-        TicketStatus.objects.create(title="To do", color="#3273DCFF", team=instance)
-        TicketStatus.objects.create(title="In Progress", color="#FFDD57", team=instance)
-        TicketStatus.objects.create(title="Done", color="#48C774FF", team=instance)
+        TicketStatus.objects.create(
+            title="To do", color="#3273DCFF", team=instance)
+        TicketStatus.objects.create(
+            title="In Progress", color="#FFDD57FF", team=instance)
+        TicketStatus.objects.create(
+            title="Done", color="#48C774FF", team=instance)

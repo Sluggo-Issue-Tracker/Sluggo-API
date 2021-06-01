@@ -66,7 +66,7 @@ class Member(HasUuid):
         unique_together = [["owner", "team"]]
 
     def __str__(self):
-        return f"Member: {self.owner.get_full_name}"
+        return f"Member: {self.owner.get_full_name()} for Team: {self.team.name}"
 
     def _pre_create(self):
         team: Team = self.team
