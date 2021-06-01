@@ -18,6 +18,10 @@ class UserInviteViewSet(GenericViewSet,
     queryset = TeamInvite.objects.all().prefetch_related('user')
     pagination_class = None
 
+    def get_queryset(self):
+        user = self.request.user
+        return super().get_queryset().filter(user=user)
+
     def update(self, request, *args, **kwargs) -> Response:
         invite_instance = self.get_object()
         user_instance = invite_instance.user
