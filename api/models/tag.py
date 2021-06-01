@@ -35,7 +35,7 @@ class Tag(HasUuid):
         app_label = "api"
 
     def __str__(self):
-        return f"Tag: {self.title}"
+        return f"Tag: {self.title} for Team: {self.team.name}"
 
     def _pre_create(self):
         team = self.team

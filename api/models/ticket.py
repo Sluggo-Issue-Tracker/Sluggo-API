@@ -47,7 +47,7 @@ class Ticket(HasUuid):
             models.Q(assigned_user=user))
 
     def __str__(self):
-        return f"Ticket: {self.title}"
+        return f"Ticket: {self.title} for Team: {self.team.name}"
 
     def _pre_create(self):
         team = self.team

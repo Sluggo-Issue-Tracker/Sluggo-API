@@ -43,4 +43,4 @@ class Event(models.Model):
         return self.DELETE == self.event_type
 
     def __str__(self):
-        return f"Event: {self.event_type}, {self.description}"
+        return f"Event: {self.event_type}, {self.description} for Team: {self.team.name}"
