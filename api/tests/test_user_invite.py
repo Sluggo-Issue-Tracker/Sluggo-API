@@ -10,22 +10,24 @@ class TestUserInvite(TestCase):
     prefix = "user-invites"
 
     def setUp(self) -> None:
-        amount = 100
-        self.user = generateArbitraryUsers(1)[0]
+        amount = 10
+        self.all_users = generateArbitraryUsers(amount)
+        self.user = self.all_users[0]
         self.teams = generateArbitraryTeams(amount)
         self.invites = []
 
         for team_objects in self.teams:
-            invite = TeamInvite.objects.create(team=team_objects, user=self.user)
-            invite.save()
-            self.invites.append(invite)
-
+            for user in self.all_users:
+                invite = TeamInvite.objects.create(team=team_objects, user=user)
+                invite.save()
+                self.invites.append(invite)
+        self.invites_with_this_user = filter(lambda x: x.user == self.user, self.invites)
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     def testListInvites(self):
         response = self.client.get(reverse(self.prefix + "-list"), format="json")
-        serialized_team_list = UserInviteSerializer(self.invites, many=True)
+        serialized_team_list = UserInviteSerializer(self.invites_with_this_user, many=True)
 
         # this call is not paginated, so what's returned should be equivalent
         # to the serialized_team_list data
@@ -33,7 +35,7 @@ class TestUserInvite(TestCase):
         self.assertEqual(response.data, serialized_team_list.data)
 
     def testAcceptInvite(self):
-        for invite in self.invites:
+        for invite in self.invites_with_this_user:
             response = self.client.put(reverse(self.prefix + "-detail", kwargs={"pk": invite.id}),
                         {},
                         format="json")
