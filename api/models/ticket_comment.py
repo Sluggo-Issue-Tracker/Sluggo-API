@@ -32,4 +32,4 @@ class TicketComment(HasUuid):
         app_label = "api"
 
     def __str__(self):
-        return f"Comment: {self.content}"
+        return f"Comment: {self.content} for Team: {self.team.name}"

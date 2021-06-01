@@ -60,7 +60,7 @@ class TicketTag(HasUuid):
             ticket_tag.delete()
 
     def __str__(self):
-        return f"TicketTag: {self.created}"
+        return f"TicketTag: {self.created} for Team: {self.team.name}"
 
     def _pre_create(self):
         tag = self.tag
