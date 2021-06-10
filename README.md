@@ -35,6 +35,30 @@ unique value (only important for production):
 
 ## Initialization
 
+This must be ran the first time. Do the following:
+
+1. Activate the virtual environment shown in the Installation steps.
+
+    a. For POSIX platforms (macOS and Linux):
+`source ./sluggoAPI/bin/activate`
+
+    b. For Windows:
+`.\sluggoAPI\Scripts\activate.bat`
+
+2. Run the following command whenever changes to the database models 
+are made. This is likely necessary whenever new versions of the 
+repository are pulled, or your version of SluggoAPI is otherwise 
+upgraded:
+`python manage.py makemigrations; python manage.py migrate`
+
+3. Create a superuser with the command:
+`python3 manage.py createsuperuser`
+
+4. Run with:
+`python manage.py runserver`
+
+## Initialization for Slack
+
 This assumes that a slack app is already created. Do the following:
 
 1. Create a superuser with the command:
