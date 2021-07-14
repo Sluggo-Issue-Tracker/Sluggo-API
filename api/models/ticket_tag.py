@@ -10,20 +10,19 @@ import re
 
 
 class TicketTag(HasUuid):
-    id = models.CharField(max_length=256,
-                          unique=True,
-                          editable=False,
-                          primary_key=True)
+    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    team = models.ForeignKey(Team,
-                             on_delete=models.CASCADE,
-                             editable=True,
-                             null=False,
-                             related_name="ticket_tag")
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        editable=True,
+        null=False,
+        related_name="ticket_tag",
+    )
 
     class Meta:
         ordering = ["created"]
@@ -46,13 +45,12 @@ class TicketTag(HasUuid):
                 filters |= models.Q(tag=tag)
 
             # select all that are not in the tag list
-            to_be_deleted = cls.objects.filter(
-                ticket=ticket_instance).exclude(filters)
+            to_be_deleted = cls.objects.filter(ticket=ticket_instance).exclude(filters)
 
             for tag in tag_list:
-                cls.objects.get_or_create(ticket=ticket_instance,
-                                          tag=tag,
-                                          team=ticket_instance.team)
+                cls.objects.get_or_create(
+                    ticket=ticket_instance, tag=tag, team=ticket_instance.team
+                )
         else:
             to_be_deleted = cls.objects.filter(ticket=ticket_instance)
 
@@ -74,8 +72,9 @@ class TicketTag(HasUuid):
 
         team_id = "{}".format(tag.id)
         ticket_id = "{}".format(ticket.id)
-        self.id = md5(team_id.encode()).hexdigest() + md5(
-            ticket_id.encode()).hexdigest()
+        self.id = (
+            md5(team_id.encode()).hexdigest() + md5(ticket_id.encode()).hexdigest()
+        )
 
     def save(self, *args, **kwargs):
         if self._state.adding:

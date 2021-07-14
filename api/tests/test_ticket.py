@@ -1,10 +1,8 @@
 from .test_base import *
 
+
 class TicketTestCase(TeamRelatedCore):
-    data_dict = {
-        "title": "ticket",
-        "description": "ticket test"
-    }
+    data_dict = {"title": "ticket", "description": "ticket test"}
 
     prefix = "team-tickets"
     model = Ticket
@@ -14,7 +12,8 @@ class TicketTestCase(TeamRelatedCore):
         super().setUp()
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
-            data=self.data_dict, format="json"
+            data=self.data_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.pk = response.data.get("id")
@@ -48,13 +47,12 @@ class TicketTestCase(TeamRelatedCore):
         extra_data["status"] = ticket_status.id
 
         tag_instance = Tag.objects.create(title="wine", team=self.team)
-        extra_data["tag_list"] = [
-            tag_instance.id
-        ]
+        extra_data["tag_list"] = [tag_instance.id]
 
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
-            data=extra_data, format="json"
+            data=extra_data,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -69,13 +67,9 @@ class TicketTestCase(TeamRelatedCore):
 
         to_be_kept = Tag.objects.create(title="keep this", team=self.team)
         extra_data = dict(self.data_dict)
-        extra_data["tag_list"] = [
-            to_be_kept.pk
-        ]
+        extra_data["tag_list"] = [to_be_kept.pk]
         expected = TicketSerializer(ticket_instance).data
-        expected["tag_list"] = [
-            TagSerializer(to_be_kept).data
-        ]
+        expected["tag_list"] = [TagSerializer(to_be_kept).data]
         self.update(extra_data, expected)
 
     def testRemoveAllTags(self):
@@ -114,34 +108,35 @@ class WrongTeamTicketTestCase(TicketTestCase):
     def list(self, expected=None):
         response = self.client.get(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def detail(self, expected=None):
         response = self.client.get(
-            reverse(self.prefix + "-detail", kwargs={
-                "team_pk": self.team.id,
-                "pk": self.pk
-            }), format="json"
+            reverse(
+                self.prefix + "-detail", kwargs={"team_pk": self.team.id, "pk": self.pk}
+            ),
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def update(self, updated_dict, expected=None):
         response = self.client.put(
-            reverse(self.prefix + "-detail", kwargs={
-                "team_pk": self.team.id,
-                "pk": self.pk
-            }), data=updated_dict, format="json"
+            reverse(
+                self.prefix + "-detail", kwargs={"team_pk": self.team.id, "pk": self.pk}
+            ),
+            data=updated_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def delete(self):
         response = self.client.delete(
-            reverse(self.prefix + "-detail", kwargs={
-                "team_pk": self.team.id,
-                "pk": self.pk
-            }), format="json"
+            reverse(
+                self.prefix + "-detail", kwargs={"team_pk": self.team.id, "pk": self.pk}
+            ),
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -152,12 +147,11 @@ class WrongTeamTicketTestCase(TicketTestCase):
         extra_data["status"] = ticket_status.id
 
         tag_instance = Tag.objects.create(title="wine", team=self.team)
-        extra_data["tag_list"] = [
-            tag_instance.id
-        ]
+        extra_data["tag_list"] = [tag_instance.id]
 
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={TEAM_PK: self.team.id}),
-            data=extra_data, format="json"
+            data=extra_data,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

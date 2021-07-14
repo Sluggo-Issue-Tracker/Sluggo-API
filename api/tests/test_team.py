@@ -11,9 +11,7 @@ class TeamTestCase(TeamRelatedCore):
         self.assertNotEqual(0, count)
 
     def testList(self):
-        response = self.client.get(
-            reverse("team-list"), format="json"
-        )
+        response = self.client.get(reverse("team-list"), format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testDetail(self):
@@ -26,7 +24,9 @@ class TeamTestCase(TeamRelatedCore):
         updated_team_dict = self.team_dict
         updated_team_dict["description"] = "not cool"
         response = self.client.put(
-            reverse("team-detail", kwargs={"pk": self.team.id}), data=updated_team_dict, format="json"
+            reverse("team-detail", kwargs={"pk": self.team.id}),
+            data=updated_team_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -38,14 +38,12 @@ class TeamTestCase(TeamRelatedCore):
 
     def testMultipleListed(self):
         other_team = {"name": "!alksdjf"}
-        response = self.client.post(
-            reverse("team-list"), other_team, format="json"
-        )
+        response = self.client.post(reverse("team-list"), other_team, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.get(
-            reverse("team-list"), format="json"
-        )
-        expected = TeamSerializer(Team.objects.filter(member__owner=self.user), many=True).data
+        response = self.client.get(reverse("team-list"), format="json")
+        expected = TeamSerializer(
+            Team.objects.filter(member__owner=self.user), many=True
+        ).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)

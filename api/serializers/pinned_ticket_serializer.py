@@ -6,10 +6,12 @@ from .ticket_serializer import TicketSerializer
 
 class PinnedTicketSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    ticket = PrimaryKeySerializedField(many=False,
-                                       required=True,
-                                       queryset=Ticket.objects.all(),
-                                       serializer=TicketSerializer)
+    ticket = PrimaryKeySerializedField(
+        many=False,
+        required=True,
+        queryset=Ticket.objects.all(),
+        serializer=TicketSerializer,
+    )
     created = serializers.DateTimeField(read_only=True)
     object_uuid = serializers.ReadOnlyField()
 

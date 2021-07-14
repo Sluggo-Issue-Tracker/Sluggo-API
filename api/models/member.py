@@ -19,18 +19,13 @@ class Member(HasUuid):
 
     # team.team_id + md5 (user.username)
     # TODO: this should probably migrate just to a normal id
-    id = models.CharField(max_length=256,
-                          unique=True,
-                          editable=False,
-                          primary_key=True)
+    id = models.CharField(max_length=256, unique=True, editable=False, primary_key=True)
 
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                              on_delete=models.CASCADE,
-                              editable=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=True
+    )
 
-    role = models.CharField(max_length=2,
-                            choices=Roles.choices,
-                            default=Roles.APPROVED)
+    role = models.CharField(max_length=2, choices=Roles.choices, default=Roles.APPROVED)
 
     pronouns = models.CharField(max_length=256, null=True, blank=True)
 
@@ -39,11 +34,9 @@ class Member(HasUuid):
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
 
-    team = models.ForeignKey(Team,
-                             on_delete=models.CASCADE,
-                             editable=True,
-                             null=False,
-                             related_name="member")
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, editable=True, null=False, related_name="member"
+    )
 
     def is_admin(self):
         return self.role == self.Roles.ADMIN
@@ -56,8 +49,9 @@ class Member(HasUuid):
         team_id = team.id
         team_id = "{}".format(team_id)
         username = user.username
-        member_pk = (md5(team_id.encode()).hexdigest() +
-                     md5(username.encode()).hexdigest())
+        member_pk = (
+            md5(team_id.encode()).hexdigest() + md5(username.encode()).hexdigest()
+        )
         return Member.objects.get(pk=member_pk)
 
     class Meta:

@@ -4,14 +4,14 @@ from ..permissions import *
 from ..docs import *
 
 
-class PinnedTicketViewSet(TeamRelatedListMixin,
-                          TeamRelatedRetrieveMixin,
-                          TeamRelatedDestroyMixin,
-                          TeamRelatedCreateMixin):
+class PinnedTicketViewSet(
+    TeamRelatedListMixin,
+    TeamRelatedRetrieveMixin,
+    TeamRelatedDestroyMixin,
+    TeamRelatedCreateMixin,
+):
     serializer_class = PinnedTicketSerializer
-    permission_classes = [
-        IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated
-    ]
+    permission_classes = [IsMemberUser, IsOwnerOrReadOnly, IsAuthenticated]
     queryset = PinnedTicket.objects.all()
     pagination_class = None
 
@@ -35,4 +35,6 @@ class PinnedTicketViewSet(TeamRelatedListMixin,
         serializer.save(team=team_instance, member=member_instance)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .user_serializer import UserSerializer
-from .. models import *
+from ..models import *
 
 
 class TicketCommentSerializer(serializers.ModelSerializer):

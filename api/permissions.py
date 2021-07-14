@@ -16,7 +16,6 @@ class BaseMemberPermissions(BasePermission):
 
 # only permit this if the user is approved
 class IsMemberUser(BaseMemberPermissions):
-
     def has_object_permission(self, request, view, obj):
 
         try:
@@ -28,7 +27,7 @@ class IsMemberUser(BaseMemberPermissions):
 
 class IsMemberUserOrCreate(IsMemberUser):
     def has_object_permission(self, request, view, obj):
-        if request.method not in SAFE_METHODS and request.method != 'POST':
+        if request.method not in SAFE_METHODS and request.method != "POST":
             return super().has_object_permission(request, view, obj)
         else:
             return True
@@ -46,9 +45,7 @@ class IsAdminMemberOrReadOnly(BaseMemberPermissions):
             try:
                 # Write permissions are only allowed to the owner of the object, or admin.
 
-                member_record = self.retrieveMemberRecord(
-                    request.user.username, obj
-                )
+                member_record = self.retrieveMemberRecord(request.user.username, obj)
                 return member_record.is_admin()
 
             except Member.DoesNotExist:
@@ -79,7 +76,7 @@ class IsOwnerOrReadOnly(BaseMemberPermissions):
             return True
 
         # hack. add HasOwner interface
-        if hasattr(obj, 'owner'):
+        if hasattr(obj, "owner"):
             return obj.owner == request.user
         else:
             return True
