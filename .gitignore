@@ -1,11 +1,11 @@
 .vscode
 .idea
 db.sqlite3
+.env
 private
 */__pycache__/*
-*/migrations/*
-!*/migrations/__init__.py
 *.pyc
 .DS_Store
 sluggoAPI/**
 env/**
+venv/**
