@@ -33,6 +33,9 @@ and Linux) run:
 unique value (only important for production):
 `export SLUGGO_DJANGO_KEY="not important for non producton"`
 
+5. (optional) Install the pre-commit hook:
+`pre-commit install`
+
 ## Initialization
 
 This must be ran the first time. Do the following:
@@ -96,7 +99,7 @@ This assumes that a slack app is already created. Do the following:
 are made. This is likely necessary whenever new versions of the 
 repository are pulled, or your version of SluggoAPI is otherwise 
 upgraded:
-`python manage.py makemigrations; python manage.py migrate`
+`python manage.py migrate`
 
 3. Run with:
 `python manage.py runserver`
