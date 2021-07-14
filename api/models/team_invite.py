@@ -12,15 +12,13 @@ User = get_user_model()
 
 class TeamInvite(HasUuid):
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE,
-                             editable=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=True
+    )
 
-    team = models.ForeignKey(Team,
-                             on_delete=models.CASCADE,
-                             editable=True,
-                             null=False,
-                             related_name="invite")
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, editable=True, null=False, related_name="invite"
+    )
 
     class Meta:
         ordering = ["id"]

@@ -3,7 +3,9 @@ import uuid
 
 
 class HasUuid(models.Model):
-    object_uuid = models.UUIDField(null=True, blank=False, default=uuid.uuid4, editable=False, unique=True)
+    object_uuid = models.UUIDField(
+        null=True, blank=False, default=uuid.uuid4, editable=False, unique=True
+    )
 
     class Meta:
         app_label = "api"
@@ -11,5 +13,3 @@ class HasUuid(models.Model):
 
     def __str__(self):
         return f"HasUuid: {self.id}"
-
-

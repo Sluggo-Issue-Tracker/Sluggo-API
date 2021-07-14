@@ -9,7 +9,4 @@ class UserInviteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TeamInvite
-        fields = [
-            "id",
-            "team"
-        ]
+        fields = ["id", "team"]

@@ -7,9 +7,7 @@ class MemberTestCase(TeamRelatedCore):
     model = Member
     serializer = MemberSerializer
 
-    data_dict = {
-        "bio": "biography"
-    }
+    data_dict = {"bio": "biography"}
 
     normal_user_dict = dict(
         username="gov.wnpp.Claudia",
@@ -18,12 +16,11 @@ class MemberTestCase(TeamRelatedCore):
         last_name="Tiedemann",
     )
 
-    admin_member_dict = {
-        "bio": "asdlfkj",
-        "role": "AD"
-    }
+    admin_member_dict = {"bio": "asdlfkj", "role": "AD"}
 
-    admin_user_dict = dict(username="lkajsdf", email="asdf@asdfl.c", first_name="lkajsdf", last_name="lmao")
+    admin_user_dict = dict(
+        username="lkajsdf", email="asdf@asdfl.c", first_name="lkajsdf", last_name="lmao"
+    )
 
     def setUp(self):
         super().setUp()
@@ -58,18 +55,23 @@ class MemberTestCase(TeamRelatedCore):
 
     def testApprove(self):
         admin_user = User.objects.create(**self.admin_user_dict)
-        Member.objects.create(**self.admin_member_dict, owner=admin_user, team=self.team)
+        Member.objects.create(
+            **self.admin_member_dict, owner=admin_user, team=self.team
+        )
         admin_client = APIClient()
         admin_client.force_authenticate(user=admin_user)
 
-        updated_dict = {
-            "role": "AD"
-        }
+        updated_dict = {"role": "AD"}
 
         response = admin_client.patch(
-            reverse(self.prefix + "-detail", kwargs={TEAM_PK: self.team.id, "pk": self.pk}),
-            data=updated_dict, format="json"
+            reverse(
+                self.prefix + "-detail", kwargs={TEAM_PK: self.team.id, "pk": self.pk}
+            ),
+            data=updated_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(updated_dict.get("role"), response.data.get("role"))
-        self.assertEqual(response.data, MemberSerializer(Member.objects.get(pk=self.pk)).data)
+        self.assertEqual(
+            response.data, MemberSerializer(Member.objects.get(pk=self.pk)).data
+        )

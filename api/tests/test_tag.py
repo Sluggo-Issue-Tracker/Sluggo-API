@@ -5,9 +5,7 @@ class TagTestCase(TeamRelatedCore):
     prefix = "team-tags"
     serializer = TagSerializer
 
-    data_dict = {
-        "title": "wine"
-    }
+    data_dict = {"title": "wine"}
 
     model = Tag
 
@@ -15,7 +13,8 @@ class TagTestCase(TeamRelatedCore):
         super().setUp()
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
-            data=self.data_dict, format="json"
+            data=self.data_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.pk = response.data.get("id")

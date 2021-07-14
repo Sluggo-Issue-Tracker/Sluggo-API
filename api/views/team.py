@@ -7,17 +7,17 @@ from ..docs import *
 
 
 class TeamViewSet(viewsets.ModelViewSet):
-    queryset = Team.objects.all().prefetch_related('member')
+    queryset = Team.objects.all().prefetch_related("member")
     serializer_class = TeamSerializer
-    permission_classes = [IsAdminMemberOrReadOnly,
-                          IsMemberUser, IsAuthenticated]
+    permission_classes = [IsAdminMemberOrReadOnly, IsMemberUser, IsAuthenticated]
 
-    search_fields = ['^name']
-    ordering_fields = ['created', 'activated']
+    search_fields = ["^name"]
+    ordering_fields = ["created", "activated"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(
-            self.get_queryset().filter(member__owner=request.user))
+            self.get_queryset().filter(member__owner=request.user)
+        )
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -34,7 +34,10 @@ class TeamViewSet(viewsets.ModelViewSet):
 
         # create a member record for the requesting user
         Member.objects.create(
-            team=instance, owner=request.user, role=Member.Roles.ADMIN).save()
+            team=instance, owner=request.user, role=Member.Roles.ADMIN
+        ).save()
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

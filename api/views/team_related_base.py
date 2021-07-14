@@ -16,8 +16,8 @@ documentation properly, and with minimal duplication
 class NewTeamRelatedBase(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, IsMemberUser]
 
-    search_fields = ['^name', '^description']
-    ordering_fields = ['created', 'activated']
+    search_fields = ["^name", "^description"]
+    ordering_fields = ["created", "activated"]
 
     def check_permissions(self, request):
         super().check_permissions(request)
@@ -45,7 +45,6 @@ class TeamRelatedListMixin(NewTeamRelatedBase, mixins.ListModelMixin):
 
 
 class TeamRelatedCreateMixin(NewTeamRelatedBase, mixins.CreateModelMixin):
-
     @extend_schema(**TEAM_DETAIL_SCHEMA)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -56,7 +55,9 @@ class TeamRelatedCreateMixin(NewTeamRelatedBase, mixins.CreateModelMixin):
         serializer.save(team=team_instance)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class TeamRelatedUpdateMixin(NewTeamRelatedBase, mixins.UpdateModelMixin):
@@ -71,22 +72,17 @@ class TeamRelatedDestroyMixin(NewTeamRelatedBase, mixins.DestroyModelMixin):
         return super().destroy(request, *args, **kwargs)
 
 
-class TeamRelatedModelViewSet(TeamRelatedListMixin,
-                              TeamRelatedCreateMixin,
-                              TeamRelatedUpdateMixin,
-                              TeamRelatedRetrieveMixin,
-                              TeamRelatedDestroyMixin):
+class TeamRelatedModelViewSet(
+    TeamRelatedListMixin,
+    TeamRelatedCreateMixin,
+    TeamRelatedUpdateMixin,
+    TeamRelatedRetrieveMixin,
+    TeamRelatedDestroyMixin,
+):
     """
     Similar to the implementation of the ModelViewSet, this collects
     the list, create, update, destroy, retrieve mixins but updates the schema
     to account for the hierarchical nature of the
     """
+
     pass
-
-
-
-
-
-
-
-

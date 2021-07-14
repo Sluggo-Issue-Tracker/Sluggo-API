@@ -3,29 +3,20 @@ from rest_framework import exceptions
 
 from django.contrib.auth import get_user_model
 
-from ..models import (
-    Member,
-    Team,
-)
+from ..models import Member, Team
 from ..serializers import MemberSerializer, TeamSerializer, UserSerializer
 
 from .team_base import *
 
 
-class MemberViewSet(
-    TeamRelatedViewSet
-):
+class MemberViewSet(TeamRelatedViewSet):
     """
     Reads handled by the mixins, and use permission_classes
     """
 
     queryset = Member.objects.all()
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsMemberUser,
-        IsOwnerOrReadOnly
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsMemberUser, IsOwnerOrReadOnly]
 
     serializer_class = MemberSerializer
 
@@ -118,7 +109,11 @@ class MemberViewSet(
     # make the user an admin if not done already
     # this call is essentially idempotent and only modifies the user record when user was not previously activated
     # the user does not need to be approved for them to become an admin
-    @action(detail=True, methods=["patch"], permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly])
+    @action(
+        detail=True,
+        methods=["patch"],
+        permission_classes=[permissions.IsAuthenticated, IsAdminMemberOrReadOnly],
+    )
     def make_admin(self, request, pk=None):
         """
         Make the user, whose member record is associated with a primary key, an admin.
@@ -141,7 +136,7 @@ class MemberViewSet(
 
     @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def leave(self, request, pk=None):
-        """ With the primary key, deactivate the associated record """
+        """With the primary key, deactivate the associated record"""
         self.check_object_permissions(request, self.get_object())
 
         try:
@@ -155,11 +150,13 @@ class MemberViewSet(
             return Response({"msg": "failure"}, status=status.HTTP_404_NOT_FOUND)
 
 
-class TeamViewSet(mixins.RetrieveModelMixin,
-                  mixins.ListModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.DestroyModelMixin,
-                  viewsets.GenericViewSet):
+class TeamViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Team.objects.all()
 
     permission_classes = [permissions.IsAuthenticated, IsAdminMemberOrReadOnly]
@@ -169,11 +166,13 @@ class TeamViewSet(mixins.RetrieveModelMixin,
     @staticmethod
     def get_success_headers(data):
         try:
-            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+            return {"Location": str(data[api_settings.URL_FIELD_NAME])}
         except (TypeError, KeyError):
             return {}
 
-    @action(methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated])
+    @action(
+        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated]
+    )
     def create_record(self, request, *args, **kwargs):
         """
         Create a team record. The user which calls this endpoint is given the admin role for this organization.
@@ -186,13 +185,12 @@ class TeamViewSet(mixins.RetrieveModelMixin,
 
         # construct a member record from the user information
         member = Member.objects.create(
-            owner=request.user,
-            team=team,
-            role="AD",
-            activated=timezone.now()
+            owner=request.user, team=team, role="AD", activated=timezone.now()
         )
         member.save()
 
         headers = self.get_success_headers(team_serializer.data)
 
-        return Response(team_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            team_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

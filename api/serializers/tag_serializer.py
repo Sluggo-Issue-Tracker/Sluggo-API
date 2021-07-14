@@ -11,6 +11,11 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = [
-            "id", "team_id", "object_uuid", "title", "created", "activated",
-            "deactivated"
+            "id",
+            "team_id",
+            "object_uuid",
+            "title",
+            "created",
+            "activated",
+            "deactivated",
         ]

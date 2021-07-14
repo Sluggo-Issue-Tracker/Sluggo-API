@@ -11,23 +11,24 @@ from ..methods import hash_team_id
 
 
 class Tag(HasUuid):
-    team_title_hash = models.CharField(max_length=256,
-                                       unique=True,
-                                       editable=False)
-    title = models.CharField(max_length=100,
-                             unique=False,
-                             validators=[
-                                 RegexValidator(re.compile(r'^[\w-]+$'),
-                                                _('Tag names must be word characters and dashes'),
-                                                'invalid'), ])
+    team_title_hash = models.CharField(max_length=256, unique=True, editable=False)
+    title = models.CharField(
+        max_length=100,
+        unique=False,
+        validators=[
+            RegexValidator(
+                re.compile(r"^[\w-]+$"),
+                _("Tag names must be word characters and dashes"),
+                "invalid",
+            )
+        ],
+    )
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    team = models.ForeignKey(Team,
-                             on_delete=models.CASCADE,
-                             editable=True,
-                             null=False,
-                             related_name="tag")
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, editable=True, null=False, related_name="tag"
+    )
 
     class Meta:
         ordering = ["id"]

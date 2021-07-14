@@ -1,10 +1,6 @@
-from ..models import (
-    Event
-)
+from ..models import Event
 
-from ..serializers import (
-    EventSerializer
-)
+from ..serializers import EventSerializer
 
 from .team_base import *
 
@@ -19,9 +15,11 @@ class EventViewSet(TeamRelatedViewSet, mixins.DestroyModelMixin):
     ]
 
     @extend_schema(**TeamRelatedViewSet.schema_dict)
-    @action(detail=True, methods=["GET"], permission_classes=[
-        permissions.IsAuthenticated, IsMemberUser
-    ])
+    @action(
+        detail=True,
+        methods=["GET"],
+        permission_classes=[permissions.IsAuthenticated, IsMemberUser],
+    )
     @team_queried_view
     def list_team(self, request, pk=None):
         return super().list_team(request, pk)

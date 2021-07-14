@@ -10,6 +10,7 @@ repos:
     -   id: check-added-large-files
     -   id: no-commit-to-branch
         args: [--branch, develop, --branch, master]
+    -   id: check-ast
 -   repo: https://github.com/psf/black
     rev: 19.3b0
     hooks:

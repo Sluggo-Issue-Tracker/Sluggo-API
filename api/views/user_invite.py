@@ -8,14 +8,13 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, DestroyModelMixin
 
 
-class UserInviteViewSet(GenericViewSet,
-                        ListModelMixin,
-                        UpdateModelMixin,
-                        DestroyModelMixin):
+class UserInviteViewSet(
+    GenericViewSet, ListModelMixin, UpdateModelMixin, DestroyModelMixin
+):
 
     permission_classes = [IsAuthenticated]
     serializer_class = UserInviteSerializer
-    queryset = TeamInvite.objects.all().prefetch_related('user')
+    queryset = TeamInvite.objects.all().prefetch_related("user")
     pagination_class = None
 
     def get_queryset(self):

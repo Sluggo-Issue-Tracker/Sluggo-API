@@ -4,12 +4,8 @@ from .team_related_base import *
 from ..serializers import *
 
 
-class TagViewSet(
-    TeamRelatedModelViewSet
-):
-    queryset = Tag.objects.all().select_related(
-        'team'
-    )
+class TagViewSet(TeamRelatedModelViewSet):
+    queryset = Tag.objects.all().select_related("team")
     serializer_class = TagSerializer
 
     def create(self, request, *args, **kwargs):
@@ -21,6 +17,8 @@ class TagViewSet(
         team_instance = self.get_team()
 
         if Tag.objects.filter(team=team_instance, title=title):
-            raise serializers.ValidationError({"team": "a tag with this title already belongs to this team"})
+            raise serializers.ValidationError(
+                {"team": "a tag with this title already belongs to this team"}
+            )
 
         return super().create(request, args, kwargs)

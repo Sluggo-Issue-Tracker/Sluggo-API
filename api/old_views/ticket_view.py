@@ -5,21 +5,14 @@ from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.request import Request
 
-from ..models import (
-    Ticket,
-    TicketComment,
-    TicketStatus,
-    Tag,
-    TicketTag,
-    TicketNode
-)
+from ..models import Ticket, TicketComment, TicketStatus, Tag, TicketTag, TicketNode
 
 from ..serializers import (
     TicketSerializer,
     TicketCommentSerializer,
     TicketStatusSerializer,
     TagSerializer,
-    TicketNodeSerializer
+    TicketNodeSerializer,
 )
 
 from .team_base import *
@@ -27,29 +20,36 @@ from .team_base import *
 User = get_user_model()
 
 
-class TicketViewSet(
-    TeamRelatedViewSet
-):
+class TicketViewSet(TeamRelatedViewSet):
     """
     Actions that provide CRUD coverage for tickets
     """
+
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
-    search_fields = ['^team__name', '^team__description', '^title', '^description', '^status__title',
-                     '^assigned_user__first_name']
+    search_fields = [
+        "^team__name",
+        "^team__description",
+        "^title",
+        "^description",
+        "^status__title",
+        "^assigned_user__first_name",
+    ]
     permission_classes = [
         permissions.IsAuthenticated,
         IsOwnerOrReadOnly | IsAdminMemberOrReadOnly,
         IsMemberUser,
     ]
-    ordering_fields = ['created', 'activated']
-    filterset_fields = ['owner__username']
+    ordering_fields = ["created", "activated"]
+    filterset_fields = ["owner__username"]
 
     # require that the user is a member of the team to create a ticket
     # manually defining this since we want to offer this endpoint for any authenticated user
     @action(
-        methods=["POST"], detail=False, permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+        methods=["POST"],
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated, IsMemberUser],
     )
     def create_record(self, request, *args, **kwargs):
         """
@@ -65,9 +65,7 @@ class TicketViewSet(
 
             # once we have a team record, make sure we are allowed to access it
             self.check_object_permissions(request, team)
-            ticket = serializer.save(
-                owner=self.request.user
-            )
+            ticket = serializer.save(owner=self.request.user)
 
             # the above serializer has already confirmed that each tag_id is valid
             if tag_list:
@@ -104,14 +102,17 @@ class TicketViewSet(
         response = serializer.data
         root = TicketNode.objects.get(ticket=instance)
         if root:
-            response["children"] = [TicketNodeSerializer(child_instance).data for child_instance in root.get_children()]
+            response["children"] = [
+                TicketNodeSerializer(child_instance).data
+                for child_instance in root.get_children()
+            ]
 
         return Response(response)
 
     @action(
         detail=True,
-        methods=['patch'],
-        permission_classes=[permissions.IsAuthenticated, IsMemberUser]
+        methods=["patch"],
+        permission_classes=[permissions.IsAuthenticated, IsMemberUser],
     )
     def update_status(self, request, pk=None):
         """
@@ -121,19 +122,15 @@ class TicketViewSet(
         """
         self.check_object_permissions(request, self.get_object())
 
-        status_id = request.data('status_id')
+        status_id = request.data("status_id")
         if status_id:
             ticket = get_object_or_404(Ticket, pk=pk)
             ticket.status = get_object_or_404(TicketStatus, pk=status_id)
-            ticket.save(update_fields=['status'])
+            ticket.save(update_fields=["status"])
 
         return Response({"msg": "okay"}, status=status.HTTP_200_OK)
 
-    @action(
-        detail=True,
-        methods=["delete"],
-        permission_classes=permission_classes,
-    )
+    @action(detail=True, methods=["delete"], permission_classes=permission_classes)
     def delete(self, request, pk=None):
         """
         Deactivates, but do not delete the ticket associated with {id}\n
@@ -164,22 +161,25 @@ class TicketViewSet(
                 if ticket_node.is_root():
                     ticket_node.move(target=parent_node, pos="last-child")
                 else:
-                    return Response({"msg": "ticket already part of a graph"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"msg": "ticket already part of a graph"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             else:
                 parent_node.add_child(ticket=child)
 
             return Response({"msg": "okay"}, status=status.HTTP_200_OK)
         except (
-                t_except.InvalidMoveToDescendant, t_except.InvalidPosition,
-                t_except.NodeAlreadySaved, t_except.PathOverflow
+            t_except.InvalidMoveToDescendant,
+            t_except.InvalidPosition,
+            t_except.NodeAlreadySaved,
+            t_except.PathOverflow,
         ):
-            return Response({"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"msg": "invalid tree operation"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-    @action(
-        detail=True,
-        methods=['patch'],
-        permission_classes=permission_classes
-    )
+    @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def add_as_subticket(self, request, pk=None):
         """
         add a ticket as a subticket of the ticket associated with pk
@@ -198,11 +198,7 @@ class TicketViewSet(
         except serializers.ValidationError as e:
             return Response({"msg": e.detail}, e.status_code)
 
-    @action(
-        detail=True,
-        methods=['patch'],
-        permission_classes=permission_classes
-    )
+    @action(detail=True, methods=["patch"], permission_classes=permission_classes)
     def add_subticket(self, request, pk=None):
         """
         add a subticket to the ticket associated with pk
@@ -217,14 +213,10 @@ class TicketViewSet(
             return self._add_subticket(parent, child)
 
         except serializers.ValidationError as e:
-            return Response({'msg': e.detail}, e.status_code)
+            return Response({"msg": e.detail}, e.status_code)
 
     @extend_schema(**TeamRelatedViewSet.schema_dict)
-    @action(
-        detail=False,
-        methods=['GET'],
-        permission_classes=permission_classes,
-    )
+    @action(detail=False, methods=["GET"], permission_classes=permission_classes)
     @team_queried_view
     def retrieve_user_tickets(self, request, pk=None):
         """
@@ -260,7 +252,7 @@ class TicketCommentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def recent_comments(self, request, team_id=None):
-        """ This call returns the first page of comments associated with the given team_id """
+        """This call returns the first page of comments associated with the given team_id"""
         pass
 
 
@@ -269,18 +261,12 @@ all old_views inherit from TeamRelatedViewSet following
 """
 
 
-class TicketStatusViewSet(
-    TeamRelatedViewSet,
-    mixins.DestroyModelMixin
-):
+class TicketStatusViewSet(TeamRelatedViewSet, mixins.DestroyModelMixin):
     queryset = TicketStatus.objects.all()
     serializer_class = TicketStatusSerializer
-    filterset_fields = ['title']
+    filterset_fields = ["title"]
 
 
-class TagViewSet(
-    TeamRelatedViewSet,
-    mixins.DestroyModelMixin
-):
+class TagViewSet(TeamRelatedViewSet, mixins.DestroyModelMixin):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer

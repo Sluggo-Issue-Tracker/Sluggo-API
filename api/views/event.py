@@ -6,18 +6,12 @@ from ..permissions import *
 from ..docs import *
 
 
-class EventViewSet(TeamRelatedListMixin,
-                   TeamRelatedUpdateMixin,
-                   TeamRelatedRetrieveMixin,
-                   TeamRelatedDestroyMixin):
-    permission_classes = [
-        IsAuthenticated,
-        IsAdminMemberOrReadOnly,
-        IsMemberUser,
-    ]
-    queryset = Event.objects.all().select_related(
-        'team'
-    ).prefetch_related(
-        'user'
-    )
+class EventViewSet(
+    TeamRelatedListMixin,
+    TeamRelatedUpdateMixin,
+    TeamRelatedRetrieveMixin,
+    TeamRelatedDestroyMixin,
+):
+    permission_classes = [IsAuthenticated, IsAdminMemberOrReadOnly, IsMemberUser]
+    queryset = Event.objects.all().select_related("team").prefetch_related("user")
     serializer_class = EventSerializer

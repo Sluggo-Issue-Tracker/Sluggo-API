@@ -10,8 +10,8 @@ class PrimaryKeySerializedField(serializers.PrimaryKeyRelatedField):
     """
 
     def __init__(self, **kwargs):
-        self.serializer = kwargs.pop('serializer')
-        self.many = kwargs.get('many')
+        self.serializer = kwargs.pop("serializer")
+        self.many = kwargs.get("many")
         super().__init__(**kwargs)
 
     def to_representation(self, value):

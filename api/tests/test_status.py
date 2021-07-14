@@ -6,16 +6,14 @@ class StatusTestCase(TeamRelatedCore):
     model = TicketStatus
     serializer = TicketStatusSerializer
 
-    data_dict = {
-        "title": "in progress",
-        "color": "#F5F225FF"
-    }
+    data_dict = {"title": "in progress", "color": "#F5F225FF"}
 
     def setUp(self):
         super().setUp()
         response = self.client.post(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
-            data=self.data_dict, format="json"
+            data=self.data_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.pk = response.data.get("id")
@@ -46,10 +44,11 @@ class StatusTestCase(TeamRelatedCore):
         client = APIClient()
         client.force_authenticate(user=self.user)
         response = client.put(
-            reverse(self.prefix + "-detail", kwargs={
-                "team_pk": self.team.id,
-                "pk": self.pk
-            }), data=updated_dict, format="json"
+            reverse(
+                self.prefix + "-detail", kwargs={"team_pk": self.team.id, "pk": self.pk}
+            ),
+            data=updated_dict,
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         print(response.data)

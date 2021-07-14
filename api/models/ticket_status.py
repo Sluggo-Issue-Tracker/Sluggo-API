@@ -13,19 +13,19 @@ from .fields.color_field import ColorField
 
 
 class TicketStatus(HasUuid):
-    title = models.CharField(max_length=100,
-                             unique=False)
+    title = models.CharField(max_length=100, unique=False)
 
-    color = ColorField(unique=False,
-                       blank=True, default="#B9B9BDFF")
+    color = ColorField(unique=False, blank=True, default="#B9B9BDFF")
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(null=True, blank=True)
     deactivated = models.DateTimeField(null=True, blank=True)
-    team = models.ForeignKey(Team,
-                             on_delete=models.CASCADE,
-                             editable=True,
-                             null=False,
-                             related_name="ticket_status")
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        editable=True,
+        null=False,
+        related_name="ticket_status",
+    )
 
     class Meta:
         ordering = ["id"]
@@ -41,8 +41,9 @@ class TicketStatus(HasUuid):
 
         title_id = "{}".format(title)
         team_id = "{}".format(team.id)
-        self.team_title_hash = md5(title_id.encode()).hexdigest() + md5(
-            team_id.encode()).hexdigest()
+        self.team_title_hash = (
+            md5(title_id.encode()).hexdigest() + md5(team_id.encode()).hexdigest()
+        )
 
     def save(self, *args, **kwargs):
         # if self._state.adding:
@@ -54,9 +55,8 @@ class TicketStatus(HasUuid):
 @receiver(post_save, sender=Team)
 def create_team_defaults(sender, instance: Team, created: bool, **kwargs):
     if created:
+        TicketStatus.objects.create(title="To do", color="#3273DCFF", team=instance)
         TicketStatus.objects.create(
-            title="To do", color="#3273DCFF", team=instance)
-        TicketStatus.objects.create(
-            title="In Progress", color="#FFDD57FF", team=instance)
-        TicketStatus.objects.create(
-            title="Done", color="#48C774FF", team=instance)
+            title="In Progress", color="#FFDD57FF", team=instance
+        )
+        TicketStatus.objects.create(title="Done", color="#48C774FF", team=instance)

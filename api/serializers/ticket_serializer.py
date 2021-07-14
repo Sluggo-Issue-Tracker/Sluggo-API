@@ -21,29 +21,33 @@ class TicketSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField()
 
-    tag_list = PrimaryKeySerializedField(many=True,
-                                         required=False,
-                                         queryset=Tag.objects.all(),
-                                         serializer=TagSerializer)
+    tag_list = PrimaryKeySerializedField(
+        many=True, required=False, queryset=Tag.objects.all(), serializer=TagSerializer
+    )
 
-    parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    parent_id = serializers.IntegerField(
+        write_only=True, required=False, allow_null=True
+    )
     object_uuid = serializers.ReadOnlyField()
 
     ticket_number = serializers.ReadOnlyField()
     comments = TicketCommentSerializer(many=True, required=False)
 
-    assigned_user = PrimaryKeySerializedField(many=False,
-                                              required=False,
-                                              allow_null=True,
-                                              queryset=Member.objects.all(),
-                                              serializer=MemberSerializer)
+    assigned_user = PrimaryKeySerializedField(
+        many=False,
+        required=False,
+        allow_null=True,
+        queryset=Member.objects.all(),
+        serializer=MemberSerializer,
+    )
 
     status = PrimaryKeySerializedField(
         many=False,
         required=False,
         allow_null=True,
         queryset=TicketStatus.objects.all(),
-        serializer=TicketStatusSerializer)
+        serializer=TicketStatusSerializer,
+    )
 
     created = serializers.DateTimeField(read_only=True)
     activated = serializers.DateTimeField(read_only=True)
@@ -70,7 +74,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
     # this creates a record from the json, modifying the keys
     def create(self, validated_data):
-        tag_list = validated_data.pop('tag_list', None)
+        tag_list = validated_data.pop("tag_list", None)
 
         ticket = Ticket.objects.create(**validated_data)
 
@@ -80,7 +84,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
     # update the instance with validated_data
     def update(self, instance: Ticket, validated_data):
-        tag_list = validated_data.pop('tag_list', None)
+        tag_list = validated_data.pop("tag_list", None)
 
         TicketTag.delete_difference(tag_list, instance)
 
