@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DJANGO_SECRET_KEY: "secretkey"
+      JWT_SECRET: "secretcatkey"
 
     steps:
     - uses: actions/checkout@v2
