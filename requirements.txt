@@ -12,3 +12,4 @@ drf-nested-routers
 python-dotenv
 pre-commit
 black
+djangorestframework-simplejwt
