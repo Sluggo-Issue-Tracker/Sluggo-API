@@ -46,4 +46,4 @@ class TeamTestCase(TeamRelatedCore):
         ).data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(response.data, expected)

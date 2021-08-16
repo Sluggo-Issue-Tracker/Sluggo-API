@@ -1,5 +1,3 @@
-from django.db.models import Q
-from rest_framework.decorators import action
 from .team_related_base import *
 from ..serializers import *
 from ..permissions import *
@@ -18,11 +16,6 @@ class TeamViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(
             self.get_queryset().filter(member__owner=request.user)
         )
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
