@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from ..serializers import TeamInviteSerializer
+from api.serializers import TeamInviteSerializer
 from .team_related_base import *
 
 

@@ -1,6 +1,6 @@
-from ..serializers import *
-from ..permissions import IsAuthenticated
-from ..models import TeamInvite, Member, Team
+from api.serializers import *
+from api.permissions import IsAuthenticated
+from api.models import TeamInvite, Member, Team
 from rest_framework import serializers
 from rest_framework.response import Response
 from django.db import transaction

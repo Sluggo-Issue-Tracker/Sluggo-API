@@ -1,9 +1,9 @@
 from django.db.models import Q
 from rest_framework.decorators import action
 from .team_related_base import *
-from ..serializers import *
-from ..permissions import *
-from ..docs import *
+from api.serializers import *
+from api.permissions import *
+from api.docs import *
 
 
 class MemberViewSet(

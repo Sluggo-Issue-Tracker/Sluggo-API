@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from django.shortcuts import get_object_or_404
 
-from ..models import *
-from ..docs import *
-from ..permissions import *
+from api.models import *
+from api.docs import *
+from api.permissions import *
 
 """
 subclassing all the entire model viewset path in order to generate
