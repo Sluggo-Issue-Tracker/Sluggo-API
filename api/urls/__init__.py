@@ -5,12 +5,8 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from .team_urls import (
-    buildTeamRouterUrls
-)
-from .user_urls import (
-    buildUserRouterUrls
-)
+from .team_urls import buildTeamRouterUrls
+from .user_urls import buildUserRouterUrls
 from api import views
 
 urlpatterns = [
