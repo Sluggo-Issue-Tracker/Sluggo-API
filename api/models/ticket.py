@@ -26,6 +26,7 @@ class Ticket(HasUuid):
         null=True,
     )
 
+    members_pins = models.ManyToManyField("Member", through="PinnedTicket")
     tag_list = models.ManyToManyField("Tag", through="TicketTag")
     due_date = models.DateTimeField(null=True, blank=True)
 
