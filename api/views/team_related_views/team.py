@@ -7,6 +7,7 @@ class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
     permission_classes = [IsAdminMemberOrReadOnly, IsMemberUser, IsAuthenticated]
+    pagination_class = None
 
     search_fields = ["^name"]
     ordering_fields = ["created", "activated"]

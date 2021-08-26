@@ -51,7 +51,6 @@ class StatusTestCase(TeamRelatedCore):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        print(response.data)
 
     def testDelete(self):
         self.delete()
