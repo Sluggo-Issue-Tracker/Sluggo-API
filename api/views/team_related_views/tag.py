@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .team_related_base import *
-from ..serializers import *
+from api.serializers import *
 
 
 class TagViewSet(TeamRelatedModelViewSet):

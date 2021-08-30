@@ -1,7 +1,7 @@
 from .team_related_base import *
 from rest_framework import serializers
-from ..serializers import *
-from ..docs import *
+from api.serializers import *
+from api.docs import *
 
 
 class StatusViewSet(TeamRelatedModelViewSet):

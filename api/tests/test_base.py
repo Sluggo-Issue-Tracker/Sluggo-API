@@ -7,7 +7,16 @@ from django.conf import settings
 import random
 import string
 
-from api.models import Ticket, Team, Member, Tag, TicketStatus, TicketTag, TicketNode
+from api.models import (
+    Ticket,
+    Team,
+    Member,
+    Tag,
+    TicketStatus,
+    TicketTag,
+    TicketNode,
+    PinnedTicket,
+)
 from ..serializers import (
     UserSerializer,
     TicketStatusSerializer,
@@ -28,6 +37,10 @@ Base class for all team related tests, querying CRUD operations
 """
 
 
+def randomString(length: int) -> str:
+    return "".join(random.choice(string.ascii_letters) for _ in range(length))
+
+
 # make random count random users, while ensuring we don't have any duplicates
 def generateArbitraryUsers(count: int) -> list:
     emails = set()
@@ -36,22 +49,22 @@ def generateArbitraryUsers(count: int) -> list:
 
     for _ in range(count):
         while True:
-            user = "".join(random.choice(string.ascii_letters) for _ in range(10))
-            hostname = "".join(random.choice(string.ascii_letters) for _ in range(10))
-            tld = "".join(random.choice(string.ascii_letters) for _ in range(3))
+            user = randomString(10)
+            hostname = randomString(10)
+            tld = randomString(3)
             email = f"{user}@{hostname}.{tld}"
             if email not in emails:
                 emails.add(email)
                 break
 
         while True:
-            username = "".join(random.choice(string.ascii_letters) for _ in range(10))
+            username = randomString(10)
             if username not in usernames:
                 usernames.add(username)
                 break
 
-        first_name = "".join(random.choice(string.ascii_letters) for _ in range(10))
-        last_name = "".join(random.choice(string.ascii_letters) for _ in range(10))
+        first_name = randomString(10)
+        last_name = randomString(10)
 
         users.append(
             User.objects.create(
@@ -74,7 +87,7 @@ def generateArbitraryTeams(count: int) -> list:
 
     for _ in range(count):
         while True:
-            team_name = "".join(random.choice(string.ascii_letters) for _ in range(10))
+            team_name = randomString(10)
             if team_name not in team_names:
                 team_names.add(team_name)
                 break
@@ -84,6 +97,26 @@ def generateArbitraryTeams(count: int) -> list:
         teams.append(team)
 
     return teams
+
+
+def generateArbitraryTickets(
+    teams: list, count_per_team: int, assignee=None, pinned=False
+) -> list:
+    tickets = []
+
+    for team in teams:
+        member = Member.objects.create(team=team, owner=assignee) if assignee else None
+        for _ in range(count_per_team):
+            ticket_title = randomString(10)
+            ticket = Ticket.objects.create(
+                team=team, title=ticket_title, assigned_user=member
+            )
+            tickets.append(ticket)
+
+            if member and pinned:
+                PinnedTicket.objects.create(ticket=ticket, member=member, team=team)
+
+    return tickets
 
 
 class TeamRelatedCore(TestCase):
