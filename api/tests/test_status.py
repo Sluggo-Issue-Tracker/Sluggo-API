@@ -21,8 +21,9 @@ class StatusTestCase(TeamRelatedCore):
     def testCreate(self):
         self.create(self.data_dict)
 
-    def testList(self):
-        self.list()
+    def testList(self):     
+        response = self.client.get(reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}), format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testDetail(self):
         self.detail()

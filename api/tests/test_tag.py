@@ -23,7 +23,9 @@ class TagTestCase(TeamRelatedCore):
         self.create(self.data_dict)
 
     def testList(self):
-        self.list()
+        response = self.client.get(reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}), format="json")
+        reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def testDetail(self):
         self.detail()

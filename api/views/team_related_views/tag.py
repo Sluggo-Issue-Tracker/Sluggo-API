@@ -7,6 +7,7 @@ from api.serializers import *
 class TagViewSet(TeamRelatedModelViewSet):
     queryset = Tag.objects.all().select_related("team")
     serializer_class = TagSerializer
+    pagination_class = None
 
     def create(self, request, *args, **kwargs):
 
