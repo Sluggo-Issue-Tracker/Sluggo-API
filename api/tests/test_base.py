@@ -152,17 +152,22 @@ class TeamRelatedCore(TestCase):
         count = Team.objects.count()
         self.assertNotEqual(0, count)
 
-    def list(self, expected=None):
-        if not expected:
+    def list(self, expected=None, is_paginated=True):
+        if not expected and is_paginated:
             qs = self.model.objects.get_queryset()[:PAGE_SIZE]
             expected = self.serializer(qs, many=True).data
-
+        elif not expected:
+            qs = self.model.objects.get_queryset()
+            expected = self.serializer(qs, many=True).data
         response = self.client.get(
             reverse(self.prefix + "-list", kwargs={"team_pk": self.team.id}),
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], expected)
+        if not is_paginated:
+            self.assertEqual(response.data, expected)
+        else:
+            self.assertEqual(response.data["results"], expected)
 
     def detail(self, expected=None):
         if not expected:
