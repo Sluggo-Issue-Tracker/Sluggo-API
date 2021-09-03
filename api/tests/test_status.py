@@ -21,8 +21,8 @@ class StatusTestCase(TeamRelatedCore):
     def testCreate(self):
         self.create(self.data_dict)
 
-    def testList(self):
-        self.list()
+    def testList(self):     
+        self.list(is_paginated=False)
 
     def testDetail(self):
         self.detail()

@@ -46,9 +46,6 @@ class TicketStatus(HasUuid):
         )
 
     def save(self, *args, **kwargs):
-        # if self._state.adding:
-        #     self._pre_create()
-
         super(TicketStatus, self).save(*args, **kwargs)
 
 

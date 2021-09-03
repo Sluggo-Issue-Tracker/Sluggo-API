@@ -23,7 +23,7 @@ class TagTestCase(TeamRelatedCore):
         self.create(self.data_dict)
 
     def testList(self):
-        self.list()
+        self.list(is_paginated=False)
 
     def testDetail(self):
         self.detail()
