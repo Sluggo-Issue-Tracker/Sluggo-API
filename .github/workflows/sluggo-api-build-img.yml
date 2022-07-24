@@ -1,0 +1,17 @@
+name: Sluggo API Image Artifacts
+
+on:
+  push:
+    branches: 
+      - "**"
+      
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag sluggo-api:$(date +%s) --tag ${{ github.sha }}
