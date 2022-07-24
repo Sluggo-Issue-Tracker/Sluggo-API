@@ -5,7 +5,8 @@ name: Sluggo Unit tests
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - "**"  # run unit tests on all branches
   pull_request:
     branches: [ develop ]
 
