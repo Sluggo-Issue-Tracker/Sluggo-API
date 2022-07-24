@@ -29,9 +29,9 @@ and Linux) run:
 3. Install the dependencies for Sluggo to run using the command 
 `pip install -r ./requirements.txt`
 
-4. Set the environment variable `SLUGGO_DJANGO_KEY` to some random, 
+4. Set the environment variable `DJANGO_SECRET_KEY` to some random, 
 unique value (only important for production):
-`export SLUGGO_DJANGO_KEY="not important for non producton"`
+`export DJANGO_SECRET_KEY="not important for non producton"`
 
 5. (optional) Install the pre-commit hook:
 `pre-commit install`
