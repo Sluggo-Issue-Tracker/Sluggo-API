@@ -1,4 +1,6 @@
 # SluggoAPI
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Sluggo is a small and flexible issue tracker for small teams, intended 
 to provide an effective free and (eventually) open source alternative to
 tools like JIRA and GitHub Issues, while providing a modern user 
@@ -129,5 +131,4 @@ For internal contributors to Slugbotics, please read CONTRIBUTING.md
 for guidance on contribution standards.
 
 ## License
-We are currently still determining an acceptable license for the
-project. For now, the project is All Rights Reserved for Slugbotics.
+This project is licensed under the Apache 2.0 license.
