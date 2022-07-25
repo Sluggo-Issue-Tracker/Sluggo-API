@@ -1,6 +1,6 @@
 # Contribution Standards
-Note: Currently, we do not accept contributions from third parties
-outside of Slugbotics, unless specifically stated.
+Note: Currently, we do not accept contributions from third parties,
+unless specifically stated.
 
 This list of contribution standards will grow over time; please keep
 up to date with this list.

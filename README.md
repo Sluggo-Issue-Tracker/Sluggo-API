@@ -127,7 +127,7 @@ can accept more developers. We intend to determine the best way to
 approach accepting third party contributions, and will do so when
 we feel the project is in a good state to do so.
 
-For internal contributors to Slugbotics, please read CONTRIBUTING.md 
+For internal contributors, please read CONTRIBUTING.md 
 for guidance on contribution standards.
 
 ## License
