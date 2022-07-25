@@ -1,4 +1,4 @@
-# SluggoAPI
+# Sluggo-API
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Sluggo is a small and flexible issue tracker for small teams, intended 
@@ -52,7 +52,7 @@ This must be ran the first time. Do the following:
 
 2. Run the following command whenever changes to the database models 
 are made. This is likely necessary whenever new versions of the 
-repository are pulled, or your version of SluggoAPI is otherwise 
+repository are pulled, or your version of Sluggo-API is otherwise 
 upgraded:
 `python manage.py makemigrations; python manage.py migrate`
 
@@ -99,7 +99,7 @@ This assumes that a slack app is already created. Do the following:
 
 2. Run the following command whenever changes to the database models 
 are made. This is likely necessary whenever new versions of the 
-repository are pulled, or your version of SluggoAPI is otherwise 
+repository are pulled, or your version of Sluggo-API is otherwise 
 upgraded:
 `python manage.py migrate`
 
@@ -121,7 +121,7 @@ browsable overview of the endpoints, replacing `$HOST` with the IP and
 port on which you are running the API (for example, 127.0.0.1:8000).
 
 ## Contributing
-Currently, we are not accepting third-party contributions to SluggoAPI.
+Currently, we are not accepting third-party contributions to Sluggo-API.
 We are focusing our efforts on developing a solid core application which
 can accept more developers. We intend to determine the best way to
 approach accepting third party contributions, and will do so when
