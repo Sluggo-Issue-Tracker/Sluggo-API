@@ -1,0 +1,81 @@
+name: Sluggo API CI
+
+on:
+  push:
+    branches: [ "develop" ]
+      
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SECRET_KEY: "secretkey"
+      JWT_SECRET: "secretcatkey"
+    steps:
+    - name: Checkout Sluggo-API
+      uses: actions/checkout@v3
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test with Django
+      run: |
+        python manage.py test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Sluggo-API
+      uses: actions/checkout@v3
+      with:
+        repository: Sluggo-Issue-Tracker/Sluggo-API
+        path: ./Sluggo-API
+        # using the current branch
+    - name: Checkout Sluggo-SPA
+      uses: actions/checkout@v3
+      with:
+        repository: Sluggo-Issue-Tracer/Sluggo-SPA
+        path: ./Sluggo-SPA
+        branch: develop # will need to change later, deployed env only develop
+    - name: Checkout Sluggo
+      uses: actions/checkout@v3
+      with:
+        repository: Sluggo-Issue-Tracker/Sluggo
+        path: ./Sluggo
+        branch: main
+    - name: Build the Img for API
+      run: >
+        docker build ./Sluggo-API --file ./Sluggo-API/Dockerfile
+        --tag sluggo-api:$(date +%s) --tag sluggo-api:develop
+    - name: Build the Img for SPA
+      run: >
+        docker build ./Sluggo-SPA --file ./Sluggo-SPA/Dockerfile
+        --tag sluggo-spa:$(date +%s) --tag sluggo-spa:develop
+    - name: Save both imgs to directory
+      run: |
+        mkdir ./imgs
+        docker save sluggo-api:develop | gzip ./imgs/sluggo-api.tar.gz
+        docker save sluggo-spa:develop | gzip ./imgs/sluggo-spa.tar.gz
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: 'placeholder'
+    - name: Adding Known Hosts
+      run: ssh-keyscan -H ${{ secrts.SSH_HOST }} >> ~/.ssh/known_hosts
+    - name: Upload images and Sluggo files with rsync
+      run: |
+        rsync -avz ./imgs ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/imgs
+        rsync -avz ./Sluggo ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/Sluggo
+    - name: Run the software!
+      uses: appleboy/ssh-action@v0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        script: |
+          docker load < ~/imgs/sluggo-api.tar.gz
+          docker load < ~/imgs/sluggo-spa.tar.gz
+          cd ~/Sluggo
+          docker-compose up -d
