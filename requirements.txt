@@ -1,7 +1,7 @@
 Django==4.0.6
 djangorestframework==3.13.1
 pylint==2.14.5
-dj-rest-auth==2.2.5
+dj-rest-auth[with_social]==2.2.5
 django-filter==22.1
 django-treebeard==4.5.1
 coreapi==2.3.3
