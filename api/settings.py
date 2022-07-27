@@ -11,7 +11,14 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from constants import DJANGO_SECRET_KEY, JWT_SECRET, DEBUG, ALLOWED_HOST
+from constants import (
+    DJANGO_SECRET_KEY,
+    JWT_SECRET,
+    DEBUG,
+    ALLOWED_HOST,
+    STATIC_ROOT,
+    BASE_URL,
+)
 from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -25,6 +32,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = DJANGO_SECRET_KEY
 
+STATIC_ROOT = STATIC_ROOT if STATIC_ROOT else BASE_DIR + '/static'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = [
@@ -32,7 +41,6 @@ ALLOWED_HOSTS = [
         "localhost",
         ALLOWED_HOST,
 ]
-
 
 # Application definition
 
