@@ -11,5 +11,4 @@ drf-spectacular==0.22.1
 drf-nested-routers==0.93.4
 python-dotenv==0.20.0
 pre-commit==2.20.0
-black==22.6.0
 djangorestframework-simplejwt==5.2.0

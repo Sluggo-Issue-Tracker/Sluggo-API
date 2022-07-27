@@ -2,8 +2,6 @@ from django.contrib import admin
 from .models import *
 from api.settings import BASE_URL
 
-print(BASE_URL)
-
 # Custom Admin class that will allow you to mark fields to be readonly on edits.
 class CustomAdmin(admin.ModelAdmin):
     readonly_edit = tuple()
@@ -14,7 +12,8 @@ class CustomAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
 
-sluggo_admin = admin.AdminSite(BASE_URL + 'admin/')
+sluggo_admin = admin.AdminSite(BASE_URL + "admin/")
+
 
 @admin.register(Event, site=sluggo_admin)
 class EventAdmin(CustomAdmin):

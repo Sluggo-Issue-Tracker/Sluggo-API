@@ -9,7 +9,6 @@ class StatusViewSet(TeamRelatedModelViewSet):
     serializer_class = TicketStatusSerializer
     pagination_class = None
 
-
     @extend_schema(**TEAM_LIST_SCHEME)
     def create(self, request, *args, **kwargs):
 
