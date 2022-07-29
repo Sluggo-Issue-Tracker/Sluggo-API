@@ -12,6 +12,6 @@ repos:
         args: [--branch, develop, --branch, master]
     -   id: check-ast
 -   repo: https://github.com/psf/black
-    rev: 19.3b0
+    rev: 22.6.0
     hooks:
     -   id: black

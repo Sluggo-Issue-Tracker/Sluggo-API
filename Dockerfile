@@ -10,5 +10,6 @@ WORKDIR /app
 COPY . /app/
 RUN pip install -r requirements.txt
 
-# run the serveir
-CMD python3 ./manage.py runserver 0.0.0.0:8000
+# run migrations
+ENTRYPOINT [ "sh", "./docker-entrypoint.sh" ]
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]

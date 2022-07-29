@@ -9,3 +9,4 @@ private
 sluggoAPI/**
 env/**
 venv/**
+static/**
