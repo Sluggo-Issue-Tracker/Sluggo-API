@@ -42,7 +42,7 @@ ALLOWED_HOSTS = [
     ALLOWED_HOST,
 ]
 
-CSRF_TRUSTED_ORIGINS = [ALLOWED_HOST]
+CSRF_TRUSTED_ORIGINS = ["https://" + ALLOWED_HOST]
 
 # Application definition
 
