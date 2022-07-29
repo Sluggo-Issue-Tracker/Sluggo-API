@@ -4,7 +4,6 @@
 # Licensed under the Apache 2.0 License, see LICENSE for details.
 
 import os
-from settings import BASE_DIR
 
 
 class DBConfigError(ValueError):
@@ -13,7 +12,7 @@ class DBConfigError(ValueError):
 
 # Get database configuration from the environment
 # Precondition: Environment variables must be loaded.
-def get_database_configuration() -> dict:
+def get_database_configuration(BASE_DIR: str) -> dict:
     # valid engines below - note MariaDB maps to mysql as per Django docs
     valid_engines = ["sqlite3", "postgresql", "mysql", "oracle"]
 

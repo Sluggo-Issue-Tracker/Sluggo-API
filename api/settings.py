@@ -20,7 +20,7 @@ from constants import (
     BASE_URL,
 )
 from datetime import timedelta
-from methods.get_database_configuration import get_database_configuration
+from get_database_configuration import get_database_configuration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -109,7 +109,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = get_database_configuration()
+DATABASES = get_database_configuration(BASE_DIR)
 
 
 # Password validation
