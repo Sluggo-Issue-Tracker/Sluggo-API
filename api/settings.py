@@ -42,6 +42,8 @@ ALLOWED_HOSTS = [
     ALLOWED_HOST,
 ]
 
+CSRF_TRUSTED_ORIGINS = [ALLOWED_HOST]
+
 # Application definition
 
 INSTALLED_APPS = [
