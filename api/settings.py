@@ -18,6 +18,7 @@ from constants import (
     ALLOWED_HOST,
     STATIC_ROOT,
     BASE_URL,
+    VUE_ROOT,
 )
 from datetime import timedelta
 
@@ -43,6 +44,8 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = ["https://" + ALLOWED_HOST]
+
+LOGIN_REDIRECT_URL = VUE_ROOT
 
 # Application definition
 
@@ -133,6 +136,7 @@ AUTH_USER_MODEL = "auth.User"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

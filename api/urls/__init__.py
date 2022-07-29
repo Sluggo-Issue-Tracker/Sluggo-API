@@ -1,4 +1,5 @@
 from django.urls import include, path
+from allauth import urls as auth_urls
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -30,4 +31,5 @@ urlpatterns = [
     path(BASE_URL + "auth/slack/", views.SlackLogin.as_view(), name="slack_login"),
     path(BASE_URL + "auth/accounts/", include("allauth.urls")),
     path(BASE_URL + "admin/", sluggo_admin.urls),
+    path(BASE_URL + "accounts/", include(auth_urls)),
 ]
