@@ -16,6 +16,7 @@ def get_database_configuration(BASE_DIR: str) -> dict:
     # valid engines below - note MariaDB maps to mysql as per Django docs
     valid_engines = ["sqlite3", "postgresql", "mysql", "oracle"]
 
+    # Get engine, defaulting to sqlite3
     engine = os.environ.get("SLUGGO_DB_ENGINE")
     if engine is None:
         engine = "sqlite3"  # default to sqlite
@@ -26,7 +27,10 @@ def get_database_configuration(BASE_DIR: str) -> dict:
     # exist)
     db_dict = {"ENGINE": f"django.db.backends.{engine}"}
 
-    # Configure NAME (behavior will differ based on engine)
+    # Configure NAME, defaulting for sqlite3 if not provided.
+    DB_NAME = os.environ.get("SLUGGO_DB_NAME")
+    if DB_NAME is None and engine == "sqlite3":
+        DB_NAME = os.path.join(BASE_DIR, "db.sqlite3")
 
     # Get potential fields
     DB_USER = os.environ.get("SLUGGO_DB_USER")
