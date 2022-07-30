@@ -45,7 +45,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = ["https://" + ALLOWED_HOST]
 
-LOGIN_REDIRECT_URL = VUE_ROOT
+LOGIN_REDIRECT_URL = LOGOUT_REDIRECT_URL = VUE_ROOT
 
 # Application definition
 
@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "dj_rest_auth.registration",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.slack",
     "django_filters",
     "treebeard",
     "drf_spectacular",
