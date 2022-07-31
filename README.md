@@ -41,6 +41,49 @@ which your Vue app is hosted (e.g. `http://localhost:8080`)
 6. (optional) Install the pre-commit hook:
 `pre-commit install`
 
+## Database Setup
+Out of the box, Sluggo-API will use a SQLite backend, which may not be
+suitable for larger instances. You may also choose to move the SQLite
+database to another file. Here are instructions on how to modify the
+database config:
+
+### Engines
+To set an engine, set the `SLUGGO_DB_ENGINE` environment variable.
+
+Valid engines are
+* `sqlite3` - SQLite backend (default)
+* `postgresql` - Postgres backend
+* `mysql` - MySQL and MariaDB backend
+* `oracle` - Oracle backend
+
+There may be some issues with using different database backends. We
+are still determining which databases to primarily support.
+
+### Other Options
+* `SLUGGO_DB_NAME` - Name of the database on a remote database, or the
+path to the SQLite file for the SQLite backend.
+* `SLUGGO_DB_HOST` - Remote DB only. Used for specifying the host
+address of the remote database.
+* `SLUGGO_DB_PORT` - Remote DB only. Used for specifying the port number of
+the remote database.
+* `SLUGGO_DB_USER` - Remote DB only. Used for specifying the user
+to login with on the remote database.
+* `SLUGGO_DB_PASS` - Remote DB only. Used for specifying the password for the
+user login on the remote database.
+
+### Example Postgres Configuration
+An example Postgres configuration is listed below:
+
+```
+SLUGGO_DB_ENGINE=postgresql
+SLUGGO_DB_NAME=sluggo
+SLUGGO_DB_HOST=127.0.0.1
+SLUGGO_DB_PORT=5432
+SLUGGO_DB_USER=sluggo
+SLUGGO_DB_PASS=1234
+```
+
+
 ## Initialization
 
 This must be ran the first time. Do the following:
