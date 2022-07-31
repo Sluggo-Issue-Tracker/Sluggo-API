@@ -51,7 +51,7 @@ def get_database_configuration(BASE_DIR: str) -> dict:
     if DB_USER is not None:
         db_dict["USER"] = DB_USER
     if DB_PASS is not None:
-        db_dict["PASS"] = DB_PASS
+        db_dict["PASSWORD"] = DB_PASS
     if DB_HOST is not None:
         db_dict["HOST"] = DB_HOST
     if DB_PORT is not None:
