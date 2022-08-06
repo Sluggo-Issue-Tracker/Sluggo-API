@@ -4,6 +4,7 @@ from .ticket_comment_serializer import TicketCommentSerializer
 from .tag_serializer import TagSerializer
 from .member_serializer import MemberSerializer
 from .ticket_status_serializer import TicketStatusSerializer
+from .team_serializer import TeamSerializer
 from ..models import Ticket, Tag, Member, TicketStatus, TicketTag
 
 
@@ -52,6 +53,7 @@ class TicketSerializer(serializers.ModelSerializer):
     created = serializers.DateTimeField(read_only=True)
     activated = serializers.DateTimeField(read_only=True)
     deactivated = serializers.DateTimeField(read_only=True)
+    team = TeamSerializer(many=False, read_only=True)
 
     class Meta:
         model = Ticket
@@ -64,6 +66,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "assigned_user",
             "status",
             "title",
+            "team",
             "description",
             "comments",
             "due_date",
