@@ -41,6 +41,25 @@ which your Vue app is hosted (e.g. `http://localhost:8080`)
 6. (optional) Install the pre-commit hook:
 `pre-commit install`
 
+## Development Setup
+We recommend the following set of environment variables for development:
+```
+DJANGO_SECRET_KEY=<any value>
+JWT_SECRET=<any value>
+DEBUG=True
+VUE_ROOT=http://localhost:8080/
+ALLOWED_HOST=localhost:8080
+```
+
+A typical workflow will include development of the API, in addtion to the SPA. In order to
+test the app fully, one should configure the `VUE_ROOT` and `ALLOWED_HOST` environment variables
+in order to satisfy CSRF requirements. `DJANGO_SECRET_KEY` and `JWT_SECRET` are also required;
+*because the development environment is intened to run on one's local machine, these can be arbitrary*.
+In production, these values should be configured to be sufficiently long and hard to guess. `DEBUG`
+affects where Django serves its static content from.
+
+For developing against a database other than the default, see below.
+
 ## Database Setup
 Out of the box, Sluggo-API will use a SQLite backend, which may not be
 suitable for larger instances. You may also choose to move the SQLite
