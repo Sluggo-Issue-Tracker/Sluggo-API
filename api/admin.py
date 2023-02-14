@@ -62,6 +62,15 @@ class TeamAdmin(CustomAdmin):
 
     fields = (("id", "ticket_head"), "name", "created", "activated", "deactivated")
 
+    def save_model(self, request, obj, form, change) -> None:
+        super().save_model(request, obj, form, change)
+        if not change:
+            # Create an admin member for the new team every time they are created
+            Member.objects.create(
+                team=obj, owner=request.user, role=Member.Roles.ADMIN
+            ).save()
+        return
+
 
 @admin.register(TicketComment, site=sluggo_admin)
 class TicketCommentAdmin(CustomAdmin):
