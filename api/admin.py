@@ -1,6 +1,9 @@
 from django.contrib import admin
 from .models import *
 from api.settings import BASE_URL
+from django.contrib.auth.admin import UserAdmin
+
+from django.contrib.auth import get_user_model
 
 # Custom Admin class that will allow you to mark fields to be readonly on edits.
 class CustomAdmin(admin.ModelAdmin):
@@ -144,3 +147,7 @@ class TeamInviteAdmin(CustomAdmin):
     readonly_edit = ("team", "user")
 
     fields = ("id", "team", "user")
+
+
+# Add the user model to the admin dashboard.
+sluggo_admin.register(get_user_model(), UserAdmin)
