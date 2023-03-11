@@ -31,7 +31,7 @@ class Ticket(HasUuid):
     due_date = models.DateTimeField(null=True, blank=True)
 
     title = models.CharField(max_length=100, blank=False)
-    description = models.TextField(blank=True)
+    description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     activated = models.DateTimeField(auto_now_add=True)
     deactivated = models.DateTimeField(null=True, blank=True)
